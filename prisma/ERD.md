@@ -3,6 +3,7 @@
 
 - [Actor](#actor)
 - [Character](#character)
+- [default](#default)
 
 ## Actor
 ```mermaid
@@ -144,3 +145,34 @@ erDiagram
   - `created_at`: 유저가 입장한 시간
   - `deleted_at`: 유저가 이탈한 시간
   - `member_id`: 유저가 누군지 식별 가능한 시점에 member_id를 기입한다.
+
+
+## default
+```mermaid
+erDiagram
+"Source" {
+  String id PK
+  String character_id FK
+  String type
+  String subtype
+  DateTime created_at
+  DateTime deleted_at "nullable"
+}
+```
+
+### `Source`
+캐릭터 학습에 필요한 자료들
+자기소개서, 포트폴리오, 이력서와 같은 파일
+유저가 캐릭터와 채팅을 시작할 때 이 소스들로부터 캐릭터가 학습 후 면접이 시��된다.
+따라서 타입이 'link'인 것은 링크의 컨텐츠가 수정될 때마다 캐릭터가 동기화되는 것과 같다.
+
+**Properties**
+  - `id`: PK
+  - `character_id`: 캐릭터의 아이디
+  - `type`: Source의 대분류로, 'file' | 'link' 둘 중 하나를 가진다.
+  - `subtype`
+    > 파일이나 링크의 소분류.
+    > 파일인 경우에는 'cover_letter' | 'portfolio' | 'resume'이 존재할 수 있다.
+    > 링크인 경우에는 'github' | 'notion' 이 있다.
+  - `created_at`: 소스가 등록된 시간
+  - `deleted_at`: 소스가 삭제된 시간

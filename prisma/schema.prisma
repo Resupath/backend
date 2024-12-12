@@ -60,6 +60,24 @@ model Provider {
   member Member @relation(fields: [member_id], references: [id]) /// 해당 계정 정보가 가리키는 멤버 정보
 }
 
+/// 캐릭터 학습에 필요한 자료들
+/// 자기소개서, 포트폴리오, 이력서와 같은 파일
+/// 유저가 캐릭터와 채팅을 시작할 때 이 소스들로부터 캐릭터가 학습 후 면접이 시작된다.
+/// 따라서 타입이 'link'인 것은 링크의 컨텐츠가 수정될 때마다 캐릭터가 동기화되는 것과 같다.
+model Source {
+  id           String    @id @db.Uuid /// PK
+  character_id String    @db.Uuid /// 캐릭터의 아이디
+  type         String /// Source의 대분류로, 'file' | 'link' 둘 중 하나를 가진다.
+  /// 파일이나 링크의 소분류.
+  /// 파일인 경우에는 'cover_letter' | 'portfolio' | 'resume'이 존재할 수 있다.
+  /// 링크인 경우에는 'github' | 'notion' 이 있다.
+  subtype      String
+  created_at   DateTime /// 소스가 등록된 시간
+  deleted_at   DateTime? /// 소스가 삭제된 시간
+
+  character Character @relation(fields: [character_id], references: [id])
+}
+
 /// 멤버가 생성한 캐릭터.
 /// 멤버는 면접 대상자를 등록하여 면접을 예행연습할 수 있다.
 /// @namespace Character
@@ -71,9 +89,10 @@ model Character {
   created_at DateTime /// 캐릭터가 생성된 시점
   deleted_at DateTime? /// 캐릭터가 삭제된 시점
 
-  creator Member @relation(fields: [member_id], references: [id]) // 캐릭터 생성자
+  creator Member   @relation(fields: [member_id], references: [id]) // 캐릭터 생성자
   rooms   Room[]
   chats   Chat[]
+  sources Source[]
 }
 
 /// 채팅방.
