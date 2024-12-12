@@ -73,6 +73,21 @@ erDiagram
   DateTime created_at
   DateTime deleted_at "nullable"
 }
+"Room" {
+  String id PK
+  String user_id FK
+  String character_id FK
+  DateTime created_at
+  DateTime deleted_at "nullable"
+}
+"User" {
+  String id PK
+  DateTime created_at
+  DateTime deleted_at "nullable"
+  String member_id FK "nullable"
+}
+"Room" }o--|| "User" : user
+"Room" }o--|| "Character" : character
 ```
 
 ### `Character`
@@ -86,3 +101,24 @@ erDiagram
   - `is_public`: 캐릭터 활성화 여부로 true인 경우에는 'public', 그렇지 않은 경우는 'private'.
   - `created_at`: 캐릭터가 생성된 시점
   - `deleted_at`: 캐릭터가 삭제된 시점
+
+### `Room`
+채팅방.
+하나의 캐릭터에 여러개의 유저가 채팅방을 생성할 수 있고, 유저는 여러개의 캐릭터에 대해 채팅방을 생성할 수 있다.
+
+**Properties**
+  - `id`: PK, 유저는 한 캐릭터에 대해서 여러 개의 방을 생성할 수 있기 때문에 별도의 ID를 둔다.
+  - `user_id`: 채팅에 참여한 유저의 아이디
+  - `character_id`: 채팅에 참여한 캐릭터의 아이디
+  - `created_at`: 채팅방이 생성된 시점
+  - `deleted_at`: 채팅방이 삭제된 시점
+
+### `User`
+한 브라우저에서 입장하여 브라우저를 종료하기 전, 즉 세션을 유저라고 한다.
+이 유저가 언제 접속해서 언제 퇴장했는지를 파악하기 위해 유저마다 생성 시간과 이탈 시간을 둔다.
+
+**Properties**
+  - `id`: PK
+  - `created_at`: 유저가 입장한 시간
+  - `deleted_at`: 유저가 이탈한 시간
+  - `member_id`: 유저가 누군지 식별 가능한 시점에 member_id를 기입한다.
