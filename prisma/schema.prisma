@@ -19,8 +19,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+/// 한 브라우저에서 입장하여 브라우저를 종료하기 전, 즉 세션을 유저라고 한다.
+/// 이 유저가 언제 접속해서 언제 퇴장했는지를 파악하기 위해 유저마다 생성 시간과 이탈 시간을 둔다.
+/// @namespace Actor
 model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
+  id         String    @id @db.Uuid
+  created_at DateTime /// 유저가 입장한 시간
+  deleted_at DateTime? /// 유저가 이탈한 시간
+}
+
+/// 회원가입하여 동일한 유저임을 알 수 있는 경우를 `Member`
+/// @namespace Actor
+model Member {
+  id         String    @id @db.Uuid
+  created_at DateTime /// 유저가 가입한 시간으로, 이 시간을 멤버가 된 시간으로 인식한다.
+  deleted_at DateTime? /// 회원탈퇴한 경우
 }
