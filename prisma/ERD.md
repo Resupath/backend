@@ -10,12 +10,14 @@ erDiagram
   String id PK
   DateTime created_at
   DateTime deleted_at "nullable"
+  String member_id FK "nullable"
 }
 "Member" {
   String id PK
   DateTime created_at
   DateTime deleted_at "nullable"
 }
+"User" }o--o| "Member" : member
 ```
 
 ### `User`
@@ -23,14 +25,15 @@ erDiagram
 이 유저가 언제 접속해서 언제 퇴장했는지를 파악하기 위해 유저마다 생성 시간과 이탈 시간을 둔다.
 
 **Properties**
-  - `id`: 
+  - `id`: PK
   - `created_at`: 유저가 입장한 시간
   - `deleted_at`: 유저가 이탈한 시간
+  - `member_id`: 유저가 누군지 식별 가능한 시점에 member_id를 기입한다.
 
 ### `Member`
 회원가입하여 동일한 유저임을 알 수 있는 경우를 `Member`
 
 **Properties**
-  - `id`: 
+  - `id`: PK
   - `created_at`: 유저가 가입한 시간으로, 이 시간을 멤버가 된 시간으로 인식한다.
   - `deleted_at`: 회원탈퇴한 경우

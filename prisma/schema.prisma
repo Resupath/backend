@@ -23,15 +23,20 @@ datasource db {
 /// 이 유저가 언제 접속해서 언제 퇴장했는지를 파악하기 위해 유저마다 생성 시간과 이탈 시간을 둔다.
 /// @namespace Actor
 model User {
-  id         String    @id @db.Uuid
+  id         String    @id @db.Uuid /// PK
   created_at DateTime /// 유저가 입장한 시간
   deleted_at DateTime? /// 유저가 이탈한 시간
+  member_id  String?   @db.Uuid /// 유저가 누군지 식별 가능한 시점에 member_id를 기입한다.
+
+  member Member? @relation(fields: [member_id], references: [id], onDelete: Cascade)
 }
 
 /// 회원가입하여 동일한 유저임을 알 수 있는 경우를 `Member`
 /// @namespace Actor
 model Member {
-  id         String    @id @db.Uuid
+  id         String    @id @db.Uuid /// PK
   created_at DateTime /// 유저가 가입한 시간으로, 이 시간을 멤버가 된 시간으로 인식한다.
   deleted_at DateTime? /// 회원탈퇴한 경우
+
+  user User[] /// 비회원 중 해당 Member와 동일인물임이 확정된 유저
 }
