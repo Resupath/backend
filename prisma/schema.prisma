@@ -30,7 +30,8 @@ model User {
   member_id  String?   @db.Uuid /// 유저가 누군지 식별 가능한 시점에 member_id를 기입한다.
 
   member Member? @relation(fields: [member_id], references: [id], onDelete: Cascade)
-  Room   Room[]
+  rooms  Room[]
+  chats  Chat[]
 }
 
 /// 회원가입하여 동일한 유저임을 알 수 있는 경우를 `Member`
@@ -41,9 +42,9 @@ model Member {
   created_at DateTime /// 유저가 가입한 시간으로, 이 시간을 멤버가 된 시간으로 인식한다.
   deleted_at DateTime? /// 회원탈퇴한 경우
 
-  users     User[] /// 비회원 중 해당 Member와 동일인물임이 확정된 유저
-  providers Provider[] /// 회원에 연결한 OAuth App들을 의미한다.
-  Character Character[]
+  users      User[] /// 비회원 중 해당 Member와 동일인물임이 확정된 유저
+  providers  Provider[] /// 회원에 연결한 OAuth App들을 의미한다.
+  characters Character[]
 }
 
 /// OAuth 연동 정보를 저장한다.
@@ -72,6 +73,7 @@ model Character {
 
   creator Member @relation(fields: [member_id], references: [id]) // 캐릭터 생성자
   rooms   Room[]
+  chats   Chat[]
 }
 
 /// 채팅방.
@@ -86,4 +88,19 @@ model Room {
 
   user      User      @relation(fields: [user_id], references: [id])
   character Character @relation(fields: [character_id], references: [id])
+}
+
+/// 채팅 내용.
+/// 유저 또는 캐릭터가 말하는 것이기 때문에, 둘 중 하나는 반드시 NOT NULL 이다. 
+/// @namespace Character
+model Chat {
+  id           String    @id @db.Uuid /// PK
+  user_id      String?   @db.Uuid /// 유저가 보낸 채팅인 경우 유저 아이디를 저장한다.
+  character_id String?   @db.Uuid /// 캐릭터가 보낸 채팅인 경우 캐릭터의 아이디를 저장한다.
+  message      String /// 채팅 메시지
+  created_at   DateTime /// 채팅을 보낸 시간
+  deleted_at   DateTime? /// 채팅을 지우는 기능은 기획 상 존재하지 않지만, 확장을 고려해 만들어둔다.
+
+  user      User?      @relation(fields: [user_id], references: [id])
+  character Character? @relation(fields: [character_id], references: [id])
 }

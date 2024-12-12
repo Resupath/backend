@@ -80,6 +80,14 @@ erDiagram
   DateTime created_at
   DateTime deleted_at "nullable"
 }
+"Chat" {
+  String id PK
+  String user_id FK "nullable"
+  String character_id FK "nullable"
+  String message
+  DateTime created_at
+  DateTime deleted_at "nullable"
+}
 "User" {
   String id PK
   DateTime created_at
@@ -88,6 +96,8 @@ erDiagram
 }
 "Room" }o--|| "User" : user
 "Room" }o--|| "Character" : character
+"Chat" }o--o| "User" : user
+"Chat" }o--o| "Character" : character
 ```
 
 ### `Character`
@@ -112,6 +122,18 @@ erDiagram
   - `character_id`: 채팅에 참여한 캐릭터의 아이디
   - `created_at`: 채팅방이 생성된 시점
   - `deleted_at`: 채팅방이 삭제된 시점
+
+### `Chat`
+채팅 내용.
+유저 또는 캐릭터가 말하는 것이기 때문에, 둘 중 하나는 반드시 NOT NULL 이다. 
+
+**Properties**
+  - `id`: PK
+  - `user_id`: 유저가 보낸 채팅인 경우 유저 아이디를 저장한다.
+  - `character_id`: 캐릭터가 보낸 채팅인 경우 캐릭터의 아이디를 저장한다.
+  - `message`: 채팅 메시지
+  - `created_at`: 채팅을 보낸 시간
+  - `deleted_at`: 채팅을 지우는 기능은 기획 상 존재하지 않지만, 확장을 고려해 만들어둔다.
 
 ### `User`
 한 브라우저에서 입장하여 브라우저를 종료하기 전, 즉 세션을 유저라고 한다.
