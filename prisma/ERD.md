@@ -3,7 +3,6 @@
 
 - [Actor](#actor)
 - [Character](#character)
-- [default](#default)
 
 ## Actor
 ```mermaid
@@ -66,11 +65,31 @@ OAuth 연동 정보를 저장한다.
 ## Character
 ```mermaid
 erDiagram
+"Source" {
+  String id PK
+  String character_id FK
+  String type
+  String subtype
+  DateTime created_at
+  DateTime deleted_at "nullable"
+}
 "Character" {
   String id PK
   String member_id FK
   String nickname
   Boolean is_public
+  DateTime created_at
+  DateTime deleted_at "nullable"
+}
+"Character_Personality" {
+  String character_id FK
+  String personality_id FK
+  DateTime created_at
+  DateTime deleted_at "nullable"
+}
+"Personality" {
+  String id PK
+  String keyword
   DateTime created_at
   DateTime deleted_at "nullable"
 }
@@ -95,11 +114,31 @@ erDiagram
   DateTime deleted_at "nullable"
   String member_id FK "nullable"
 }
+"Source" }o--|| "Character" : character
+"Character_Personality" }o--|| "Personality" : personality
+"Character_Personality" }o--|| "Character" : character
 "Room" }o--|| "User" : user
 "Room" }o--|| "Character" : character
 "Chat" }o--o| "User" : user
 "Chat" }o--o| "Character" : character
 ```
+
+### `Source`
+캐릭터 학습에 필요한 자료들
+자기소개서, 포트폴리오, 이력서와 같은 파일
+유저가 캐릭터와 채팅을 시작할 때 이 소스들로부터 캐릭터가 학습 후 면접이 시작된다.
+따라서 타입이 'link'인 것은 링크의 컨텐츠가 수정될 때마다 캐릭터가 동기화되는 것과 같다.
+
+**Properties**
+  - `id`: PK
+  - `character_id`: 캐릭터의 아이디
+  - `type`: Source의 대분류로, 'file' | 'link' 둘 중 하나를 가진다.
+  - `subtype`
+    > 파일이나 링크의 소분류.
+    > 파일인 경우에는 'cover_letter' | 'portfolio' | 'resume'이 존재할 수 있다.
+    > 링크인 경우에는 'github' | 'notion' 이 있다.
+  - `created_at`: 소스가 등록된 시간
+  - `deleted_at`: 소스가 삭제된 시간
 
 ### `Character`
 멤버가 생성한 캐릭터.
@@ -112,6 +151,26 @@ erDiagram
   - `is_public`: 캐릭터 활성화 여부로 true인 경우에는 'public', 그렇지 않은 경우는 'private'.
   - `created_at`: 캐릭터가 생성된 시점
   - `deleted_at`: 캐릭터가 삭제된 시점
+
+### `Character_Personality`
+캐릭터의 성격 유형
+하나의 캐릭터는 여러개의 성격으로 지정될 수 있으며, 하나의 성격은 여러개의 캐릭터가 가지고 있을수 있다.
+
+**Properties**
+  - `character_id`: 
+  - `personality_id`: 
+  - `created_at`: 캐릭터와 성격이 관계 생성 시점
+  - `deleted_at`: 캐릭터와 성격의 관계가 해제된 시점
+
+### `Personality`
+성격 유형.
+소스와 함께 학습에 사용된다. 캐릭터의 말투와 성격을 결정한다. 
+
+**Properties**
+  - `id`: PK
+  - `keyword`: 성격에 대해 설명하는 단어나 문장. '용감한', '호기심이 많은' 같은 성격과 관련된 키워드이다.
+  - `created_at`: 성격이 생성된 시점
+  - `deleted_at`: 성격이 삭제된 시점
 
 ### `Room`
 채팅방.
@@ -145,34 +204,3 @@ erDiagram
   - `created_at`: 유저가 입장한 시간
   - `deleted_at`: 유저가 이탈한 시간
   - `member_id`: 유저가 누군지 식별 가능한 시점에 member_id를 기입한다.
-
-
-## default
-```mermaid
-erDiagram
-"Source" {
-  String id PK
-  String character_id FK
-  String type
-  String subtype
-  DateTime created_at
-  DateTime deleted_at "nullable"
-}
-```
-
-### `Source`
-캐릭터 학습에 필요한 자료들
-자기소개서, 포트폴리오, 이력서와 같은 파일
-유저가 캐릭터와 채팅을 시작할 때 이 소스들로부터 캐릭터가 학습 후 면접이 시��된다.
-따라서 타입이 'link'인 것은 링크의 컨텐츠가 수정될 때마다 캐릭터가 동기화되는 것과 같다.
-
-**Properties**
-  - `id`: PK
-  - `character_id`: 캐릭터의 아이디
-  - `type`: Source의 대분류로, 'file' | 'link' 둘 중 하나를 가진다.
-  - `subtype`
-    > 파일이나 링크의 소분류.
-    > 파일인 경우에는 'cover_letter' | 'portfolio' | 'resume'이 존재할 수 있다.
-    > 링크인 경우에는 'github' | 'notion' 이 있다.
-  - `created_at`: 소스가 등록된 시간
-  - `deleted_at`: 소스가 삭제된 시간

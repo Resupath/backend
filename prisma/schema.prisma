@@ -64,6 +64,7 @@ model Provider {
 /// 자기소개서, 포트폴리오, 이력서와 같은 파일
 /// 유저가 캐릭터와 채팅을 시작할 때 이 소스들로부터 캐릭터가 학습 후 면접이 시작된다.
 /// 따라서 타입이 'link'인 것은 링크의 컨텐츠가 수정될 때마다 캐릭터가 동기화되는 것과 같다.
+/// @namespace Character
 model Source {
   id           String    @id @db.Uuid /// PK
   character_id String    @db.Uuid /// 캐릭터의 아이디
@@ -89,10 +90,38 @@ model Character {
   created_at DateTime /// 캐릭터가 생성된 시점
   deleted_at DateTime? /// 캐릭터가 삭제된 시점
 
-  creator Member   @relation(fields: [member_id], references: [id]) // 캐릭터 생성자
-  rooms   Room[]
-  chats   Chat[]
-  sources Source[]
+  creator               Member                  @relation(fields: [member_id], references: [id]) // 캐릭터 생성자
+  rooms                 Room[]
+  chats                 Chat[]
+  sources               Source[]
+  characterPersonalites Character_Personality[]
+}
+
+/// 캐릭터의 성격 유형
+/// 하나의 캐릭터는 여러개의 성격으로 지정될 수 있으며, 하나의 성격은 여러개의 캐릭터가 가지고 있을수 있다.
+/// @namespace Character
+model Character_Personality {
+  character_id   String    @db.Uuid
+  personality_id String    @db.Uuid
+  created_at     DateTime /// 캐릭터와 성격이 관계 생성 시점
+  deleted_at     DateTime? /// 캐릭터와 성격의 관계가 해제된 시점
+
+  personality Personality @relation(fields: [personality_id], references: [id])
+  character   Character   @relation(fields: [character_id], references: [id])
+
+  @@unique([character_id, personality_id]) /// PK
+}
+
+/// 성격 유형.
+/// 소스와 함께 학습에 사용된다. 캐릭터의 말투와 성격을 결정한다. 
+/// @namespace Character
+model Personality {
+  id         String    @id @db.Uuid /// PK
+  keyword    String /// 성격에 대해 설명하는 단어나 문장. '용감한', '호기심이 많은' 같은 성격과 관련된 키워드이다.
+  created_at DateTime /// 성격이 생성된 시점
+  deleted_at DateTime? /// 성격이 삭제된 시점
+
+  characterPersonalites Character_Personality[]
 }
 
 /// 채팅방.
