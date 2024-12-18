@@ -57,6 +57,9 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 # Nestia SDK
 src/api
+packages/api/*
+!packages/api/package-lock.json
+!packages/api/package.json
 
 # Local Database Volumes
 db_data
