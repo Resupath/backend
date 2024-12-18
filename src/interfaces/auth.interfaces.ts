@@ -1,3 +1,7 @@
+export interface LoginRequestInterface {
+  code: string;
+}
+
 export interface LoginResponseInterface {
   id: string;
   name: string;

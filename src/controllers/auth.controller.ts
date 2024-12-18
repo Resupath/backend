@@ -1,6 +1,9 @@
 import core, { TypedQuery } from '@nestia/core';
 import { Controller } from '@nestjs/common';
-import { LoginResponseInterface } from 'src/interfaces/auth.interfaces';
+import {
+  LoginRequestInterface,
+  LoginResponseInterface,
+} from 'src/interfaces/auth.interfaces';
 import { AuthService } from 'src/services/auth.service';
 
 @Controller('auth')
@@ -20,8 +23,8 @@ export class AuthController {
    */
   @core.TypedRoute.Get('google/callback')
   async getGoogleAuthorization(
-    @TypedQuery() input: { code: string },
+    @TypedQuery() query: LoginRequestInterface,
   ): Promise<LoginResponseInterface> {
-    return this.authService.getGoogleAuthorization(input.code);
+    return this.authService.getGoogleAuthorization(query.code);
   }
 }
