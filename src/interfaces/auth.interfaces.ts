@@ -8,7 +8,7 @@ export interface LoginResponseInterface {
 export interface CommonAuthorizationResponseInterface {
   uid: string;
   email: string;
-  nickname: string;
+  name: string;
   accessToken: string;
   refreshToken: string;
   type: 'google' | 'github' | 'linkedin';
