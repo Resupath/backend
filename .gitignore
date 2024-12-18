@@ -55,6 +55,8 @@ pids
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
-
 # Nestia SDK
 src/api
+
+# Local Database Volumes
+db_data
