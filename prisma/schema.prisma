@@ -25,8 +25,8 @@ datasource db {
 /// @namespace Character
 model User {
   id         String    @id @db.Uuid /// PK
-  created_at DateTime /// 유저가 입장한 시간
-  deleted_at DateTime? /// 유저가 이탈한 시간
+  created_at DateTime  @db.Timestamptz /// 유저가 입장한 시간
+  deleted_at DateTime? @db.Timestamptz /// 유저가 이탈한 시간
   member_id  String?   @db.Uuid /// 유저가 누군지 식별 가능한 시점에 member_id를 기입한다.
 
   member Member? @relation(fields: [member_id], references: [id], onDelete: Cascade)
@@ -39,8 +39,8 @@ model User {
 model Member {
   id         String    @id @db.Uuid /// PK
   name       String /// 사용자 이름으로, 면접 서비스기 때문에 실명을 사용한다. 단, 강제성은 없다.
-  created_at DateTime /// 유저가 가입한 시간으로, 이 시간을 멤버가 된 시간으로 인식한다.
-  deleted_at DateTime? /// 회원탈퇴한 경우
+  created_at DateTime  @db.Timestamptz /// 유저가 가입한 시간으로, 이 시간을 멤버가 된 시간으로 인식한다.
+  deleted_at DateTime? @db.Timestamptz /// 회원탈퇴한 경우
 
   users      User[] /// 비회원 중 해당 Member와 동일인물임이 확정된 유저
   providers  Provider[] /// 회원에 연결한 OAuth App들을 의미한다.
@@ -55,7 +55,7 @@ model Provider {
   type       String /// google, kakao와 같은 서비스 명칭
   uid        String /// OAuth 내에서 해당 유저를 가리키는 아이디로, 외부 유저 Unique ID
   password   String /// OAuth 상에서 해당 유저를 식별 가능한 Refresh Token
-  created_at DateTime /// OAuth가 연동된 시간으로, 삭제는 불가능하다. 회원 탈퇴 시간은 Member를 확인할 것.
+  created_at DateTime @db.Timestamptz /// OAuth가 연동된 시간으로, 삭제는 불가능하다. 회원 탈퇴 시간은 Member를 확인할 것.
 
   member Member @relation(fields: [member_id], references: [id]) /// 해당 계정 정보가 가리키는 멤버 정보
 }
@@ -73,8 +73,8 @@ model Source {
   /// 파일인 경우에는 'cover_letter' | 'portfolio' | 'resume'이 존재할 수 있다.
   /// 링크인 경우에는 'github' | 'notion' 이 있다.
   subtype      String
-  created_at   DateTime /// 소스가 등록된 시간
-  deleted_at   DateTime? /// 소스가 삭제된 시간
+  created_at   DateTime  @db.Timestamptz /// 소스가 등록된 시간
+  deleted_at   DateTime? @db.Timestamptz /// 소스가 삭제된 시간
 
   character Character @relation(fields: [character_id], references: [id])
 }
@@ -87,8 +87,8 @@ model Character {
   member_id  String    @db.Uuid /// 캐릭터 생성자 아이디
   nickname   String /// 사용자는 이름을 숨기고 싶을 수 있기 때문에 닉네임이라고 둔다. 단, 강제성은 없다.
   is_public  Boolean /// 캐릭터 활성화 여부로 true인 경우에는 'public', 그렇지 않은 경우는 'private'.
-  created_at DateTime /// 캐릭터가 생성된 시점
-  deleted_at DateTime? /// 캐릭터가 삭제된 시점
+  created_at DateTime  @db.Timestamptz /// 캐릭터가 생성된 시점
+  deleted_at DateTime? @db.Timestamptz /// 캐릭터가 삭제된 시점
 
   creator               Member                  @relation(fields: [member_id], references: [id]) // 캐릭터 생성자
   rooms                 Room[]
@@ -103,8 +103,8 @@ model Character {
 model Character_Personality {
   character_id   String    @db.Uuid
   personality_id String    @db.Uuid
-  created_at     DateTime /// 캐릭터와 성격이 관계 생성 시점
-  deleted_at     DateTime? /// 캐릭터와 성격의 관계가 해제된 시점
+  created_at     DateTime  @db.Timestamptz /// 캐릭터와 성격이 관계 생성 시점
+  deleted_at     DateTime? @db.Timestamptz /// 캐릭터와 성격의 관계가 해제된 시점
 
   personality Personality @relation(fields: [personality_id], references: [id])
   character   Character   @relation(fields: [character_id], references: [id])
@@ -118,8 +118,8 @@ model Character_Personality {
 model Personality {
   id         String    @id @db.Uuid /// PK
   keyword    String /// 성격에 대해 설명하는 단어나 문장. '용감한', '호기심이 많은' 같은 성격과 관련된 키워드이다.
-  created_at DateTime /// 성격이 생성된 시점
-  deleted_at DateTime? /// 성격이 삭제된 시점
+  created_at DateTime  @db.Timestamptz /// 성격이 생성된 시점
+  deleted_at DateTime? @db.Timestamptz /// 성격이 삭제된 시점
 
   characterPersonalites Character_Personality[]
 }
@@ -131,8 +131,8 @@ model Room {
   id           String    @id @db.Uuid /// PK, 유저는 한 캐릭터에 대해서 여러 개의 방을 생성할 수 있기 때문에 별도의 ID를 둔다.
   user_id      String    @db.Uuid /// 채팅에 참여한 유저의 아이디
   character_id String    @db.Uuid /// 채팅에 참여한 캐릭터의 아이디
-  created_at   DateTime /// 채팅방이 생성된 시점
-  deleted_at   DateTime? /// 채팅방이 삭제된 시점
+  created_at   DateTime  @db.Timestamptz /// 채팅방이 생성된 시점
+  deleted_at   DateTime? @db.Timestamptz /// 채팅방이 삭제된 시점
 
   user      User      @relation(fields: [user_id], references: [id])
   character Character @relation(fields: [character_id], references: [id])
@@ -146,8 +146,8 @@ model Chat {
   user_id      String?   @db.Uuid /// 유저가 보낸 채팅인 경우 유저 아이디를 저장한다.
   character_id String?   @db.Uuid /// 캐릭터가 보낸 채팅인 경우 캐릭터의 아이디를 저장한다.
   message      String /// 채팅 메시지
-  created_at   DateTime /// 채팅을 보낸 시간
-  deleted_at   DateTime? /// 채팅을 지우는 기능은 기획 상 존재하지 않지만, 확장을 고려해 만들어둔다.
+  created_at   DateTime  @db.Timestamptz /// 채팅을 보낸 시간
+  deleted_at   DateTime? @db.Timestamptz /// 채팅을 지우는 기능은 기획 상 존재하지 않지만, 확장을 고려해 만들어둔다.
 
   user      User?      @relation(fields: [user_id], references: [id])
   character Character? @relation(fields: [character_id], references: [id])

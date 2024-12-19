@@ -77,7 +77,7 @@ export class AuthService {
   }
 
   async createMember(user: CommonAuthorizationResponseInterface) {
-    const date = new Date();
+    const date = new Date().toISOString();
     const { member } = await this.prisma.provider.create({
       select: { member: { select: { id: true, name: true } } },
       data: {
