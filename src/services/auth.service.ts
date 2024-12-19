@@ -21,7 +21,7 @@ export class AuthService {
     const { clientId, redirectUri } = this.getGoogleClient();
     const scope = encodeURIComponent('profile email'); // 허용된 스코프는 프로필과 이메일이다.
 
-    return `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}&response_type=code&access_type=offline`;
+    return `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}&response_type=code&access_type=offline&prompt=consent`;
   }
 
   /**
@@ -51,23 +51,35 @@ export class AuthService {
   }
 
   async findOrCreateMember(user: CommonAuthorizationResponseInterface) {
-    const member = await this.findMember(user);
-    return member ?? (await this.createMember(user));
+    const provider = await this.findProviderMember(user);
+    return provider
+      ? await this.updateProviderPassword(provider.id, user.refreshToken)
+      : await this.createMember(user);
   }
 
-  async findMember(user: CommonAuthorizationResponseInterface) {
+  async findProviderMember(user: CommonAuthorizationResponseInterface) {
     const provider = await this.prisma.provider.findFirst({
       select: { id: true, member: { select: { id: true, name: true } } },
       where: { uid: user.uid, type: user.type },
     });
 
-    return provider?.member;
+    return provider;
+  }
+
+  async updateProviderPassword(providerId: string, refreshToken: string) {
+    const { member } = await this.prisma.provider.update({
+      select: { member: { select: { id: true, name: true } } },
+      data: { password: refreshToken },
+      where: { id: providerId },
+    });
+
+    return member;
   }
 
   async createMember(user: CommonAuthorizationResponseInterface) {
     const date = new Date();
-    const provider = await this.prisma.provider.create({
-      select: { id: true, member: { select: { id: true, name: true } } },
+    const { member } = await this.prisma.provider.create({
+      select: { member: { select: { id: true, name: true } } },
       data: {
         id: uuidv4(),
         uid: user.uid,
@@ -78,7 +90,7 @@ export class AuthService {
       },
     });
 
-    return provider?.member;
+    return member;
   }
 
   private login(member: { id: string; name: string }) {
