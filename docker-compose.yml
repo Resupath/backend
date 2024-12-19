@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13
+    container_name: local-postgres-db
+    environment:
+      POSTGRES_USER: ${LOCAL_DATABASE_USER}
+      POSTGRES_PASSWORD: ${LOCAL_DATABASE_PASSWORD}
+      POSTGRES_DB: ${LOCAL_DATABASE_NAME}
+    ports:
+      - '${LOCAL_DATABASE_PORT}:5432'
+    volumes:
+      - ./db_data:/var/lib/postgresql/data
