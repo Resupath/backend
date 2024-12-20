@@ -4,7 +4,7 @@ import {
   LoginRequestInterface,
   LoginResponseInterface,
   RefreshRequestInterface,
-} from 'src/interfaces/auth.interfaces';
+} from 'src/interfaces/auth.interface';
 import { AuthService } from 'src/services/auth.service';
 
 @Controller('auth')

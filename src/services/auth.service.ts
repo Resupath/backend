@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
-import { CommonAuthorizationResponseInterface } from '../interfaces/auth.interfaces';
+import { CommonAuthorizationResponseInterface } from '../interfaces/auth.interface';
 import { PrismaService } from './prisma.service';
 
 @Injectable()
