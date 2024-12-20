@@ -1,3 +1,7 @@
+export interface RefreshRequestInterface {
+  refreshToken: string;
+}
+
 export interface LoginRequestInterface {
   code: string;
 }

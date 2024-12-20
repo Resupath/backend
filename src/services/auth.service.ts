@@ -15,6 +15,14 @@ export class AuthService {
   ) {}
 
   /**
+   * Refresh Token을 검증하고 인증 정보를 재발급한다.
+   */
+  async memberRefresh(refreshToken: string) {
+    const payload = await this.verifyRefreshToken(refreshToken);
+    return this.login(payload);
+  }
+
+  /**
    * 구글 로그인 페이지의 url을 반환한다.
    */
   async getGoogleLoginUrl() {
@@ -93,8 +101,25 @@ export class AuthService {
     return member;
   }
 
+  private async verifyRefreshToken(
+    refreshToken: string,
+  ): Promise<{ id: string; name: string }> {
+    try {
+      const payload = this.jwtService.verify(refreshToken, {
+        secret: this.configService.get('JWT_REFRESH_SECRET_MEMBER'),
+      });
+      return payload as { id: string; name: string };
+    } catch (error) {
+      console.error(error);
+      throw new UnauthorizedException();
+    }
+  }
+
   private login(member: { id: string; name: string }) {
-    const payload: { id: string } = { id: member.id };
+    const payload: { id: string; name: string } = {
+      id: member.id,
+      name: member.name,
+    };
 
     const accessToken = this.jwtService.sign(payload, {
       secret: this.configService.get('JWT_SECRET_MEMBER'),

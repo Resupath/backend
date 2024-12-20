@@ -1,14 +1,25 @@
-import core, { TypedQuery } from '@nestia/core';
+import core, { TypedBody, TypedQuery } from '@nestia/core';
 import { Controller } from '@nestjs/common';
 import {
   LoginRequestInterface,
   LoginResponseInterface,
+  RefreshRequestInterface,
 } from 'src/interfaces/auth.interfaces';
 import { AuthService } from 'src/services/auth.service';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
+  /**
+   * AccessToken과 RefreshToken을 재발급 한다.
+   */
+  @core.TypedRoute.Get('refresh')
+  async refresh(
+    @TypedBody() body: RefreshRequestInterface,
+  ): Promise<LoginResponseInterface> {
+    return await this.authService.memberRefresh(body.refreshToken);
+  }
 
   /**
    * 클라이언트 요청에 따라 구글 로그인 url을 반환한다.
