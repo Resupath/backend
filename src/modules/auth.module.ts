@@ -4,7 +4,6 @@ import { AuthController } from 'src/controllers/auth.controller';
 import { AuthService } from 'src/services/auth.service';
 
 @Module({
-  imports: [JwtModule],
   controllers: [AuthController],
   providers: [AuthService],
 })

@@ -76,10 +76,19 @@ erDiagram
 "Character" {
   String id PK
   String member_id FK
+  DateTime created_at
+  DateTime deleted_at "nullable"
+}
+"Character_Snapshot" {
+  String id PK
+  String character_id FK
   String nickname
   Boolean is_public
   DateTime created_at
-  DateTime deleted_at "nullable"
+}
+"Character_Last_Snapshot" {
+  String character_id PK
+  String character_snapshot_id FK
 }
 "Character_Personality" {
   String character_id FK
@@ -115,6 +124,9 @@ erDiagram
   String member_id FK "nullable"
 }
 "Source" }o--|| "Character" : character
+"Character_Snapshot" }o--|| "Character" : character
+"Character_Last_Snapshot" |o--|| "Character" : character
+"Character_Last_Snapshot" |o--|| "Character_Snapshot" : snapshot
 "Character_Personality" }o--|| "Personality" : personality
 "Character_Personality" }o--|| "Character" : character
 "Room" }o--|| "User" : user
@@ -147,10 +159,25 @@ erDiagram
 **Properties**
   - `id`: PK
   - `member_id`: 캐릭터 생성자 아이디
-  - `nickname`: 사용자는 이름을 숨기고 싶을 수 있기 때문에 닉네임이라고 둔다. 단, 강제성은 없다.
-  - `is_public`: 캐릭터 활성화 여부로 true인 경우에는 'public', 그렇지 않은 경우는 'private'.
   - `created_at`: 캐릭터가 생성된 시점
   - `deleted_at`: 캐릭터가 삭제된 시점
+
+### `Character_Snapshot`
+캐릭터 스냅샷
+
+**Properties**
+  - `id`: PK
+  - `character_id`: 스냅샷이 참조하는 캐릭터 ID
+  - `nickname`: 사용자의 이름, 본명을 사용하는 것이 권장되나 강제성은 없다.
+  - `is_public`: 캐릭터 활성화 여부. true인 경우에는 'public', 그렇지 않은 경우는 'private'이다.
+  - `created_at`: 스냅샷 생성 시점
+
+### `Character_Last_Snapshot`
+캐릭터의 마지막 스냅샷
+
+**Properties**
+  - `character_id`: 
+  - `character_snapshot_id`: 
 
 ### `Character_Personality`
 캐릭터의 성격 유형
@@ -174,7 +201,7 @@ erDiagram
 
 ### `Room`
 채팅방.
-하나의 캐릭터에 여러개의 유저가 채팅방을 생성할 수 있고, 유저는 여러개의 캐릭터에 대해 채팅방을 생성할 수 있다.
+하나의 캐릭터에 여러개의 유저가 채팅방을 생성할 �� 있고, 유저는 여러개의 캐릭터에 대해 채팅방을 생성할 수 있다.
 
 **Properties**
   - `id`: PK, 유저는 한 캐릭터에 대해서 여러 개의 방을 생성할 수 있기 때문에 별도의 ID를 둔다.

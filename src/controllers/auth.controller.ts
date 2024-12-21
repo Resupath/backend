@@ -14,7 +14,7 @@ export class AuthController {
   /**
    * AccessToken과 RefreshToken을 재발급 한다.
    */
-  @core.TypedRoute.Get('refresh')
+  @core.TypedRoute.Post('refresh')
   async refresh(
     @TypedBody() body: RefreshRequestInterface,
   ): Promise<LoginResponseInterface> {

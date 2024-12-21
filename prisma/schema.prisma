@@ -85,8 +85,6 @@ model Source {
 model Character {
   id         String    @id @db.Uuid /// PK
   member_id  String    @db.Uuid /// 캐릭터 생성자 아이디
-  nickname   String /// 사용자는 이름을 숨기고 싶을 수 있기 때문에 닉네임이라고 둔다. 단, 강제성은 없다.
-  is_public  Boolean /// 캐릭터 활성화 여부로 true인 경우에는 'public', 그렇지 않은 경우는 'private'.
   created_at DateTime  @db.Timestamptz /// 캐릭터가 생성된 시점
   deleted_at DateTime? @db.Timestamptz /// 캐릭터가 삭제된 시점
 
@@ -95,6 +93,34 @@ model Character {
   chats                 Chat[]
   sources               Source[]
   characterPersonalites Character_Personality[]
+
+  snapshots     Character_Snapshot[]
+  last_snapshot Character_Last_Snapshot?
+}
+
+/// 캐릭터 스냅샷
+/// @namespace Character
+model Character_Snapshot {
+  id           String   @id @db.Uuid /// PK
+  character_id String   @db.Uuid /// 스냅샷이 참조하는 캐릭터 ID
+  nickname     String /// 사용자의 이름, 본명을 사용하는 것이 권장되나 강제성은 없다.
+  is_public    Boolean /// 캐릭터 활성화 여부. true인 경우에는 'public', 그렇지 않은 경우는 'private'이다.
+  created_at   DateTime @db.Timestamptz /// 스냅샷 생성 시점
+
+  character     Character                @relation(fields: [character_id], references: [id])
+  last_snapshot Character_Last_Snapshot?
+}
+
+/// 캐릭터의 마지막 스냅샷
+/// @namespace Character
+model Character_Last_Snapshot {
+  character_id          String @id @db.Uuid
+  character_snapshot_id String @db.Uuid
+
+  character Character          @relation(fields: [character_id], references: [id])
+  snapshot  Character_Snapshot @relation(fields: [character_snapshot_id], references: [id])
+
+  @@unique([character_snapshot_id])
 }
 
 /// 캐릭터의 성격 유형
@@ -109,7 +135,7 @@ model Character_Personality {
   personality Personality @relation(fields: [personality_id], references: [id])
   character   Character   @relation(fields: [character_id], references: [id])
 
-  @@unique([character_id, personality_id]) /// PK
+  @@unique([character_id, personality_id])
 }
 
 /// 성격 유형.
