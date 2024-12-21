@@ -7,7 +7,7 @@ import { PrismaService } from './prisma.service';
 export class CharactersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(memberId: string, input: Character.CreateCharacterRequest) {
+  async create(memberId: string, input: Character.CreateRequest) {
     const characterId = uuidv4();
     const snapshotId = uuidv4();
     const date = new Date().toISOString();
