@@ -1,3 +1,4 @@
+import { PaginationUtil } from 'src/util/pagination.util';
 import { tags } from 'typia';
 
 export interface Character {
@@ -19,5 +20,12 @@ export namespace Character {
     extends Pick<
       Character,
       'id' | 'memberId' | 'nickname' | 'isPublic' | 'createAt'
+    > {}
+
+  export interface GetByPageRequest extends PaginationUtil.Request {}
+
+  export interface GetByPageResponse
+    extends PaginationUtil.Response<
+      Pick<Character, 'id' | 'nickname' | 'createAt'>
     > {}
 }

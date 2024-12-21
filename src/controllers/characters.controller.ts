@@ -1,10 +1,11 @@
-import core, { TypedBody, TypedParam } from '@nestia/core';
+import core, { TypedBody, TypedParam, TypedQuery } from '@nestia/core';
 import { Controller, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { User } from 'src/decorators/user.decorator';
 import { MemberGuard } from 'src/guards/member.guard';
 import { Character } from 'src/interfaces/characters.interface';
 import { CharactersService } from 'src/services/characters.service';
+import { PaginationUtil } from 'src/util/pagination.util';
 import { tags } from 'typia';
 
 @ApiTags('Character')
@@ -22,6 +23,14 @@ export class CharactersController {
     @TypedBody() body: Character.CreateRequest,
   ): Promise<Character.CreateResponse> {
     return await this.charactersService.create(user.id, body);
+  }
+
+  /**
+   * 캐릭터를 페이지네이션으로 조회한다.
+   */
+  @core.TypedRoute.Get()
+  async getCharactersByPage(@TypedQuery() query: Character.GetByPageRequest) {
+    return await this.charactersService.getBypage(query);
   }
 
   /**
