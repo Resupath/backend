@@ -1,10 +1,6 @@
 import core, { TypedBody, TypedQuery } from '@nestia/core';
 import { Controller } from '@nestjs/common';
-import {
-  LoginRequestInterface,
-  LoginResponseInterface,
-  RefreshRequestInterface,
-} from 'src/interfaces/auth.interface';
+import { Auth } from 'src/interfaces/auth.interface';
 import { AuthService } from 'src/services/auth.service';
 
 @Controller('auth')
@@ -14,10 +10,10 @@ export class AuthController {
   /**
    * AccessToken과 RefreshToken을 재발급 한다.
    */
-  @core.TypedRoute.Post('refresh')
+  @core.TypedRoute.Get('refresh')
   async refresh(
-    @TypedBody() body: RefreshRequestInterface,
-  ): Promise<LoginResponseInterface> {
+    @TypedBody() body: Auth.RefreshRequest,
+  ): Promise<Auth.LoginResponse> {
     return await this.authService.memberRefresh(body.refreshToken);
   }
 
@@ -34,8 +30,8 @@ export class AuthController {
    */
   @core.TypedRoute.Get('google/callback')
   async getGoogleAuthorization(
-    @TypedQuery() query: LoginRequestInterface,
-  ): Promise<LoginResponseInterface> {
+    @TypedQuery() query: Auth.LoginRequest,
+  ): Promise<Auth.LoginResponse> {
     return this.authService.getGoogleAuthorization(query.code);
   }
 }

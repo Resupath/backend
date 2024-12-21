@@ -1,23 +1,27 @@
-export interface RefreshRequestInterface {
-  refreshToken: string;
-}
+import { tags } from 'typia';
 
-export interface LoginRequestInterface {
-  code: string;
-}
+export namespace Auth {
+  export interface RefreshRequest {
+    refreshToken: string;
+  }
 
-export interface LoginResponseInterface {
-  id: string;
-  name: string;
-  accessToken: string;
-  refreshToken: string;
-}
+  export interface LoginRequest {
+    code: string;
+  }
 
-export interface CommonAuthorizationResponseInterface {
-  uid: string;
-  email: string;
-  name: string;
-  accessToken: string;
-  refreshToken: string;
-  type: 'google' | 'github' | 'linkedin';
+  export interface LoginResponse {
+    id: string & tags.Format<'uuid'>;
+    name: string;
+    accessToken: string;
+    refreshToken: string;
+  }
+
+  export interface CommonAuthorizationResponse {
+    uid: string;
+    name: string;
+    email: string & tags.Format<'email'>;
+    accessToken: string;
+    refreshToken: string;
+    type: 'google' | 'github' | 'linkedin';
+  }
 }

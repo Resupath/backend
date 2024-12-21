@@ -2,8 +2,8 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import axios from 'axios';
+import { Auth } from 'src/interfaces/auth.interface';
 import { v4 as uuidv4 } from 'uuid';
-import { CommonAuthorizationResponseInterface } from '../interfaces/auth.interface';
 import { PrismaService } from './prisma.service';
 
 @Injectable()
@@ -58,17 +58,20 @@ export class AuthService {
     }
   }
 
-  async findOrCreateMember(user: CommonAuthorizationResponseInterface) {
-    const provider = await this.findProviderMember(user);
+  async findOrCreateMember(authorization: Auth.CommonAuthorizationResponse) {
+    const provider = await this.findProviderMember(authorization);
     return provider
-      ? await this.updateProviderPassword(provider.id, user.refreshToken)
-      : await this.createMember(user);
+      ? await this.updateProviderPassword(
+          provider.id,
+          authorization.refreshToken,
+        )
+      : await this.createMember(authorization);
   }
 
-  async findProviderMember(user: CommonAuthorizationResponseInterface) {
+  async findProviderMember(authorization: Auth.CommonAuthorizationResponse) {
     const provider = await this.prisma.provider.findFirst({
       select: { id: true, member: { select: { id: true, name: true } } },
-      where: { uid: user.uid, type: user.type },
+      where: { uid: authorization.uid, type: authorization.type },
     });
 
     return provider;
@@ -84,17 +87,19 @@ export class AuthService {
     return member;
   }
 
-  async createMember(user: CommonAuthorizationResponseInterface) {
+  async createMember(authorization: Auth.CommonAuthorizationResponse) {
     const date = new Date().toISOString();
     const { member } = await this.prisma.provider.create({
       select: { member: { select: { id: true, name: true } } },
       data: {
         id: uuidv4(),
-        uid: user.uid,
-        password: user.refreshToken,
-        type: user.type,
+        uid: authorization.uid,
+        password: authorization.refreshToken,
+        type: authorization.type,
         created_at: date,
-        member: { create: { id: uuidv4(), name: user.name, created_at: date } },
+        member: {
+          create: { id: uuidv4(), name: authorization.name, created_at: date },
+        },
       },
     });
 
