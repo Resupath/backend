@@ -30,8 +30,12 @@ export class MemberGuard implements CanActivate {
       });
 
       const member = await this.prisma.member.findUnique({
+        select: { id: true },
         where: { id },
       });
+
+      request.user = member;
+
       return member ? true : false;
     } catch (error) {
       console.error('Guard Error:', error);
