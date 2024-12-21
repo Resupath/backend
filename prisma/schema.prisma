@@ -99,6 +99,7 @@ model Character {
 }
 
 /// 캐릭터 스냅샷
+/// @namespace Character
 model Character_Snapshot {
   id           String   @id @db.Uuid /// PK
   character_id String   @db.Uuid /// 스냅샷이 참조하는 캐릭터 ID
@@ -111,6 +112,7 @@ model Character_Snapshot {
 }
 
 /// 캐릭터의 마지막 스냅샷
+/// @namespace Character
 model Character_Last_Snapshot {
   character_id          String @id @db.Uuid
   character_snapshot_id String @db.Uuid
