@@ -140,7 +140,8 @@ model Character {
 model Character_Snapshot {
   id           String   @id @db.Uuid /// PK
   character_id String   @db.Uuid /// 스냅샷이 참조하는 캐릭터 ID
-  nickname     String /// 사용자의 이름, 본명을 사용하는 것이 권장되나 강제성은 없다.
+  nickname     String /// 캐릭터의 이름, 사용자 본명을 사용하는 것이 권장되나 강제성은 없다.
+  image        String? /// 캐릭터 프로필 이미지. s3 url을 저장한다.
   created_at   DateTime @db.Timestamptz /// 스냅샷 생성 시점
 
   character     Character                @relation(fields: [character_id], references: [id])

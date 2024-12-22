@@ -103,6 +103,7 @@ erDiagram
   String id PK
   String character_id FK
   String nickname
+  String image "nullable"
   DateTime created_at
 }
 "Character_Last_Snapshot" {
@@ -156,6 +157,7 @@ erDiagram
 "Chat" }o--o| "Character" : character
 ```
 
+<<<<<<< HEAD
 ### `Experience`
 `Member`의 경력사항을 나타낸다.
 
@@ -181,6 +183,8 @@ erDiagram
   - `created_at`: 관계 생성 시간
   - `deleted_at`: 관계 삭제 시간
 
+=======
+>>>>>>> c3bc7e4 (feat: Character에 프로필 이미지 칼럼 스키마 정의)
 ### `Source`
 캐릭터 학습에 필요한 자료들
 자기소개서, 포트폴리오, 이력서와 같은 파일
@@ -215,7 +219,12 @@ erDiagram
 **Properties**
   - `id`: PK
   - `character_id`: 스냅샷이 참조하는 캐릭터 ID
+<<<<<<< HEAD
   - `nickname`: 사용자의 이름, 본명을 사용하는 것이 권장되나 강제성은 없다.
+=======
+  - `nickname`: 캐릭터의 이름, 사용자 본명을 사용하는 것이 권장되나 강제성은 없다.
+  - `image`: 캐릭터 프로필 이미지. s3 url을 저장한다.
+>>>>>>> c3bc7e4 (feat: Character에 프로필 이미지 칼럼 스키마 정의)
   - `created_at`: 스냅샷 생성 시점
 
 ### `Character_Last_Snapshot`
