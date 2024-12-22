@@ -1,4 +1,4 @@
-import core, { TypedBody, TypedQuery } from '@nestia/core';
+import core from '@nestia/core';
 import { Controller } from '@nestjs/common';
 import { Auth } from 'src/interfaces/auth.interface';
 import { AuthService } from 'src/services/auth.service';
@@ -12,7 +12,7 @@ export class AuthController {
    */
   @core.TypedRoute.Get('refresh')
   async refresh(
-    @TypedBody() body: Auth.RefreshRequest,
+    @core.TypedBody() body: Auth.RefreshRequest,
   ): Promise<Auth.LoginResponse> {
     return await this.authService.memberRefresh(body.refreshToken);
   }
@@ -30,7 +30,7 @@ export class AuthController {
    */
   @core.TypedRoute.Get('google/callback')
   async getGoogleAuthorization(
-    @TypedQuery() query: Auth.LoginRequest,
+    @core.TypedQuery() query: Auth.LoginRequest,
   ): Promise<Auth.LoginResponse> {
     return this.authService.getGoogleAuthorization(query.code);
   }

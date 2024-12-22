@@ -19,7 +19,7 @@ export class CharactersController {
   @core.TypedRoute.Post()
   async createCharacater(
     @User() user: { id: string },
-    @TypedBody() body: Character.CreateRequest,
+    @core.TypedBody() body: Character.CreateRequest,
   ): Promise<Character.CreateResponse> {
     return await this.charactersService.create(user.id, body);
   }
@@ -28,7 +28,9 @@ export class CharactersController {
    * 캐릭터를 페이지네이션으로 조회한다.
    */
   @core.TypedRoute.Get()
-  async getCharactersByPage(@TypedQuery() query: Character.GetByPageRequest) {
+  async getCharactersByPage(
+    @core.TypedQuery() query: Character.GetByPageRequest,
+  ) {
     return await this.charactersService.getBypage(query);
   }
 
@@ -36,7 +38,7 @@ export class CharactersController {
    * 아이디로 캐릭터를 조회한다.
    */
   @core.TypedRoute.Get(':id')
-  async getCharacter(@TypedParam('id') id: string & tags.Format<'uuid'>) {
+  async getCharacter(@core.TypedParam('id') id: string & tags.Format<'uuid'>) {
     return await this.charactersService.get(id);
   }
 }
