@@ -9,6 +9,10 @@ export interface Personality {
 }
 
 export namespace Personality {
+  export interface CreateBulkRequest {
+    keywords: string[] & tags.MinItems<0>;
+  }
+
   export interface GetByPageRequest extends PaginationUtil.Request {}
 
   export interface GetByPageResonse
