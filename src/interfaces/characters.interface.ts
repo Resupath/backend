@@ -4,8 +4,9 @@ import { Personality } from './personalities.interface';
 
 export interface Character {
   id: string & tags.Format<'uuid'>;
-  memberId: string;
+  memberId: string & tags.Format<'uuid'>;
   nickname: string & tags.MinLength<1>;
+  image: (string & tags.MinLength<1>) | null;
   isPublic: boolean;
   createdAt: string & tags.Format<'date-time'>;
   deletedAt: string & tags.Format<'date-time'>;
@@ -14,6 +15,7 @@ export interface Character {
 export namespace Character {
   export interface CreateRequest
     extends Pick<Character, 'nickname' | 'isPublic'> {
+    image?: Character['image'];
     personalities: Personality['id'][] & tags.MinItems<1>;
   }
 
@@ -22,7 +24,7 @@ export namespace Character {
   export interface GetResponse
     extends Pick<
       Character,
-      'id' | 'memberId' | 'nickname' | 'isPublic' | 'createdAt'
+      'id' | 'memberId' | 'nickname' | 'image' | 'isPublic' | 'createdAt'
     > {
     personality: Personality['keyword'][];
   }

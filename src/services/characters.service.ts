@@ -29,6 +29,7 @@ export class CharactersService {
           create: {
             id: snapshotId,
             nickname: input.nickname,
+            image: input.image,
             created_at: date,
           },
         },
@@ -63,20 +64,21 @@ export class CharactersService {
         id: true,
         member_id: true,
         is_public: true,
-        characterPersonalites: {
-          select: {
-            personality: {
-              select: { keyword: true },
-            },
-          },
-        },
         last_snapshot: {
           select: {
             snapshot: {
               select: {
                 nickname: true,
+                image: true,
                 created_at: true,
               },
+            },
+          },
+        },
+        characterPersonalites: {
+          select: {
+            personality: {
+              select: { keyword: true },
             },
           },
         },
@@ -96,6 +98,7 @@ export class CharactersService {
       memberId: character.member_id,
       isPublic: character.is_public,
       nickname: character.last_snapshot.snapshot.nickname,
+      image: character.last_snapshot.snapshot.image,
       createdAt: character.last_snapshot.snapshot.created_at.toISOString(),
       personality: character.characterPersonalites.map(
         (el) => el.personality.keyword,
