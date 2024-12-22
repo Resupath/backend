@@ -1,8 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { Character } from 'src/interfaces/characters.interface';
+import { PaginationUtil } from 'src/util/pagination.util';
 import { v4 as uuidv4 } from 'uuid';
 import { PrismaService } from './prisma.service';
-import { PaginationUtil } from 'src/util/pagination.util';
 
 @Injectable()
 export class CharactersService {
@@ -20,12 +21,12 @@ export class CharactersService {
       data: {
         id: characterId,
         member_id: memberId,
+        is_public: input.isPublic,
         created_at: date,
         snapshots: {
           create: {
             id: snapshotId,
             nickname: input.nickname,
-            is_public: input.isPublic,
             created_at: date,
           },
         },
@@ -45,19 +46,19 @@ export class CharactersService {
       select: {
         id: true,
         member_id: true,
+        is_public: true,
         last_snapshot: {
           select: {
             snapshot: {
               select: {
                 nickname: true,
-                is_public: true,
                 created_at: true,
               },
             },
           },
         },
       },
-      where: { id, last_snapshot: { snapshot: { is_public: true } } },
+      where: { id, is_public: true },
     });
 
     if (!character?.last_snapshot?.snapshot) {
@@ -67,8 +68,8 @@ export class CharactersService {
     return {
       id: character.id,
       memberId: character.member_id,
+      isPublic: character.is_public,
       nickname: character.last_snapshot.snapshot.nickname,
-      isPublic: character.last_snapshot.snapshot.is_public,
       createAt: character.last_snapshot.snapshot.created_at,
     };
   }
@@ -77,6 +78,8 @@ export class CharactersService {
     query: Character.GetByPageRequest,
   ): Promise<Character.GetByPageResponse> {
     const { skip, take } = PaginationUtil.getOffset(query);
+
+    const whereInput: Prisma.CharacterWhereInput = { is_public: true };
 
     const [characters, count] = await this.prisma.$transaction([
       this.prisma.character.findMany({
@@ -94,10 +97,11 @@ export class CharactersService {
             },
           },
         },
+        where: whereInput,
         skip,
         take,
       }),
-      this.prisma.character.count(),
+      this.prisma.character.count({ where: whereInput }),
     ]);
 
     const data = characters.map((el) => {
