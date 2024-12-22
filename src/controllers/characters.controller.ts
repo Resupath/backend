@@ -5,7 +5,6 @@ import { User } from 'src/decorators/user.decorator';
 import { MemberGuard } from 'src/guards/member.guard';
 import { Character } from 'src/interfaces/characters.interface';
 import { CharactersService } from 'src/services/characters.service';
-import { PaginationUtil } from 'src/util/pagination.util';
 import { tags } from 'typia';
 
 @ApiTags('Character')

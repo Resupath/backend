@@ -47,7 +47,7 @@ export namespace PaginationUtil {
   /**
    * 페이지네이션 응답 형태를 만들기 위한 유틸 함수이다.
    */
-  export function createPaginationResponse<T>(input: {
+  export function createResponse<T>(input: {
     data: T[];
     skip: number;
     count: number;

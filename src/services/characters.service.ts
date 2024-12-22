@@ -66,6 +66,9 @@ export class CharactersService {
       throw new NotFoundException();
     }
 
+    /**
+     * mapping
+     */
     return {
       id: character.id,
       memberId: character.member_id,
@@ -105,6 +108,9 @@ export class CharactersService {
       this.prisma.character.count({ where: whereInput }),
     ]);
 
+    /**
+     * mapping
+     */
     const data = characters.map((el) => {
       if (!el?.last_snapshot?.snapshot) {
         throw new NotFoundException();
@@ -116,7 +122,7 @@ export class CharactersService {
       };
     });
 
-    return PaginationUtil.createPaginationResponse({
+    return PaginationUtil.createResponse({
       data,
       count,
       skip,
