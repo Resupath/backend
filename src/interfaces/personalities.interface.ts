@@ -4,8 +4,8 @@ import { tags } from 'typia';
 export interface Personality {
   id: string & tags.Format<'uuid'>;
   keyword: string & tags.MinLength<1>;
-  createAt: Date;
-  deleteAt: Date;
+  createdAt: string & tags.Format<'date-time'>;
+  deletedAt: string & tags.Format<'date-time'>;
 }
 
 export namespace Personality {
@@ -15,6 +15,8 @@ export namespace Personality {
 
   export interface GetByPageRequest extends PaginationUtil.Request {}
 
+  export interface GetByPageData extends Pick<Personality, 'id' | 'keyword'> {}
+
   export interface GetByPageResonse
-    extends PaginationUtil.Response<Pick<Personality, 'id' | 'keyword'>> {}
+    extends PaginationUtil.Response<GetByPageData> {}
 }

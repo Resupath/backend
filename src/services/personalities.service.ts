@@ -14,7 +14,7 @@ export class PersonalitiesService {
     const { keywords } = body;
     const date = DateTimeUtil.now();
 
-    this.prisma.$transaction(async (tr) => {
+    await this.prisma.$transaction(async (tr) => {
       for (const keyword of keywords) {
         await tr.personality.updateMany({
           where: { keyword, deleted_at: null },
@@ -44,8 +44,15 @@ export class PersonalitiesService {
       this.prisma.personality.count({ where: whereInput }),
     ]);
 
+    /**
+     * mapping
+     */
+    const data = personalities.map((el): Personality.GetByPageData => {
+      return { id: el.id, keyword: el.keyword };
+    });
+
     return PaginationUtil.createResponse({
-      data: personalities,
+      data,
       count,
       skip,
       take,

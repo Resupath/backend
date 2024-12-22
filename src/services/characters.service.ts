@@ -74,7 +74,7 @@ export class CharactersService {
       memberId: character.member_id,
       isPublic: character.is_public,
       nickname: character.last_snapshot.snapshot.nickname,
-      createAt: character.last_snapshot.snapshot.created_at,
+      createdAt: character.last_snapshot.snapshot.created_at.toISOString(),
     };
   }
 
@@ -111,14 +111,14 @@ export class CharactersService {
     /**
      * mapping
      */
-    const data = characters.map((el) => {
+    const data = characters.map((el): Character.GetByPageData => {
       if (!el?.last_snapshot?.snapshot) {
         throw new NotFoundException();
       }
       return {
         id: el.id,
         nickname: el.last_snapshot.snapshot.nickname,
-        createAt: el.last_snapshot.snapshot.created_at,
+        createdAt: el.last_snapshot.snapshot.created_at.toISOString(),
       };
     });
 
