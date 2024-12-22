@@ -2,8 +2,8 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import axios from 'axios';
+import { randomUUID } from 'crypto';
 import { Auth } from 'src/interfaces/auth.interface';
-import { v4 as uuidv4 } from 'uuid';
 import { PrismaService } from './prisma.service';
 
 @Injectable()
@@ -92,13 +92,17 @@ export class AuthService {
     const { member } = await this.prisma.provider.create({
       select: { member: { select: { id: true, name: true } } },
       data: {
-        id: uuidv4(),
+        id: randomUUID(),
         uid: authorization.uid,
         password: authorization.refreshToken,
         type: authorization.type,
         created_at: date,
         member: {
-          create: { id: uuidv4(), name: authorization.name, created_at: date },
+          create: {
+            id: randomUUID(),
+            name: authorization.name,
+            created_at: date,
+          },
         },
       },
     });

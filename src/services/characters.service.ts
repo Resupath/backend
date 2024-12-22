@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { Character } from 'src/interfaces/characters.interface';
 import { PaginationUtil } from 'src/util/pagination.util';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 import { PrismaService } from './prisma.service';
 import { DateTimeUtil } from 'src/util/dateTime.util';
 
@@ -11,8 +11,8 @@ export class CharactersService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(memberId: string, input: Character.CreateRequest) {
-    const characterId = uuidv4();
-    const snapshotId = uuidv4();
+    const characterId = randomUUID();
+    const snapshotId = randomUUID();
     const date = DateTimeUtil.now();
 
     const character = await this.prisma.character.create({
