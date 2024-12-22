@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './modules/auth.module';
 import { PrismaModule } from './modules/prisma.module';
 import { CharactersModule } from './modules/characters.module';
+import { PersonalitiesModule } from './modules/personalities.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { CharactersModule } from './modules/characters.module';
     PrismaModule,
     AuthModule,
     CharactersModule,
+    PersonalitiesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
