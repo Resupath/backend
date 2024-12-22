@@ -4,6 +4,7 @@ import { Character } from 'src/interfaces/characters.interface';
 import { PaginationUtil } from 'src/util/pagination.util';
 import { v4 as uuidv4 } from 'uuid';
 import { PrismaService } from './prisma.service';
+import { DateTimeUtil } from 'src/util/dateTime.util';
 
 @Injectable()
 export class CharactersService {
@@ -12,7 +13,7 @@ export class CharactersService {
   async create(memberId: string, input: Character.CreateRequest) {
     const characterId = uuidv4();
     const snapshotId = uuidv4();
-    const date = new Date().toISOString();
+    const date = DateTimeUtil.now();
 
     const character = await this.prisma.character.create({
       select: {
