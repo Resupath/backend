@@ -1,5 +1,6 @@
 import { PaginationUtil } from 'src/util/pagination.util';
 import { tags } from 'typia';
+import { Personality } from './personalities.interface';
 
 export interface Character {
   id: string & tags.Format<'uuid'>;
@@ -12,7 +13,9 @@ export interface Character {
 
 export namespace Character {
   export interface CreateRequest
-    extends Pick<Character, 'nickname' | 'isPublic'> {}
+    extends Pick<Character, 'nickname' | 'isPublic'> {
+    personalities: Personality['id'][] & tags.MinItems<1>;
+  }
 
   export interface CreateResponse extends Pick<Character, 'id'> {}
 
@@ -20,7 +23,9 @@ export namespace Character {
     extends Pick<
       Character,
       'id' | 'memberId' | 'nickname' | 'isPublic' | 'createdAt'
-    > {}
+    > {
+    personality: Personality['keyword'][];
+  }
 
   export interface GetByPageRequest extends PaginationUtil.Request {}
 

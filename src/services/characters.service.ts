@@ -15,6 +15,7 @@ export class CharactersService {
     const snapshotId = randomUUID();
     const date = DateTimeUtil.now();
 
+    // 1. 캐릭터 생성
     const character = await this.prisma.character.create({
       select: {
         id: true,
@@ -39,6 +40,20 @@ export class CharactersService {
       },
     });
 
+    // 2. 캐릭터 ㅡ 성격 관계 지정
+    const characterPersonalities = input.personalities.map(
+      (personalityId): Prisma.Character_PersonalityCreateManyInput => ({
+        character_id: character.id,
+        personality_id: personalityId,
+        created_at: date,
+      }),
+    );
+
+    // 3. 관계 데이터 삽입
+    await this.prisma.character_Personality.createMany({
+      data: characterPersonalities,
+    });
+
     return character;
   }
 
@@ -48,6 +63,13 @@ export class CharactersService {
         id: true,
         member_id: true,
         is_public: true,
+        characterPersonalites: {
+          select: {
+            personality: {
+              select: { keyword: true },
+            },
+          },
+        },
         last_snapshot: {
           select: {
             snapshot: {
@@ -75,6 +97,9 @@ export class CharactersService {
       isPublic: character.is_public,
       nickname: character.last_snapshot.snapshot.nickname,
       createdAt: character.last_snapshot.snapshot.created_at.toISOString(),
+      personality: character.characterPersonalites.map(
+        (el) => el.personality.keyword,
+      ),
     };
   }
 
