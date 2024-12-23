@@ -1,9 +1,9 @@
-import { Controller, UseGuards } from '@nestjs/common';
-import { ExperiencesService } from '../services/experiences.service';
 import core, { TypedBody } from '@nestia/core';
+import { Controller, UseGuards } from '@nestjs/common';
+import { User } from 'src/decorators/user.decorator';
 import { MemberGuard } from 'src/guards/member.guard';
 import { Experience } from 'src/interfaces/experiences.interface';
-import { User } from 'src/decorators/user.decorator';
+import { ExperiencesService } from '../services/experiences.service';
 
 @UseGuards(MemberGuard)
 @Controller('experiences')
@@ -11,11 +11,14 @@ export class ExperiencesController {
   constructor(private readonly experiencesService: ExperiencesService) {}
 
   /**
-   * @todo 경력들을 생성한다.
+   * 경력들을 생성한다.
    */
   @core.TypedRoute.Post()
-  async createExperiences(@TypedBody() body: Experience.CreateRequest[]) {
-    return;
+  async createExperiences(
+    @User() user: { id: string },
+    @TypedBody() body: Experience.CreateRequest,
+  ) {
+    return await this.experiencesService.create(user.id, body);
   }
 
   /**

@@ -13,7 +13,7 @@ export interface Experience {
 }
 
 export namespace Experience {
-  export interface CreateRequest
+  export interface CreateData
     extends Pick<
       Experience,
       'companyName' | 'position' | 'startDate' | 'endDate'
@@ -21,7 +21,9 @@ export namespace Experience {
     description?: Experience['description'];
   }
 
-  export interface CreateResponse extends Pick<Experience, 'id'> {}
+  export interface CreateRequest {
+    experiences: CreateData[] & tags.MinItems<1>;
+  }
 
   export interface GetResponse
     extends Pick<
