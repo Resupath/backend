@@ -103,6 +103,7 @@ erDiagram
   String id PK
   String character_id FK
   String nickname
+  String position
   String image "nullable"
   DateTime created_at
 }
@@ -223,6 +224,7 @@ erDiagram
   - `nickname`: 사용자의 이름, 본명을 사용하는 것이 권장되나 강제성은 없다.
 =======
   - `nickname`: 캐릭터의 이름, 사용자 본명을 사용하는 것이 권장되나 강제성은 없다.
+  - `position`: 캐릭터의 직군. 프론트엔드, 백엔드 등을 입력할 수 있다.
   - `image`: 캐릭터 프로필 이미지. s3 url을 저장한다.
 >>>>>>> c3bc7e4 (feat: Character에 프로필 이미지 칼럼 스키마 정의)
   - `created_at`: 스냅샷 생성 시점
