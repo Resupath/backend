@@ -73,6 +73,25 @@ OAuth 연동 정보를 저장한다.
 
 ```mermaid
 erDiagram
+"Experience" {
+  String id PK
+  String member_id FK
+  String company_name
+  String position
+  DateTime start_date
+  DateTime end_date "nullable"
+  String description "nullable"
+  Decimal sequence
+  DateTime created_at
+  DateTime deleted_at "nullable"
+}
+"Character_Experience" {
+  String id PK
+  String character_id FK
+  String experience_id FK
+  DateTime created_at
+  DateTime deleted_at "nullable"
+}
 "Source" {
   String id PK
   String character_id FK
@@ -131,6 +150,8 @@ erDiagram
   DateTime deleted_at "nullable"
   String member_id FK "nullable"
 }
+"Character_Experience" }o--|| "Character" : character
+"Character_Experience" }o--|| "Experience" : experience
 "Source" }o--|| "Character" : character
 "Character_Snapshot" }o--|| "Character" : character
 "Character_Last_Snapshot" |o--|| "Character" : character
@@ -142,6 +163,35 @@ erDiagram
 "Chat" }o--o| "User" : user
 "Chat" }o--o| "Character" : character
 ```
+
+### `Experience`
+
+`Member`의 경력사항을 나타낸다.
+
+**Properties**
+
+- `id`: PK
+- `member_id`: 가입된 사용자가 경력을 입력할 수 있다.
+- `company_name`:
+- `position`: 직군을 입력한다.
+- `start_date`: 근무 시작 날짜. 월까지 입력한다.
+- `end_date`: 근무 종료 날짜. 월까지 입력하며, 현재 재직 중일 경우 null이다.
+- `description`: 경력에 대한 설명. 업문 내용 등 사용자가 입력하고 싶은 것들을 적으며, 비워둘 수 있다.
+- `sequence`: 경력의 순서를 저장하는 필드이다. 유저에게 보여줄때 순서를 보장하기 위해 사용한다.
+- `created_at`: 경력을 최초 입력후 저장한 시간.
+- `deleted_at`: 경력을 삭제한 경우.
+
+### `Character_Experience`
+
+캐릭터의 학습에 사용된 경력 사항들을 저장한다.
+
+**Properties**
+
+- `id`: PK
+- `character_id`: Character FK
+- `experience_id`: Experience FK
+- `created_at`: 관계 생성 시간
+- `deleted_at`: 관계 삭제 시간
 
 ### `Source`
 
