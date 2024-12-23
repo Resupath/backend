@@ -73,7 +73,7 @@ erDiagram
   String start_date
   String end_date "nullable"
   String description "nullable"
-  Decimal sequence
+  Int sequence
   DateTime created_at
   DateTime deleted_at "nullable"
 }

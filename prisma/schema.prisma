@@ -58,7 +58,7 @@ model Experience {
   start_date   String /// 근무 시작 날짜. 월까지 입력한다.
   end_date     String? /// 근무 종료 날짜. 월까지 입력하며, 현재 재직 중일 경우 null이다.
   description  String? /// 경력에 대한 설명. 업문 내용 등 사용자가 입력하고 싶은 것들을 적으며, 비워둘 수 있다.
-  sequence     Decimal /// 경력의 순서를 저장하는 필드이다. 유저에게 보여줄때 순서를 보장하기 위해 사용한다.
+  sequence     Int /// 경력의 순서를 저장하는 필드이다. 유저에게 보여줄때 순서를 보장하기 위해 사용한다.
   created_at   DateTime  @db.Timestamptz /// 경력을 최초 입력후 저장한 시간.
   deleted_at   DateTime? @db.Timestamptz /// 경력을 삭제한 경우.
 

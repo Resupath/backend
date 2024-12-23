@@ -17,7 +17,7 @@ export class ExperiencesService {
     const date = DateTimeUtil.now();
 
     const createInput = experiences.map(
-      (el, index): Prisma.ExperienceCreateManyInput => {
+      (el): Prisma.ExperienceCreateManyInput => {
         return {
           id: randomUUID(),
           member_id: memberId,
@@ -26,7 +26,7 @@ export class ExperiencesService {
           description: el.description,
           start_date: el.startDate,
           end_date: el.endDate,
-          sequence: index,
+          sequence: el.sequence,
           created_at: date,
         };
       },
@@ -46,8 +46,10 @@ export class ExperiencesService {
         description: true,
         start_date: true,
         end_date: true,
+        sequence: true,
       },
       where: { member_id: memberId, deleted_at: null },
+      orderBy: { sequence: 'asc' },
     });
 
     /**
@@ -61,6 +63,7 @@ export class ExperiencesService {
         description: el.description,
         startDate: el.start_date,
         endDate: el.end_date,
+        sequence: el.sequence,
       };
     });
   }

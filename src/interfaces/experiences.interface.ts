@@ -7,7 +7,7 @@ export interface Experience {
   startDate: string & tags.Format<'date'>;
   endDate: string & tags.Format<'date'>;
   description: string | null;
-  // sequence: number
+  sequence: number & tags.Minimum<0> & tags.Type<'int64'>;
   createdAt: string & tags.Format<'date-time'>;
   deletedAt: string & tags.Format<'date-time'>;
 }
@@ -16,7 +16,7 @@ export namespace Experience {
   export interface CreateData
     extends Pick<
       Experience,
-      'companyName' | 'position' | 'startDate' | 'endDate'
+      'companyName' | 'position' | 'startDate' | 'endDate' | 'sequence'
     > {
     description?: Experience['description'];
   }
@@ -28,7 +28,12 @@ export namespace Experience {
   export interface GetResponse
     extends Pick<
       Experience,
-      'id' | 'companyName' | 'position' | 'description' | 'startDate'
+      | 'id'
+      | 'companyName'
+      | 'position'
+      | 'description'
+      | 'startDate'
+      | 'sequence'
     > {
     endDate?: Experience['endDate'] | null;
   }
