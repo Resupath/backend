@@ -22,17 +22,16 @@ export namespace Experience {
   }
 
   export interface CreateRequest {
-    experiences: CreateData[] & tags.MinItems<1>;
+    experiences: Array<CreateData> & tags.MinItems<1>;
   }
 
   export interface GetResponse
     extends Pick<
       Experience,
-      | 'id'
-      | 'companyName'
-      | 'position'
-      | 'startDate'
-      | 'endDate'
-      | 'description'
-    > {}
+      'id' | 'companyName' | 'position' | 'description' | 'startDate'
+    > {
+    endDate?: Experience['endDate'] | null;
+  }
+
+  export interface GetAllResponse extends Array<GetResponse> {}
 }

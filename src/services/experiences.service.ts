@@ -24,8 +24,8 @@ export class ExperiencesService {
           company_name: el.companyName,
           position: el.position,
           description: el.description,
-          start_date: new Date(el.startDate).toISOString(),
-          end_date: new Date(el.endDate).toISOString(),
+          start_date: el.startDate,
+          end_date: el.endDate,
           sequence: index,
           created_at: date,
         };
@@ -34,6 +34,34 @@ export class ExperiencesService {
 
     await this.prisma.experience.createMany({
       data: createInput,
+    });
+  }
+
+  async getAll(memberId: string): Promise<Experience.GetAllResponse> {
+    const experiences = await this.prisma.experience.findMany({
+      select: {
+        id: true,
+        company_name: true,
+        position: true,
+        description: true,
+        start_date: true,
+        end_date: true,
+      },
+      where: { member_id: memberId, deleted_at: null },
+    });
+
+    /**
+     * mapping
+     */
+    return experiences.map((el): Experience.GetResponse => {
+      return {
+        id: el.id,
+        companyName: el.company_name,
+        position: el.position,
+        description: el.description,
+        startDate: el.start_date,
+        endDate: el.end_date,
+      };
     });
   }
 }

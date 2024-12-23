@@ -5,7 +5,6 @@ import { MemberGuard } from 'src/guards/member.guard';
 import { Experience } from 'src/interfaces/experiences.interface';
 import { ExperiencesService } from '../services/experiences.service';
 
-@UseGuards(MemberGuard)
 @Controller('experiences')
 export class ExperiencesController {
   constructor(private readonly experiencesService: ExperiencesService) {}
@@ -13,19 +12,23 @@ export class ExperiencesController {
   /**
    * 경력들을 생성한다.
    */
+  @UseGuards(MemberGuard)
   @core.TypedRoute.Post()
   async createExperiences(
     @User() user: { id: string },
     @TypedBody() body: Experience.CreateRequest,
-  ) {
+  ): Promise<void> {
     return await this.experiencesService.create(user.id, body);
   }
 
   /**
-   * @todo 경력들을 조회한다.
+   * 경력들을 조회한다.
    */
+  @UseGuards(MemberGuard)
   @core.TypedRoute.Get()
-  async getExperiences(@User() user: { id: string }) {
-    return;
+  async getAllExperiences(
+    @User() user: { id: string },
+  ): Promise<Experience.GetAllResponse> {
+    return await this.experiencesService.getAll(user.id);
   }
 }
