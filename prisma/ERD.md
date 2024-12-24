@@ -78,7 +78,6 @@ erDiagram
   DateTime deleted_at "nullable"
 }
 "Character_Experience" {
-  String id PK
   String character_id FK
   String experience_id FK
   DateTime created_at
@@ -177,7 +176,6 @@ erDiagram
 캐릭터의 학습에 사용된 경력 사항들을 저장한다.
 
 **Properties**
-  - `id`: PK
   - `character_id`: Character FK
   - `experience_id`: Experience FK
   - `created_at`: 관계 생성 시간

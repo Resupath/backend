@@ -69,7 +69,6 @@ model Experience {
 /// 캐릭터의 학습에 사용된 경력 사항들을 저장한다.
 /// @namespace Character
 model Character_Experience {
-  id            String    @id @db.Uuid /// PK
   character_id  String    @db.Uuid /// Character FK
   experience_id String    @db.Uuid /// Experience FK
   created_at    DateTime  @default(now()) @db.Timestamptz /// 관계 생성 시간
