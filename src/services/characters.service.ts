@@ -29,6 +29,7 @@ export class CharactersService {
           create: {
             id: snapshotId,
             nickname: input.nickname,
+            position: input.position,
             image: input.image,
             created_at: date,
           },
@@ -69,6 +70,7 @@ export class CharactersService {
             snapshot: {
               select: {
                 nickname: true,
+                position: true,
                 image: true,
                 created_at: true,
               },
@@ -86,7 +88,9 @@ export class CharactersService {
       where: { id, is_public: true },
     });
 
-    if (!character?.last_snapshot?.snapshot) {
+    const snapshot = character?.last_snapshot?.snapshot;
+
+    if (!snapshot) {
       throw new NotFoundException();
     }
 
@@ -97,9 +101,12 @@ export class CharactersService {
       id: character.id,
       memberId: character.member_id,
       isPublic: character.is_public,
-      nickname: character.last_snapshot.snapshot.nickname,
-      image: character.last_snapshot.snapshot.image,
-      createdAt: character.last_snapshot.snapshot.created_at.toISOString(),
+
+      nickname: snapshot.nickname,
+      position: snapshot.position,
+      image: snapshot.image,
+      createdAt: snapshot.created_at.toISOString(),
+
       personality: character.characterPersonalites.map(
         (el) => el.personality.keyword,
       ),
