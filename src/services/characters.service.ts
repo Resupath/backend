@@ -77,7 +77,7 @@ export class CharactersService {
             },
           },
         },
-        characterPersonalites: {
+        character_personalites: {
           select: {
             personality: {
               select: { keyword: true },
@@ -107,7 +107,7 @@ export class CharactersService {
       image: snapshot.image,
       createdAt: snapshot.created_at.toISOString(),
 
-      personality: character.characterPersonalites.map(
+      personality: character.character_personalites.map(
         (el) => el.personality.keyword,
       ),
     };
