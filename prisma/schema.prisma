@@ -42,9 +42,43 @@ model Member {
   created_at DateTime  @db.Timestamptz /// 유저가 가입한 시간으로, 이 시간을 멤버가 된 시간으로 인식한다.
   deleted_at DateTime? @db.Timestamptz /// 회원탈퇴한 경우
 
-  users      User[] /// 비회원 중 해당 Member와 동일인물임이 확정된 유저
-  providers  Provider[] /// 회원에 연결한 OAuth App들을 의미한다.
-  characters Character[]
+  users       User[] /// 비회원 중 해당 Member와 동일인물임이 확정된 유저
+  providers   Provider[] /// 회원에 연결한 OAuth App들을 의미한다.
+  characters  Character[] /// 회원이 생성한 캐릭터들.
+  experiences Experience[] /// 회원과 연결된 경력 데이터를 의미한다.
+}
+
+/// `Member`의 경력사항을 나타낸다.
+/// @namespace Character
+model Experience {
+  id           String    @id @db.Uuid /// PK
+  member_id    String    @db.Uuid /// 가입된 사용자가 경력을 입력할 수 있다.
+  company_name String
+  position     String /// 직군을 입력한다.
+  start_date   String /// 근무 시작 날짜. 월까지 입력한다.
+  end_date     String? /// 근무 종료 날짜. 월까지 입력하며, 현재 재직 중일 경우 null이다.
+  description  String? /// 경력에 대한 설명. 업문 내용 등 사용자가 입력하고 싶은 것들을 적으며, 비워둘 수 있다.
+  sequence     Int /// 경력의 순서를 저장하는 필드이다. 유저에게 보여줄때 순서를 보장하기 위해 사용한다.
+  created_at   DateTime  @db.Timestamptz /// 경력을 최초 입력후 저장한 시간.
+  deleted_at   DateTime? @db.Timestamptz /// 경력을 삭제한 경우.
+
+  memer                 Member                 @relation(fields: [member_id], references: [id])
+  character_experiences Character_Experience[]
+}
+
+/// 캐릭터의 학습에 사용된 경력 사항들을 저장한다.
+/// @namespace Character
+model Character_Experience {
+  id            String    @id @db.Uuid /// PK
+  character_id  String    @db.Uuid /// Character FK
+  experience_id String    @db.Uuid /// Experience FK
+  created_at    DateTime  @default(now()) @db.Timestamptz /// 관계 생성 시간
+  deleted_at    DateTime? @db.Timestamptz /// 관계 삭제 시간
+
+  character  Character  @relation(fields: [character_id], references: [id])
+  experience Experience @relation(fields: [experience_id], references: [id])
+
+  @@unique([character_id, experience_id]) /// Character와 Experience의 조합이 유일해야 함
 }
 
 /// OAuth 연동 정보를 저장한다.
@@ -89,12 +123,14 @@ model Character {
   created_at DateTime  @db.Timestamptz /// 캐릭터가 생성된 시점
   deleted_at DateTime? @db.Timestamptz /// 캐릭터가 삭제된 시점
 
-  creator               Member                  @relation(fields: [member_id], references: [id]) // 캐릭터 생성자
-  rooms                 Room[]
-  chats                 Chat[]
-  sources               Source[]
-  characterPersonalites Character_Personality[]
+  creator                Member                  @relation(fields: [member_id], references: [id]) // 캐릭터 생성자
+  rooms                  Room[] /// 캐릭터를 기준으로 생성된 채팅방
+  chats                  Chat[] /// 캐릭터와 대화한 기록
+  sources                Source[] /// 캐릭터 생성에 사용된 소스
+  character_personalites Character_Personality[] /// 캐릭터 생성에 사용된 성격
+  character_experiences  Character_Experience[] /// 캐릭터 생성에 사용된 경험
 
+  /// 스냅샷들
   snapshots     Character_Snapshot[]
   last_snapshot Character_Last_Snapshot?
 }
@@ -147,7 +183,7 @@ model Personality {
   created_at DateTime  @db.Timestamptz /// 성격이 생성된 시점
   deleted_at DateTime? @db.Timestamptz /// 성격이 삭제된 시점
 
-  characterPersonalites Character_Personality[]
+  character_personalites Character_Personality[]
 }
 
 /// 채팅방.

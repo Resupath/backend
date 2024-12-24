@@ -7,6 +7,7 @@ import { AuthModule } from './modules/auth.module';
 import { PrismaModule } from './modules/prisma.module';
 import { CharactersModule } from './modules/characters.module';
 import { PersonalitiesModule } from './modules/personalities.module';
+import { ExperiencesModule } from './modules/experiences.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { PersonalitiesModule } from './modules/personalities.module';
     AuthModule,
     CharactersModule,
     PersonalitiesModule,
+    ExperiencesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
