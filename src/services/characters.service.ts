@@ -43,18 +43,14 @@ export class CharactersService {
     });
 
     // 2. 캐릭터 ㅡ 성격 관계 지정
-    const characterPersonalities = input.personalities.map(
-      (personalityId): Prisma.Character_PersonalityCreateManyInput => ({
-        character_id: character.id,
-        personality_id: personalityId,
-        created_at: date,
-      }),
+    await this.createCharacterPersonalities(
+      characterId,
+      input.personalities,
+      date,
     );
 
-    // 3. 관계 데이터 삽입
-    await this.prisma.character_Personality.createMany({
-      data: characterPersonalities,
-    });
+    // 3. 캐릭터 ㅡ 경험 관계 지정
+    await this.createCharacterExperiences(characterId, input.experiences, date);
 
     return character;
   }
@@ -162,6 +158,42 @@ export class CharactersService {
       count,
       skip,
       take,
+    });
+  }
+
+  private async createCharacterPersonalities(
+    characterId: string,
+    personalities: Character.CreateRequest['personalities'],
+    date: string,
+  ) {
+    const characterPersonalities = personalities.map(
+      (personalityId): Prisma.Character_PersonalityCreateManyInput => ({
+        character_id: characterId,
+        personality_id: personalityId,
+        created_at: date,
+      }),
+    );
+
+    await this.prisma.character_Personality.createMany({
+      data: characterPersonalities,
+    });
+  }
+
+  private async createCharacterExperiences(
+    characterId: string,
+    experiences: Character.CreateRequest['experiences'],
+    date: string,
+  ) {
+    const characterExperiences = experiences.map(
+      (personalityId): Prisma.Character_ExperienceCreateManyInput => ({
+        character_id: characterId,
+        experience_id: personalityId,
+        created_at: date,
+      }),
+    );
+
+    await this.prisma.character_Experience.createMany({
+      data: characterExperiences,
     });
   }
 }
