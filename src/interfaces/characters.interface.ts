@@ -19,13 +19,8 @@ export namespace Character {
    * create
    */
   export interface CreateRequest
-<<<<<<< HEAD
-    extends Pick<Character, 'nickname' | 'isPublic' | 'position'>,
+    extends Pick<Character, 'nickname' | 'isPublic'>,
       Partial<Pick<Character, 'image'>> {
-=======
-    extends Pick<Character, 'nickname' | 'isPublic'> {
-    image?: Character['image'];
->>>>>>> b39d0f3 (feat: Position 스키마 정의 추가)
     personalities: Array<Personality['id']> & tags.MinItems<1>;
     experiences: Array<Experience['id']> & tags.MinItems<1>;
   }
