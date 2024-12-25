@@ -8,6 +8,7 @@ import { PrismaModule } from './modules/prisma.module';
 import { CharactersModule } from './modules/characters.module';
 import { PersonalitiesModule } from './modules/personalities.module';
 import { ExperiencesModule } from './modules/experiences.module';
+import { PositionsModule } from './modules/positions.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { ExperiencesModule } from './modules/experiences.module';
     CharactersModule,
     PersonalitiesModule,
     ExperiencesModule,
+    PositionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

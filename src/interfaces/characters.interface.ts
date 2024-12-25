@@ -8,7 +8,6 @@ export interface Character {
   id: string & tags.Format<'uuid'>;
   memberId: Member['id'];
   nickname: string & tags.MinLength<1>;
-  position: string & tags.MinLength<1>;
   image: (string & tags.MinLength<1>) | null;
   isPublic: boolean;
   createdAt: string & tags.Format<'date-time'>;
@@ -20,7 +19,7 @@ export namespace Character {
    * create
    */
   export interface CreateRequest
-    extends Pick<Character, 'nickname' | 'isPublic' | 'position'>,
+    extends Pick<Character, 'nickname' | 'isPublic'>,
       Partial<Pick<Character, 'image'>> {
     personalities: Array<Personality['id']> & tags.MinItems<1>;
     experiences: Array<Experience['id']> & tags.MinItems<1>;
@@ -34,13 +33,7 @@ export namespace Character {
   export interface GetResponse
     extends Pick<
       Character,
-      | 'id'
-      | 'memberId'
-      | 'nickname'
-      | 'position'
-      | 'image'
-      | 'isPublic'
-      | 'createdAt'
+      'id' | 'memberId' | 'nickname' | 'image' | 'isPublic' | 'createdAt'
     > {
     personalities: Array<Personality['keyword']>;
   }

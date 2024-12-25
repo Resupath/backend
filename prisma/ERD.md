@@ -102,7 +102,6 @@ erDiagram
   String id PK
   String character_id FK
   String nickname
-  String position
   String image "nullable"
   DateTime created_at
 }
@@ -117,6 +116,16 @@ erDiagram
   DateTime deleted_at "nullable"
 }
 "Personality" {
+  String id PK
+  String keyword
+  DateTime created_at
+  DateTime deleted_at "nullable"
+}
+"Character_Snapshot_Position" {
+  String character_snapshot_id FK
+  String position_id FK
+}
+"Position" {
   String id PK
   String keyword
   DateTime created_at
@@ -151,6 +160,8 @@ erDiagram
 "Character_Last_Snapshot" |o--|| "Character_Snapshot" : snapshot
 "Character_Personality" }o--|| "Personality" : personality
 "Character_Personality" }o--|| "Character" : character
+"Character_Snapshot_Position" }o--|| "Character_Snapshot" : character_snapshot
+"Character_Snapshot_Position" }o--|| "Position" : postion
 "Room" }o--|| "User" : user
 "Room" }o--|| "Character" : character
 "Chat" }o--o| "User" : user
@@ -216,7 +227,6 @@ erDiagram
   - `id`: PK
   - `character_id`: 스냅샷이 참조하는 캐릭터 ID
   - `nickname`: 캐릭터의 이름, 사용자 본명을 사용하는 것이 권장되나 강제성은 없다.
-  - `position`: 캐릭터의 직군. 프론트엔드, 백엔드 등을 입력할 수 있다.
   - `image`: 캐릭터 프로필 이미지. s3 url을 저장한다.
   - `created_at`: 스냅샷 생성 시점
 
@@ -246,6 +256,24 @@ erDiagram
   - `keyword`: 성격에 대해 설명하는 단어나 문장. '용감한', '호기심이 많은' 같은 성격과 관련된 키워드이다.
   - `created_at`: 성격이 생성된 시점
   - `deleted_at`: 성격이 삭제된 시점
+
+### `Character_Snapshot_Position`
+캐릭터의 직군 정보
+사용자는 캐릭터 생성시 직군에 관한 정보를 입력할 수 있다.
+
+**Properties**
+  - `character_snapshot_id`: 
+  - `position_id`: 
+
+### `Position`
+직군.
+프론트, 백엔드 같은 직군의 정보를 저장한다.
+
+**Properties**
+  - `id`: PK
+  - `keyword`: 직군을 표현하는 단어를 뜻한다.
+  - `created_at`: 직군이 등록된 시점
+  - `deleted_at`: 직군이 삭제된 시점
 
 ### `Room`
 채팅방.
