@@ -5,7 +5,7 @@ export interface Experience {
   companyName: string & tags.MinLength<1>;
   position: string & tags.MinLength<1>;
   startDate: string & tags.Format<'date'>;
-  endDate: string & tags.Format<'date'>;
+  endDate: (string & tags.Format<'date'>) | null;
   description: string | null;
   sequence: number & tags.Minimum<0> & tags.Type<'int64'>;
   createdAt: string & tags.Format<'date-time'>;
@@ -32,15 +32,15 @@ export namespace Experience {
    */
   export interface GetResponse
     extends Pick<
-        Experience,
-        | 'id'
-        | 'companyName'
-        | 'position'
-        | 'description'
-        | 'startDate'
-        | 'sequence'
-      >,
-      Partial<Pick<Experience, 'endDate'>> {}
+      Experience,
+      | 'id'
+      | 'companyName'
+      | 'position'
+      | 'description'
+      | 'startDate'
+      | 'sequence'
+      | 'endDate'
+    > {}
 
   export interface GetAllResponse extends Array<GetResponse> {}
 }
