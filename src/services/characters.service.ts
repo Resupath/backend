@@ -32,6 +32,20 @@ export class CharactersService {
             position: input.position,
             image: input.image,
             created_at: date,
+            character_snapshot_experiences: {
+              createMany: {
+                data: input.experiences.map(
+                  (
+                    experinceId,
+                  ): Prisma.Character_Snapshot_ExperienceCreateManyCharacter_snapshotInput => {
+                    return {
+                      experience_id: experinceId,
+                      created_at: date,
+                    };
+                  },
+                ),
+              },
+            },
           },
         },
         last_snapshot: {
@@ -48,9 +62,6 @@ export class CharactersService {
       input.personalities,
       date,
     );
-
-    // 3. 캐릭터 ㅡ 경험 관계 지정
-    await this.createCharacterExperiences(characterId, input.experiences, date);
 
     return character;
   }
@@ -103,7 +114,7 @@ export class CharactersService {
       image: snapshot.image,
       createdAt: snapshot.created_at.toISOString(),
 
-      personality: character.character_personalites.map(
+      personalities: character.character_personalites.map(
         (el) => el.personality.keyword,
       ),
     };
@@ -176,24 +187,6 @@ export class CharactersService {
 
     await this.prisma.character_Personality.createMany({
       data: characterPersonalities,
-    });
-  }
-
-  private async createCharacterExperiences(
-    characterId: string,
-    experiences: Character.CreateRequest['experiences'],
-    date: string,
-  ) {
-    const characterExperiences = experiences.map(
-      (personalityId): Prisma.Character_ExperienceCreateManyInput => ({
-        character_id: characterId,
-        experience_id: personalityId,
-        created_at: date,
-      }),
-    );
-
-    await this.prisma.character_Experience.createMany({
-      data: characterExperiences,
     });
   }
 }
