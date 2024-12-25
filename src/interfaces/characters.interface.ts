@@ -1,26 +1,49 @@
 import { PaginationUtil } from 'src/util/pagination.util';
 import { tags } from 'typia';
+import { Experience } from './experiences.interface';
+import { Member } from './member.interface';
+import { Personality } from './personalities.interface';
 
 export interface Character {
   id: string & tags.Format<'uuid'>;
-  memberId: string;
+  memberId: Member['id'];
   nickname: string & tags.MinLength<1>;
+  position: string & tags.MinLength<1>;
+  image: (string & tags.MinLength<1>) | null;
   isPublic: boolean;
   createdAt: string & tags.Format<'date-time'>;
   deletedAt: string & tags.Format<'date-time'>;
 }
 
 export namespace Character {
+  /**
+   * create
+   */
   export interface CreateRequest
-    extends Pick<Character, 'nickname' | 'isPublic'> {}
+    extends Pick<Character, 'nickname' | 'isPublic' | 'position'>,
+      Partial<Pick<Character, 'image'>> {
+    personalities: Array<Personality['id']> & tags.MinItems<1>;
+    experiences: Array<Experience['id']> & tags.MinItems<1>;
+  }
 
   export interface CreateResponse extends Pick<Character, 'id'> {}
 
+  /**
+   * get
+   */
   export interface GetResponse
     extends Pick<
       Character,
-      'id' | 'memberId' | 'nickname' | 'isPublic' | 'createdAt'
-    > {}
+      | 'id'
+      | 'memberId'
+      | 'nickname'
+      | 'position'
+      | 'image'
+      | 'isPublic'
+      | 'createdAt'
+    > {
+    personalities: Array<Personality['keyword']>;
+  }
 
   export interface GetByPageRequest extends PaginationUtil.Request {}
 

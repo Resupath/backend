@@ -9,12 +9,18 @@ export interface Personality {
 }
 
 export namespace Personality {
+  /**
+   * create
+   */
   export interface CreateBulkRequest {
-    keywords: string[] & tags.MinItems<0>;
+    keywords: Array<string> & tags.MinItems<0>;
   }
 
   export interface GetByPageRequest extends PaginationUtil.Request {}
 
+  /**
+   * get
+   */
   export interface GetByPageData extends Pick<Personality, 'id' | 'keyword'> {}
 
   export interface GetByPageResonse

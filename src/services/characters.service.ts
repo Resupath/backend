@@ -15,6 +15,7 @@ export class CharactersService {
     const snapshotId = randomUUID();
     const date = DateTimeUtil.now();
 
+    // 1. 캐릭터 생성
     const character = await this.prisma.character.create({
       select: {
         id: true,
@@ -28,7 +29,23 @@ export class CharactersService {
           create: {
             id: snapshotId,
             nickname: input.nickname,
+            position: input.position,
+            image: input.image,
             created_at: date,
+            character_snapshot_experiences: {
+              createMany: {
+                data: input.experiences.map(
+                  (
+                    experinceId,
+                  ): Prisma.Character_Snapshot_ExperienceCreateManyCharacter_snapshotInput => {
+                    return {
+                      experience_id: experinceId,
+                      created_at: date,
+                    };
+                  },
+                ),
+              },
+            },
           },
         },
         last_snapshot: {
@@ -38,6 +55,13 @@ export class CharactersService {
         },
       },
     });
+
+    // 2. 캐릭터 ㅡ 성격 관계 지정
+    await this.createCharacterPersonalities(
+      characterId,
+      input.personalities,
+      date,
+    );
 
     return character;
   }
@@ -53,8 +77,17 @@ export class CharactersService {
             snapshot: {
               select: {
                 nickname: true,
+                position: true,
+                image: true,
                 created_at: true,
               },
+            },
+          },
+        },
+        character_personalites: {
+          select: {
+            personality: {
+              select: { keyword: true },
             },
           },
         },
@@ -62,7 +95,9 @@ export class CharactersService {
       where: { id, is_public: true },
     });
 
-    if (!character?.last_snapshot?.snapshot) {
+    const snapshot = character?.last_snapshot?.snapshot;
+
+    if (!snapshot) {
       throw new NotFoundException();
     }
 
@@ -73,8 +108,15 @@ export class CharactersService {
       id: character.id,
       memberId: character.member_id,
       isPublic: character.is_public,
-      nickname: character.last_snapshot.snapshot.nickname,
-      createdAt: character.last_snapshot.snapshot.created_at.toISOString(),
+
+      nickname: snapshot.nickname,
+      position: snapshot.position,
+      image: snapshot.image,
+      createdAt: snapshot.created_at.toISOString(),
+
+      personalities: character.character_personalites.map(
+        (el) => el.personality.keyword,
+      ),
     };
   }
 
@@ -127,6 +169,24 @@ export class CharactersService {
       count,
       skip,
       take,
+    });
+  }
+
+  private async createCharacterPersonalities(
+    characterId: string,
+    personalities: Character.CreateRequest['personalities'],
+    date: string,
+  ) {
+    const characterPersonalities = personalities.map(
+      (personalityId): Prisma.Character_PersonalityCreateManyInput => ({
+        character_id: characterId,
+        personality_id: personalityId,
+        created_at: date,
+      }),
+    );
+
+    await this.prisma.character_Personality.createMany({
+      data: characterPersonalities,
     });
   }
 }

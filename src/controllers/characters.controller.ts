@@ -1,4 +1,4 @@
-import core, { TypedBody, TypedParam, TypedQuery } from '@nestia/core';
+import core from '@nestia/core';
 import { Controller, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { User } from 'src/decorators/user.decorator';

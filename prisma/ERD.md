@@ -77,9 +77,8 @@ erDiagram
   DateTime created_at
   DateTime deleted_at "nullable"
 }
-"Character_Experience" {
-  String id PK
-  String character_id FK
+"Character_Snapshot_Experience" {
+  String character_snapshot_id FK
   String experience_id FK
   DateTime created_at
   DateTime deleted_at "nullable"
@@ -103,6 +102,8 @@ erDiagram
   String id PK
   String character_id FK
   String nickname
+  String position
+  String image "nullable"
   DateTime created_at
 }
 "Character_Last_Snapshot" {
@@ -142,8 +143,8 @@ erDiagram
   DateTime deleted_at "nullable"
   String member_id FK "nullable"
 }
-"Character_Experience" }o--|| "Character" : character
-"Character_Experience" }o--|| "Experience" : experience
+"Character_Snapshot_Experience" }o--|| "Character_Snapshot" : character_snapshot
+"Character_Snapshot_Experience" }o--|| "Experience" : experience
 "Source" }o--|| "Character" : character
 "Character_Snapshot" }o--|| "Character" : character
 "Character_Last_Snapshot" |o--|| "Character" : character
@@ -163,7 +164,7 @@ erDiagram
   - `id`: PK
   - `member_id`: 가입된 사용자가 경력을 입력할 수 있다.
   - `company_name`: 
-  - `position`: 직군을 입력한다.
+  - `position`: 직군을 입력한다. 
   - `start_date`: 근무 시작 날짜. 월까지 입력한다.
   - `end_date`: 근무 종료 날짜. 월까지 입력하며, 현재 재직 중일 경우 null이다.
   - `description`: 경력에 대한 설명. 업문 내용 등 사용자가 입력하고 싶은 것들을 적으며, 비워둘 수 있다.
@@ -171,12 +172,11 @@ erDiagram
   - `created_at`: 경력을 최초 입력후 저장한 시간.
   - `deleted_at`: 경력을 삭제한 경우.
 
-### `Character_Experience`
-캐릭터의 학습에 사용된 경력 사항들을 저장한다.
+### `Character_Snapshot_Experience`
+캐릭터의 학습에 사용된 경력 사항들을 저장한다. 캐릭터 스냅샷과 다대다 관계를 가진다.
 
 **Properties**
-  - `id`: PK
-  - `character_id`: Character FK
+  - `character_snapshot_id`: Character_Snapshot FK
   - `experience_id`: Experience FK
   - `created_at`: 관계 생성 시간
   - `deleted_at`: 관계 삭제 시간
@@ -215,23 +215,25 @@ erDiagram
 **Properties**
   - `id`: PK
   - `character_id`: 스냅샷이 참조하는 캐릭터 ID
-  - `nickname`: 사용자의 이름, 본명을 사용하는 것이 권장되나 강제성은 없다.
+  - `nickname`: 캐릭터의 이름, 사용자 본명을 사용하는 것이 권장되나 강제성은 없다.
+  - `position`: 캐릭터의 직군. 프론트엔드, 백엔드 등을 입력할 수 있다.
+  - `image`: 캐릭터 프로필 이미지. s3 url을 저장한다.
   - `created_at`: 스냅샷 생성 시점
 
 ### `Character_Last_Snapshot`
 캐릭터의 마지막 스냅샷
 
 **Properties**
-  - `character_id`: 
-  - `character_snapshot_id`: 
+  - `character_id`: Character FK
+  - `character_snapshot_id`: Character_Snapshot FK
 
 ### `Character_Personality`
 캐릭터의 성격 유형
 하나의 캐릭터는 여러개의 성격으로 지정될 수 있으며, 하나의 성격은 여러개의 캐릭터가 가지고 있을수 있다.
 
 **Properties**
-  - `character_id`: 
-  - `personality_id`: 
+  - `character_id`: Character FK
+  - `personality_id`: Personality FK
   - `created_at`: 캐릭터와 성격이 관계 생성 시점
   - `deleted_at`: 캐릭터와 성격의 관계가 해제된 시점
 

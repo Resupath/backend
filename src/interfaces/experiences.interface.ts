@@ -5,7 +5,7 @@ export interface Experience {
   companyName: string & tags.MinLength<1>;
   position: string & tags.MinLength<1>;
   startDate: string & tags.Format<'date'>;
-  endDate: string & tags.Format<'date'>;
+  endDate: (string & tags.Format<'date'>) | null;
   description: string | null;
   sequence: number & tags.Minimum<0> & tags.Type<'int64'>;
   createdAt: string & tags.Format<'date-time'>;
@@ -13,18 +13,23 @@ export interface Experience {
 }
 
 export namespace Experience {
+  /**
+   * create
+   */
   export interface CreateData
     extends Pick<
-      Experience,
-      'companyName' | 'position' | 'startDate' | 'endDate' | 'sequence'
-    > {
-    description?: Experience['description'];
-  }
+        Experience,
+        'companyName' | 'position' | 'startDate' | 'endDate' | 'sequence'
+      >,
+      Partial<Pick<Experience, 'description'>> {}
 
   export interface CreateRequest {
     experiences: Array<CreateData> & tags.MinItems<1>;
   }
 
+  /**
+   * get
+   */
   export interface GetResponse
     extends Pick<
       Experience,
@@ -34,9 +39,8 @@ export namespace Experience {
       | 'description'
       | 'startDate'
       | 'sequence'
-    > {
-    endDate?: Experience['endDate'] | null;
-  }
+      | 'endDate'
+    > {}
 
   export interface GetAllResponse extends Array<GetResponse> {}
 }
