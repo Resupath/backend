@@ -8,7 +8,6 @@ export interface Character {
   id: string & tags.Format<'uuid'>;
   memberId: Member['id'];
   nickname: string & tags.MinLength<1>;
-  position: string & tags.MinLength<1>;
   image: (string & tags.MinLength<1>) | null;
   isPublic: boolean;
   createdAt: string & tags.Format<'date-time'>;
@@ -20,8 +19,13 @@ export namespace Character {
    * create
    */
   export interface CreateRequest
+<<<<<<< HEAD
     extends Pick<Character, 'nickname' | 'isPublic' | 'position'>,
       Partial<Pick<Character, 'image'>> {
+=======
+    extends Pick<Character, 'nickname' | 'isPublic'> {
+    image?: Character['image'];
+>>>>>>> b39d0f3 (feat: Position 스키마 정의 추가)
     personalities: Array<Personality['id']> & tags.MinItems<1>;
     experiences: Array<Experience['id']> & tags.MinItems<1>;
   }
@@ -34,13 +38,7 @@ export namespace Character {
   export interface GetResponse
     extends Pick<
       Character,
-      | 'id'
-      | 'memberId'
-      | 'nickname'
-      | 'position'
-      | 'image'
-      | 'isPublic'
-      | 'createdAt'
+      'id' | 'memberId' | 'nickname' | 'image' | 'isPublic' | 'createdAt'
     > {
     personalities: Array<Personality['keyword']>;
   }

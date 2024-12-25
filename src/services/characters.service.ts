@@ -29,7 +29,6 @@ export class CharactersService {
           create: {
             id: snapshotId,
             nickname: input.nickname,
-            position: input.position,
             image: input.image,
             created_at: date,
             character_snapshot_experiences: {
@@ -77,7 +76,6 @@ export class CharactersService {
             snapshot: {
               select: {
                 nickname: true,
-                position: true,
                 image: true,
                 created_at: true,
               },
@@ -110,7 +108,6 @@ export class CharactersService {
       isPublic: character.is_public,
 
       nickname: snapshot.nickname,
-      position: snapshot.position,
       image: snapshot.image,
       createdAt: snapshot.created_at.toISOString(),
 

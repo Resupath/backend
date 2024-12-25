@@ -139,13 +139,13 @@ model Character_Snapshot {
   id           String   @id @db.Uuid /// PK
   character_id String   @db.Uuid /// 스냅샷이 참조하는 캐릭터 ID
   nickname     String /// 캐릭터의 이름, 사용자 본명을 사용하는 것이 권장되나 강제성은 없다.
-  position     String /// 캐릭터의 직군. 프론트엔드, 백엔드 등을 입력할 수 있다.
   image        String? /// 캐릭터 프로필 이미지. s3 url을 저장한다.
   created_at   DateTime @db.Timestamptz /// 스냅샷 생성 시점
 
   character                      Character                       @relation(fields: [character_id], references: [id])
   last_snapshot                  Character_Last_Snapshot?
   character_snapshot_experiences Character_Snapshot_Experience[]
+  character_snapshot_positions   Character_Snapshot_Position[]
 }
 
 /// 캐릭터의 마지막 스냅샷
@@ -185,6 +185,31 @@ model Personality {
   deleted_at DateTime? @db.Timestamptz /// 성격이 삭제된 시점
 
   character_personalites Character_Personality[]
+}
+
+/// 캐릭터의 직군 정보
+/// 사용자는 캐릭터 생성시 직군에 관한 정보를 입력할 수 있다.
+/// @namespace Character
+model Character_Snapshot_Position {
+  character_snapshot_id String @db.Uuid //  Character_Snapshot FK
+  position_id           String @db.Uuid // Postion FK
+
+  character_snapshot Character_Snapshot @relation(fields: [character_snapshot_id], references: [id])
+  postion            Position           @relation(fields: [position_id], references: [id])
+
+  @@unique([character_snapshot_id, position_id])
+}
+
+/// 직군.
+/// 프론트, 백엔드 같은 직군의 정보를 저장한다.
+/// @namespace Character
+model Position {
+  id         String    @id @db.Uuid /// PK
+  keyword    String /// 직군을 표현하는 단어를 뜻한다.
+  created_at DateTime  @db.Timestamptz /// 직군이 등록된 시점
+  deleted_at DateTime? @db.Timestamptz /// 직군이 삭제된 시점
+
+  character_snapshot_positions Character_Snapshot_Position[]
 }
 
 /// 채팅방.
