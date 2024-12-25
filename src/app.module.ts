@@ -4,11 +4,12 @@ import { JwtModule } from '@nestjs/jwt';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './modules/auth.module';
-import { PrismaModule } from './modules/prisma.module';
 import { CharactersModule } from './modules/characters.module';
-import { PersonalitiesModule } from './modules/personalities.module';
 import { ExperiencesModule } from './modules/experiences.module';
+import { PersonalitiesModule } from './modules/personalities.module';
 import { PositionsModule } from './modules/positions.module';
+import { PrismaModule } from './modules/prisma.module';
+import { RoomsModule } from './modules/rooms.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { PositionsModule } from './modules/positions.module';
     PersonalitiesModule,
     ExperiencesModule,
     PositionsModule,
+    RoomsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
