@@ -13,30 +13,34 @@ export interface Experience {
 }
 
 export namespace Experience {
+  /**
+   * create
+   */
   export interface CreateData
     extends Pick<
-      Experience,
-      'companyName' | 'position' | 'startDate' | 'endDate' | 'sequence'
-    > {
-    description?: Experience['description'];
-  }
+        Experience,
+        'companyName' | 'position' | 'startDate' | 'endDate' | 'sequence'
+      >,
+      Partial<Pick<Experience, 'description'>> {}
 
   export interface CreateRequest {
     experiences: Array<CreateData> & tags.MinItems<1>;
   }
 
+  /**
+   * get
+   */
   export interface GetResponse
     extends Pick<
-      Experience,
-      | 'id'
-      | 'companyName'
-      | 'position'
-      | 'description'
-      | 'startDate'
-      | 'sequence'
-    > {
-    endDate?: Experience['endDate'] | null;
-  }
+        Experience,
+        | 'id'
+        | 'companyName'
+        | 'position'
+        | 'description'
+        | 'startDate'
+        | 'sequence'
+      >,
+      Partial<Pick<Experience, 'endDate'>> {}
 
   export interface GetAllResponse extends Array<GetResponse> {}
 }
