@@ -47,7 +47,7 @@ erDiagram
 **Properties**
   - `id`: PK
   - `name`: 사용자 이름으로, 면접 서비스기 때문에 실명을 사용한다. 단, 강제성은 없다.
-  - `created_at`: 유저가 가입한 시간으로, 이 시간을 멤버가 된 시간으로 인식한다.
+  - `created_at`: 유저가 가입한 ��간으로, 이 시간을 멤버가 된 시간으로 인식한다.
   - `deleted_at`: 회원탈퇴한 경우
 
 ### `Provider`
@@ -140,6 +140,7 @@ erDiagram
 }
 "Chat" {
   String id PK
+  String room_id FK
   String user_id FK "nullable"
   String character_id FK "nullable"
   String message
@@ -164,6 +165,7 @@ erDiagram
 "Character_Snapshot_Position" }o--|| "Position" : postion
 "Room" }o--|| "User" : user
 "Room" }o--|| "Character" : character
+"Chat" }o--|| "Room" : room
 "Chat" }o--o| "User" : user
 "Chat" }o--o| "Character" : character
 ```
@@ -253,7 +255,7 @@ erDiagram
 
 **Properties**
   - `id`: PK
-  - `keyword`: 성격에 대해 설명하는 단어나 문장. '용감한', '호기심이 많은' 같은 성격과 관련된 키워드이다.
+  - `keyword`: 성격에 대해 설명하는 단어나 문장. '용감한', '호기심이 많은' 같은 성격과 관련된 키워��이다.
   - `created_at`: 성격이 생성된 시점
   - `deleted_at`: 성격이 삭제된 시점
 
@@ -292,6 +294,7 @@ erDiagram
 
 **Properties**
   - `id`: PK
+  - `room_id`: Room FK
   - `user_id`: 유저가 보낸 채팅인 경우 유저 아이디를 저장한다.
   - `character_id`: 캐릭터가 보낸 채팅인 경우 캐릭터의 아이디를 저장한다.
   - `message`: 채팅 메시지
