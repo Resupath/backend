@@ -1,18 +1,16 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import OpenAI from 'openai';
-import { ChatCompletion } from 'openai/resources';
 import { Chat } from 'src/interfaces/chats.interface';
 import { DateTimeUtil } from 'src/util/dateTime.util';
 import { OpenaiUtil } from 'src/util/openai.util';
+import { OpenaiService } from './openai.service';
 import { PrismaService } from './prisma.service';
 
 @Injectable()
 export class ChatsService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly configService: ConfigService,
+    private readonly openaiService: OpenaiService,
   ) {}
 
   async getAll(roomId: string): Promise<Chat.GetAllResponse> {
@@ -43,9 +41,8 @@ export class ChatsService {
 
   async create(id: string, body: Chat.CreateRequst) {
     // 1. 질문 저장
-    await this.createChat(id, {
+    await this.createUserChat(id, {
       userId: body.userId,
-      characterId: null,
       message: body.message,
     });
 
@@ -53,43 +50,13 @@ export class ChatsService {
     const histories = await this.getChatHistories(id);
 
     // 3. 응답 생성 (API 요청)
-    const answer = await this.getAnswer(histories);
+    const answer = await this.openaiService.getAnswer(histories);
 
     // 4. 응답 저장
-    await this.createChat(id, {
-      userId: null,
+    await this.createCharacterChat(id, {
       characterId: body.characterId,
       message: answer,
     });
-
-    return answer;
-  }
-
-  private getContent(input: ChatCompletion): string | null {
-    return input.choices.at(0)?.message.content ?? null;
-  }
-
-  private createContents(message: string, createdAt: string): string {
-    return JSON.stringify({
-      message: message,
-      createdAt: createdAt,
-    });
-  }
-
-  private async getAnswer(
-    histories: Array<OpenaiUtil.CreateChatCompletionRequest>,
-  ): Promise<string> {
-    const completion = await new OpenAI({
-      apiKey: this.configService.get('OPENAI_API_KEY'),
-    }).chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [...histories],
-    });
-
-    const answer = this.getContent(completion);
-    if (!answer) {
-      throw new InternalServerErrorException();
-    }
 
     return answer;
   }
@@ -100,7 +67,7 @@ export class ChatsService {
    */
   private async getChatHistories(
     roomId: string,
-  ): Promise<Array<OpenaiUtil.CreateChatCompletionRequest>> {
+  ): Promise<Array<OpenaiUtil.ChatCompletionRequestType>> {
     const chats = await this.getAll(roomId);
 
     if (chats.length === 1) {
@@ -111,8 +78,8 @@ export class ChatsService {
     /**
      * mapping
      */
-    let histories = chats.map((el): OpenaiUtil.CreateChatCompletionRequest => {
-      const content = this.createContents(el.message, el.createdAt);
+    let histories = chats.map((el): OpenaiUtil.ChatCompletionRequestType => {
+      const content = OpenaiUtil.createContents(el.message, el.createdAt);
 
       if (el.userId !== null) {
         return {
@@ -133,6 +100,47 @@ export class ChatsService {
     });
 
     return histories;
+  }
+
+  private async createSystemPrompt(roomId: string): Promise<Chat.GetResponse> {
+    const message = ['여기에 프롬프트', '내용을 작성합니다.'].join('\n');
+
+    const prompt = await this.createSystemChat(roomId, { message });
+
+    return prompt;
+  }
+
+  async createUserChat(
+    roomId: string,
+    body: Pick<Chat.CreateRequst, 'userId' | 'message'>,
+  ): Promise<Chat.GetResponse> {
+    return this.createChat(roomId, {
+      userId: body.userId,
+      characterId: null,
+      message: body.message,
+    });
+  }
+
+  async createCharacterChat(
+    roomId: string,
+    body: Pick<Chat.CreateRequst, 'characterId' | 'message'>,
+  ): Promise<Chat.GetResponse> {
+    return this.createChat(roomId, {
+      userId: null,
+      characterId: body.characterId,
+      message: body.message,
+    });
+  }
+
+  async createSystemChat(
+    roomId: string,
+    body: Pick<Chat.CreateRequst, 'message'>,
+  ): Promise<Chat.GetResponse> {
+    return this.createChat(roomId, {
+      userId: null,
+      characterId: null,
+      message: body.message,
+    });
   }
 
   private async createChat(
@@ -169,17 +177,5 @@ export class ChatsService {
       message: chat.message,
       createdAt: chat.created_at.toISOString(),
     };
-  }
-
-  private async createSystemPrompt(roomId: string): Promise<Chat.GetResponse> {
-    const message = ['여기에 프롬프트', '내용을 작성합니다.'].join('\n');
-
-    const prompt = await this.createChat(roomId, {
-      userId: null,
-      characterId: null,
-      message,
-    });
-
-    return prompt;
   }
 }

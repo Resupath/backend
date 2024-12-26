@@ -11,6 +11,7 @@ import { PersonalitiesModule } from './modules/personalities.module';
 import { PositionsModule } from './modules/positions.module';
 import { PrismaModule } from './modules/prisma.module';
 import { RoomsModule } from './modules/rooms.module';
+import { OpenaiModule } from './modules/openai.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { RoomsModule } from './modules/rooms.module';
       isGlobal: true,
     }),
     PrismaModule,
+    OpenaiModule,
     AuthModule,
     CharactersModule,
     PersonalitiesModule,
