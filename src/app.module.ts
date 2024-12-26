@@ -5,6 +5,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './modules/auth.module';
 import { CharactersModule } from './modules/characters.module';
+import { ChatsModule } from './modules/chats.module';
 import { ExperiencesModule } from './modules/experiences.module';
 import { PersonalitiesModule } from './modules/personalities.module';
 import { PositionsModule } from './modules/positions.module';
@@ -23,6 +24,7 @@ import { RoomsModule } from './modules/rooms.module';
     PersonalitiesModule,
     ExperiencesModule,
     PositionsModule,
+    ChatsModule,
     RoomsModule,
   ],
   controllers: [AppController],
