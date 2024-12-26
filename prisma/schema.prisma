@@ -224,6 +224,7 @@ model Room {
 
   user      User      @relation(fields: [user_id], references: [id])
   character Character @relation(fields: [character_id], references: [id])
+  Chat      Chat[]
 }
 
 /// 채팅 내용.
@@ -231,12 +232,14 @@ model Room {
 /// @namespace Character
 model Chat {
   id           String    @id @db.Uuid /// PK
+  room_id      String    @db.Uuid /// Room FK
   user_id      String?   @db.Uuid /// 유저가 보낸 채팅인 경우 유저 아이디를 저장한다.
   character_id String?   @db.Uuid /// 캐릭터가 보낸 채팅인 경우 캐릭터의 아이디를 저장한다.
   message      String /// 채팅 메시지
   created_at   DateTime  @db.Timestamptz /// 채팅을 보낸 시간
   deleted_at   DateTime? @db.Timestamptz /// 채팅을 지우는 기능은 기획 상 존재하지 않지만, 확장을 고려해 만들어둔다.
 
+  room      Room       @relation(fields: [room_id], references: [id])
   user      User?      @relation(fields: [user_id], references: [id])
   character Character? @relation(fields: [character_id], references: [id])
 }
