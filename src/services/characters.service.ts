@@ -5,15 +5,22 @@ import { PaginationUtil } from 'src/util/pagination.util';
 import { randomUUID } from 'crypto';
 import { PrismaService } from './prisma.service';
 import { DateTimeUtil } from 'src/util/dateTime.util';
+import { PositionsService } from './positions.service';
 
 @Injectable()
 export class CharactersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly positionsService: PositionsService,
+  ) {}
 
   async create(memberId: string, input: Character.CreateRequest) {
     const characterId = randomUUID();
     const snapshotId = randomUUID();
     const date = DateTimeUtil.now();
+
+    // 0. 직군(Position), 스킬(Skill) 생성
+    const positions = this.positionsService.findOrCreateMany(input.positions);
 
     // 1. 캐릭터 생성
     const character = await this.prisma.character.create({
@@ -40,6 +47,19 @@ export class CharactersService {
                     return {
                       experience_id: experinceId,
                       created_at: date,
+                    };
+                  },
+                ),
+              },
+            },
+            character_snapshot_positions: {
+              createMany: {
+                data: (await positions).map(
+                  (
+                    positionId,
+                  ): Prisma.Character_Snapshot_PositionCreateManyCharacter_snapshotInput => {
+                    return {
+                      position_id: positionId,
                     };
                   },
                 ),
