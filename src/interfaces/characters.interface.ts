@@ -3,6 +3,8 @@ import { tags } from 'typia';
 import { Experience } from './experiences.interface';
 import { Member } from './member.interface';
 import { Personality } from './personalities.interface';
+import { Position } from './positions.interface';
+import { Skill } from './skills.interface';
 
 export interface Character {
   id: string & tags.Format<'uuid'>;
@@ -21,8 +23,10 @@ export namespace Character {
   export interface CreateRequest
     extends Pick<Character, 'nickname' | 'isPublic'>,
       Partial<Pick<Character, 'image'>> {
-    personalities: Array<Personality['id']> & tags.MinItems<1>;
-    experiences: Array<Experience['id']> & tags.MinItems<1>;
+    personalities: Array<Pick<Personality, 'id'>> & tags.MinItems<1>;
+    experiences: Array<Pick<Experience, 'id'>> & tags.MinItems<1>;
+    positions: Array<Position.CreateRequest> & tags.MinItems<1>;
+    skills: Array<Skill.CreateRequest> & tags.MinItems<1>;
   }
 
   export interface CreateResponse extends Pick<Character, 'id'> {}

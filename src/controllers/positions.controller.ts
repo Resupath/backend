@@ -25,7 +25,7 @@ export class PositionsController {
   @UseGuards(MemberGuard)
   @core.TypedRoute.Get()
   async getPositionByPage(
-    @core.TypedQuery() query: Position.GetByPage,
+    @core.TypedQuery() query: Position.GetByPageRequest,
   ): Promise<Position.GetByPageResponse> {
     return await this.positionsService.getByPage(query);
   }

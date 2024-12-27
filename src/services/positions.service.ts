@@ -19,8 +19,46 @@ export class PositionsService {
     });
   }
 
+  async findOrCreateMany(
+    body: Array<Position.CreateRequest>,
+  ): Promise<Array<Position['id']>> {
+    const date = DateTimeUtil.now();
+
+    return await Promise.all(
+      body.map(async (el) => {
+        const position = await this.get(el.keyword);
+
+        if (!position) {
+          const newPosition = await this.prisma.position.create({
+            select: { id: true },
+            data: {
+              id: randomUUID(),
+              keyword: el.keyword,
+              created_at: date,
+            },
+          });
+
+          return newPosition.id;
+        }
+        return position.id;
+      }),
+    );
+  }
+
+  async get(
+    keyword: Position['keyword'],
+  ): Promise<Position.GetResponse | null> {
+    return await this.prisma.position.findFirst({
+      select: { id: true, keyword: true },
+      where: {
+        keyword: keyword,
+        deleted_at: null,
+      },
+    });
+  }
+
   async getByPage(
-    query: Position.GetByPage,
+    query: Position.GetByPageRequest,
   ): Promise<Position.GetByPageResponse> {
     const { skip, take } = PaginationUtil.getOffset(query);
 

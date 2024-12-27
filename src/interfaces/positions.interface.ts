@@ -16,7 +16,7 @@ export namespace Position {
   /**
    * get
    */
-  export interface GetByPage extends PaginationUtil.Request {
+  export interface GetByPageRequest extends PaginationUtil.Request {
     search?: string | null;
   }
 

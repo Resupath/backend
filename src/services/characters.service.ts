@@ -1,19 +1,31 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { Character } from 'src/interfaces/characters.interface';
-import { PaginationUtil } from 'src/util/pagination.util';
 import { randomUUID } from 'crypto';
-import { PrismaService } from './prisma.service';
+import { Character } from 'src/interfaces/characters.interface';
 import { DateTimeUtil } from 'src/util/dateTime.util';
+import { PaginationUtil } from 'src/util/pagination.util';
+import { PositionsService } from './positions.service';
+import { PrismaService } from './prisma.service';
+import { SkillsService } from './skills.service';
 
 @Injectable()
 export class CharactersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly positionsService: PositionsService,
+    private readonly skillsService: SkillsService,
+  ) {}
 
   async create(memberId: string, input: Character.CreateRequest) {
     const characterId = randomUUID();
     const snapshotId = randomUUID();
     const date = DateTimeUtil.now();
+
+    // 0. 직군(Position), 스킬(Skill) 생성
+    const positions = await this.positionsService.findOrCreateMany(
+      input.positions,
+    );
+    const skills = await this.skillsService.findOrCreateMany(input.skills);
 
     // 1. 캐릭터 생성
     const character = await this.prisma.character.create({
@@ -31,16 +43,43 @@ export class CharactersService {
             nickname: input.nickname,
             image: input.image,
             created_at: date,
+            /**
+             * snapshot relations
+             */
             character_snapshot_experiences: {
               createMany: {
                 data: input.experiences.map(
                   (
-                    experinceId,
+                    experince,
                   ): Prisma.Character_Snapshot_ExperienceCreateManyCharacter_snapshotInput => {
                     return {
-                      experience_id: experinceId,
+                      experience_id: experince.id,
                       created_at: date,
                     };
+                  },
+                ),
+              },
+            },
+            character_snapshot_positions: {
+              createMany: {
+                data: positions.map(
+                  (
+                    positionId,
+                  ): Prisma.Character_Snapshot_PositionCreateManyCharacter_snapshotInput => {
+                    return {
+                      position_id: positionId,
+                    };
+                  },
+                ),
+              },
+            },
+            character_snapshot_skills: {
+              createMany: {
+                data: skills.map(
+                  (
+                    skillId,
+                  ): Prisma.Character_Snapshot_SkillCreateManyCharacter_snapshotInput => {
+                    return { skill_id: skillId };
                   },
                 ),
               },
@@ -175,9 +214,9 @@ export class CharactersService {
     date: string,
   ) {
     const characterPersonalities = personalities.map(
-      (personalityId): Prisma.Character_PersonalityCreateManyInput => ({
+      (personality): Prisma.Character_PersonalityCreateManyInput => ({
         character_id: characterId,
-        personality_id: personalityId,
+        personality_id: personality.id,
         created_at: date,
       }),
     );
