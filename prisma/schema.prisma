@@ -146,6 +146,7 @@ model Character_Snapshot {
   last_snapshot                  Character_Last_Snapshot?
   character_snapshot_experiences Character_Snapshot_Experience[]
   character_snapshot_positions   Character_Snapshot_Position[]
+  character_snapshot_skills      Character_Snapshot_Skill[]
 }
 
 /// 캐릭터의 마지막 스냅샷
@@ -191,8 +192,8 @@ model Personality {
 /// 사용자는 캐릭터 생성시 직군에 관한 정보를 입력할 수 있다.
 /// @namespace Character
 model Character_Snapshot_Position {
-  character_snapshot_id String @db.Uuid //  Character_Snapshot FK
-  position_id           String @db.Uuid // Postion FK
+  character_snapshot_id String @db.Uuid ///  Character_Snapshot FK
+  position_id           String @db.Uuid /// Postion FK
 
   character_snapshot Character_Snapshot @relation(fields: [character_snapshot_id], references: [id])
   postion            Position           @relation(fields: [position_id], references: [id])
@@ -210,6 +211,31 @@ model Position {
   deleted_at DateTime? @db.Timestamptz /// 직군이 삭제된 시점
 
   character_snapshot_positions Character_Snapshot_Position[]
+}
+
+/// 캐릭터의 기술 스택 정보
+/// 사용자는 캐릭터 생성시 기술 스택(스킬)에 관한 정보를 입력할 수 있다.
+/// @namespace Character
+model Character_Snapshot_Skill {
+  character_snapshot_id String @db.Uuid ///  Character_Snapshot FK
+  skill_id              String @db.Uuid /// Skill FK
+
+  character_snapshot Character_Snapshot @relation(fields: [character_snapshot_id], references: [id])
+  skill              Skill              @relation(fields: [skill_id], references: [id])
+
+  @@unique([character_snapshot_id, skill_id])
+}
+
+/// 기술 스택
+/// React, NestJS 기술 스택(스킬)의 정보를 저장한다.
+/// @namespace Character
+model Skill {
+  id         String    @id @db.Uuid /// PK
+  keyword    String /// 스킬의 이름
+  created_at DateTime  @db.Timestamptz /// 스킬이 등록된 시점
+  deleted_at DateTime? @db.Timestamptz /// 스킬이 삭제된 시점
+
+  character_snapshot_skills Character_Snapshot_Skill[]
 }
 
 /// 채팅방.

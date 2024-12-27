@@ -33,7 +33,7 @@ erDiagram
 
 ### `User`
 한 브라우저에서 입장하여 브라우저를 종료하기 전, 즉 세션을 유저라고 한다.
-이 유저가 언제 접속해서 언제 퇴장했는지를 파악하기 위해 유저마다 생성 시간과 이탈 시간을 둔다.
+이 유저가 언제 ��속해서 언제 퇴장했는지를 파악하기 위해 유저마다 생성 시간과 이탈 시간을 둔다.
 
 **Properties**
   - `id`: PK
@@ -47,7 +47,7 @@ erDiagram
 **Properties**
   - `id`: PK
   - `name`: 사용자 이름으로, 면접 서비스기 때문에 실명을 사용한다. 단, 강제성은 없다.
-  - `created_at`: 유저가 가입한 ��간으로, 이 시간을 멤버가 된 시간으로 인식한다.
+  - `created_at`: 유저가 가입한 시간으로, 이 시간을 멤버가 된 시간으로 인식한다.
   - `deleted_at`: 회원탈퇴한 경우
 
 ### `Provider`
@@ -131,6 +131,16 @@ erDiagram
   DateTime created_at
   DateTime deleted_at "nullable"
 }
+"Character_Snapshot_Skill" {
+  String character_snapshot_id FK
+  String skill_id FK
+}
+"Skill" {
+  String id PK
+  String keyword
+  DateTime created_at
+  DateTime deleted_at "nullable"
+}
 "Room" {
   String id PK
   String user_id FK
@@ -163,6 +173,8 @@ erDiagram
 "Character_Personality" }o--|| "Character" : character
 "Character_Snapshot_Position" }o--|| "Character_Snapshot" : character_snapshot
 "Character_Snapshot_Position" }o--|| "Position" : postion
+"Character_Snapshot_Skill" }o--|| "Character_Snapshot" : character_snapshot
+"Character_Snapshot_Skill" }o--|| "Skill" : skill
 "Room" }o--|| "User" : user
 "Room" }o--|| "Character" : character
 "Chat" }o--|| "Room" : room
@@ -255,7 +267,7 @@ erDiagram
 
 **Properties**
   - `id`: PK
-  - `keyword`: 성격에 대해 설명하는 단어나 문장. '용감한', '호기심이 많은' 같은 성격과 관련된 키워��이다.
+  - `keyword`: 성격에 대해 설명하는 단어나 문장. '용감한', '호기심이 많은' 같은 성격과 관련된 키워드이다.
   - `created_at`: 성격이 생성된 시점
   - `deleted_at`: 성격이 삭제된 시점
 
@@ -264,8 +276,8 @@ erDiagram
 사용자는 캐릭터 생성시 직군에 관한 정보를 입력할 수 있다.
 
 **Properties**
-  - `character_snapshot_id`: 
-  - `position_id`: 
+  - `character_snapshot_id`: Character_Snapshot FK
+  - `position_id`: Postion FK
 
 ### `Position`
 직군.
@@ -276,6 +288,24 @@ erDiagram
   - `keyword`: 직군을 표현하는 단어를 뜻한다.
   - `created_at`: 직군이 등록된 시점
   - `deleted_at`: 직군이 삭제된 시점
+
+### `Character_Snapshot_Skill`
+캐릭터의 기술 스택 정보
+사용자는 캐릭터 생성시 기술 스택(스킬)에 관한 정보를 입력할 수 있다.
+
+**Properties**
+  - `character_snapshot_id`: Character_Snapshot FK
+  - `skill_id`: Skill FK
+
+### `Skill`
+기술 스택
+React, NestJS 기술 스택(스킬)의 정보를 저장한다.
+
+**Properties**
+  - `id`: PK
+  - `keyword`: 스킬의 이름
+  - `created_at`: 스킬이 등록된 시점
+  - `deleted_at`: 스킬이 삭제된 시점
 
 ### `Room`
 채팅방.
@@ -303,7 +333,7 @@ erDiagram
 
 ### `User`
 한 브라우저에서 입장하여 브라우저를 종료하기 전, 즉 세션을 유저라고 한다.
-이 유저가 언제 접속해서 언제 퇴장했는지를 파악하기 위해 유저마다 생성 시간과 이탈 시간을 둔다.
+이 유저가 언제 ��속해서 언제 퇴장했는지를 파악하기 위해 유저마다 생성 시간과 이탈 시간을 둔다.
 
 **Properties**
   - `id`: PK

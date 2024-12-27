@@ -12,6 +12,7 @@ import { PositionsModule } from './modules/positions.module';
 import { PrismaModule } from './modules/prisma.module';
 import { RoomsModule } from './modules/rooms.module';
 import { OpenaiModule } from './modules/openai.module';
+import { SkillsModule } from './modules/skills.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { OpenaiModule } from './modules/openai.module';
     PositionsModule,
     ChatsModule,
     RoomsModule,
+    SkillsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
