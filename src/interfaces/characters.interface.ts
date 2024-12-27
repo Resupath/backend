@@ -23,8 +23,8 @@ export namespace Character {
   export interface CreateRequest
     extends Pick<Character, 'nickname' | 'isPublic'>,
       Partial<Pick<Character, 'image'>> {
-    personalities: Array<Personality['id']> & tags.MinItems<1>;
-    experiences: Array<Experience['id']> & tags.MinItems<1>;
+    personalities: Array<Pick<Personality, 'id'>> & tags.MinItems<1>;
+    experiences: Array<Pick<Experience, 'id'>> & tags.MinItems<1>;
     positions: Array<Position.CreateRequest> & tags.MinItems<1>;
     skills: Array<Skill.CreateRequest> & tags.MinItems<1>;
   }

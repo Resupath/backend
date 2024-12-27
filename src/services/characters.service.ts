@@ -50,10 +50,10 @@ export class CharactersService {
               createMany: {
                 data: input.experiences.map(
                   (
-                    experinceId,
+                    experince,
                   ): Prisma.Character_Snapshot_ExperienceCreateManyCharacter_snapshotInput => {
                     return {
-                      experience_id: experinceId,
+                      experience_id: experince.id,
                       created_at: date,
                     };
                   },
@@ -214,9 +214,9 @@ export class CharactersService {
     date: string,
   ) {
     const characterPersonalities = personalities.map(
-      (personalityId): Prisma.Character_PersonalityCreateManyInput => ({
+      (personality): Prisma.Character_PersonalityCreateManyInput => ({
         character_id: characterId,
-        personality_id: personalityId,
+        personality_id: personality.id,
         created_at: date,
       }),
     );
