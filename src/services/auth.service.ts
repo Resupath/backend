@@ -4,6 +4,8 @@ import { JwtService } from '@nestjs/jwt';
 import axios from 'axios';
 import { randomUUID } from 'crypto';
 import { Auth } from 'src/interfaces/auth.interface';
+import { User } from 'src/interfaces/user.interface';
+import { DateTimeUtil } from 'src/util/dateTime.util';
 import { PrismaService } from './prisma.service';
 
 @Injectable()
@@ -13,6 +15,24 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {}
+
+  /**
+   * userToken을 발급한다.
+   */
+
+  async getUserToken() {
+    const user = await this.createUser();
+    return this.createUserToken(user);
+  }
+
+  async createUser() {
+    const date = DateTimeUtil.now();
+
+    return await this.prisma.user.create({
+      select: { id: true },
+      data: { id: randomUUID(), created_at: date },
+    });
+  }
 
   /**
    * Refresh Token을 검증하고 인증 정보를 재발급한다.
@@ -141,6 +161,15 @@ export class AuthService {
     });
 
     return { ...member, accessToken, refreshToken };
+  }
+
+  private createUserToken(user: Pick<User, 'id'>): Auth.UserToken {
+    const userToken = this.jwtService.sign(user, {
+      secret: this.configService.get('JWT_SECRET_USER'),
+      expiresIn: this.configService.get('JWT_EXPIRATION_TIME_USER'),
+    });
+
+    return { userToken };
   }
 
   private async getGoogleAccessToken(code: string) {

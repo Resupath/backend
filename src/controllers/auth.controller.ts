@@ -8,6 +8,14 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   /**
+   * user를 생성하고 토큰을 발급한다.
+   */
+  @core.TypedRoute.Get('user')
+  async createUser(): Promise<Auth.UserToken> {
+    return await this.authService.getUserToken();
+  }
+
+  /**
    * AccessToken과 RefreshToken을 재발급 한다.
    */
   @core.TypedRoute.Post('refresh')
