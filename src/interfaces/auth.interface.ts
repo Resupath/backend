@@ -4,7 +4,7 @@ import { Provider } from './provider.interface';
 
 export namespace Auth {
   export interface UserToken {
-    userToken: string;
+    accessToken: string & tags.MinLength<1>;
   }
 
   export interface RefreshRequest {

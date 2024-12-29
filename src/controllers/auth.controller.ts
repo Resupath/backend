@@ -1,8 +1,10 @@
 import core from '@nestia/core';
 import { Controller } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Auth } from 'src/interfaces/auth.interface';
 import { AuthService } from 'src/services/auth.service';
 
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}

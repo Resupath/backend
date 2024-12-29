@@ -164,12 +164,12 @@ export class AuthService {
   }
 
   private createUserToken(user: Pick<User, 'id'>): Auth.UserToken {
-    const userToken = this.jwtService.sign(user, {
+    const accessToken = this.jwtService.sign(user, {
       secret: this.configService.get('JWT_SECRET_USER'),
       expiresIn: this.configService.get('JWT_EXPIRATION_TIME_USER'),
     });
 
-    return { userToken };
+    return { accessToken };
   }
 
   private async getGoogleAccessToken(code: string) {
