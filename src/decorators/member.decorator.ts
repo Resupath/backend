@@ -1,11 +1,11 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { Guard } from 'src/interfaces/guard.interface';
 
-export const User = createParamDecorator(
+export const Member = createParamDecorator(
   (data: string | undefined, ctx: ExecutionContext) => {
     const request = ctx.switchToHttp().getRequest();
-    const user = request?.user;
+    const member = request?.member;
 
-    return user as Guard.UserResponse;
+    return member as Guard.MemberResponse;
   },
 );

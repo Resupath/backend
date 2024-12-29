@@ -34,7 +34,7 @@ export class MemberGuard implements CanActivate {
         where: { id },
       });
 
-      request.user = member;
+      request.member = member;
 
       return member ? true : false;
     } catch (error) {
