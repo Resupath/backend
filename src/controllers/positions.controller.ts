@@ -1,9 +1,11 @@
 import core from '@nestia/core';
 import { Controller, UseGuards } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { MemberGuard } from 'src/guards/member.guard';
 import { Position } from 'src/interfaces/positions.interface';
 import { PositionsService } from 'src/services/positions.service';
 
+@ApiTags('Position')
 @Controller('positions')
 export class PositionsController {
   constructor(private readonly positionsService: PositionsService) {}

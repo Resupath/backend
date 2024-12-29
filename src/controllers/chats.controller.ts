@@ -1,9 +1,11 @@
 import core from '@nestia/core';
 import { Controller } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Chat } from 'src/interfaces/chats.interface';
 import { Room } from 'src/interfaces/rooms.interface';
 import { ChatsService } from 'src/services/chats.service';
 
+@ApiTags('Chat')
 @Controller('chats')
 export class ChatsController {
   constructor(private readonly chatsService: ChatsService) {}

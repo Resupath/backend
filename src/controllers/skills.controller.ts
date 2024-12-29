@@ -1,9 +1,11 @@
 import core from '@nestia/core';
 import { Controller, UseGuards } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { MemberGuard } from 'src/guards/member.guard';
 import { Skill } from 'src/interfaces/skills.interface';
 import { SkillsService } from 'src/services/skills.service';
 
+@ApiTags('Skill')
 @Controller('skills')
 export class SkillsController {
   constructor(private readonly skillsService: SkillsService) {}
