@@ -44,7 +44,9 @@ export class UserGuard implements CanActivate {
   }
 
   private getBearerToken(request: any): string | null {
-    const authHeader = request.headers['authorization'];
+    let authHeader = request.headers['X-User'];
+    authHeader = authHeader ?? request.headers['authorization'];
+
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return null;
     }
