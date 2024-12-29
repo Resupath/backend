@@ -3,6 +3,10 @@ import { Member } from './member.interface';
 import { Provider } from './provider.interface';
 
 export namespace Auth {
+  export interface UserToken {
+    accessToken: string & tags.MinLength<1>;
+  }
+
   export interface RefreshRequest {
     refreshToken: string & tags.MinLength<1>;
   }

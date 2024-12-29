@@ -1,11 +1,24 @@
 import core from '@nestia/core';
-import { Controller } from '@nestjs/common';
+import { Controller, UseGuards } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import { User } from 'src/decorators/user.decorator';
+import { UserGuard } from 'src/guards/user.guard';
 import { Auth } from 'src/interfaces/auth.interface';
+import { Guard } from 'src/interfaces/guard.interface';
 import { AuthService } from 'src/services/auth.service';
 
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
+  /**
+   * user를 생성하고 토큰을 발급한다.
+   */
+  @core.TypedRoute.Get('user')
+  async createUser(): Promise<Auth.UserToken> {
+    return await this.authService.getUserToken();
+  }
 
   /**
    * AccessToken과 RefreshToken을 재발급 한다.
@@ -28,10 +41,12 @@ export class AuthController {
   /**
    * 클라이언트에서 받은 코드를 이용해 유저를 검증하고 jwt를 발급한다.
    */
+  @UseGuards(UserGuard)
   @core.TypedRoute.Get('google/callback')
   async getGoogleAuthorization(
+    @User() user: Guard.UserResponse,
     @core.TypedQuery() query: Auth.LoginRequest,
   ): Promise<Auth.LoginResponse> {
-    return this.authService.getGoogleAuthorization(query.code);
+    return this.authService.getGoogleAuthorization(user.id, query.code);
   }
 }

@@ -1,9 +1,10 @@
 import core from '@nestia/core';
 import { Controller, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { User } from 'src/decorators/user.decorator';
+import { Member } from 'src/decorators/member.decorator';
 import { MemberGuard } from 'src/guards/member.guard';
 import { Character } from 'src/interfaces/characters.interface';
+import { Guard } from 'src/interfaces/guard.interface';
 import { CharactersService } from 'src/services/characters.service';
 import { tags } from 'typia';
 
@@ -18,10 +19,10 @@ export class CharactersController {
   @UseGuards(MemberGuard)
   @core.TypedRoute.Post()
   async createCharacater(
-    @User() user: { id: string },
+    @Member() member: Guard.MemberResponse,
     @core.TypedBody() body: Character.CreateRequest,
   ): Promise<Character.CreateResponse> {
-    return await this.charactersService.create(user.id, body);
+    return await this.charactersService.create(member.id, body);
   }
 
   /**

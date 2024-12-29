@@ -9,7 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/services/prisma.service';
 
 @Injectable()
-export class MemberGuard implements CanActivate {
+export class UserGuard implements CanActivate {
   constructor(
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
@@ -26,25 +26,25 @@ export class MemberGuard implements CanActivate {
       }
 
       const { id } = this.jwtService.verify(accessToken, {
-        secret: this.configService.get('JWT_SECRET_MEMBER'),
+        secret: this.configService.get('JWT_SECRET_USER'),
       });
 
-      const member = await this.prisma.member.findUnique({
+      const user = await this.prisma.user.findUnique({
         select: { id: true },
         where: { id },
       });
 
-      request.member = member;
+      request.user = user;
 
-      return member ? true : false;
+      return user ? true : false;
     } catch (error) {
-      console.error('Member Guard Error:', error);
+      console.error('User Guard Error:', error);
       throw new UnauthorizedException();
     }
   }
 
   private getBearerToken(request: any): string | null {
-    let authHeader = request.headers['X-Member'];
+    let authHeader = request.headers['X-User'];
     authHeader = authHeader ?? request.headers['authorization'];
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {

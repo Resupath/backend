@@ -1,10 +1,13 @@
 import core, { TypedBody } from '@nestia/core';
 import { Controller, UseGuards } from '@nestjs/common';
-import { User } from 'src/decorators/user.decorator';
+import { ApiTags } from '@nestjs/swagger';
+import { Member } from 'src/decorators/member.decorator';
 import { MemberGuard } from 'src/guards/member.guard';
 import { Experience } from 'src/interfaces/experiences.interface';
+import { Guard } from 'src/interfaces/guard.interface';
 import { ExperiencesService } from '../services/experiences.service';
 
+@ApiTags('Experience')
 @Controller('experiences')
 export class ExperiencesController {
   constructor(private readonly experiencesService: ExperiencesService) {}
@@ -15,10 +18,10 @@ export class ExperiencesController {
   @UseGuards(MemberGuard)
   @core.TypedRoute.Post()
   async createExperiences(
-    @User() user: { id: string },
+    @Member() member: Guard.MemberResponse,
     @TypedBody() body: Experience.CreateRequest,
   ): Promise<void> {
-    return await this.experiencesService.create(user.id, body);
+    return await this.experiencesService.create(member.id, body);
   }
 
   /**
@@ -27,8 +30,8 @@ export class ExperiencesController {
   @UseGuards(MemberGuard)
   @core.TypedRoute.Get()
   async getAllExperiences(
-    @User() user: { id: string },
+    @Member() member: Guard.MemberResponse,
   ): Promise<Experience.GetAllResponse> {
-    return await this.experiencesService.getAll(user.id);
+    return await this.experiencesService.getAll(member.id);
   }
 }
