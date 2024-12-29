@@ -1,7 +1,10 @@
 import core from '@nestia/core';
-import { Controller } from '@nestjs/common';
+import { Controller, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { User } from 'src/decorators/user.decorator';
+import { UserGuard } from 'src/guards/user.guard';
 import { Auth } from 'src/interfaces/auth.interface';
+import { Guard } from 'src/interfaces/guard.interface';
 import { AuthService } from 'src/services/auth.service';
 
 @ApiTags('Auth')
@@ -38,10 +41,12 @@ export class AuthController {
   /**
    * 클라이언트에서 받은 코드를 이용해 유저를 검증하고 jwt를 발급한다.
    */
+  @UseGuards(UserGuard)
   @core.TypedRoute.Get('google/callback')
   async getGoogleAuthorization(
+    @User() user: Guard.UserResponse,
     @core.TypedQuery() query: Auth.LoginRequest,
   ): Promise<Auth.LoginResponse> {
-    return this.authService.getGoogleAuthorization(query.code);
+    return this.authService.getGoogleAuthorization(user.id, query.code);
   }
 }

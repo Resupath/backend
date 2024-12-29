@@ -56,13 +56,13 @@ export class AuthService {
    * 구글 로그인 결과를 검증하고 jwt를 발급한다.
    * @param code 클라이언트의 로그인 성공 시 얻을수 있는 코드값.
    */
-  async getGoogleAuthorization(code: string) {
+  async getGoogleAuthorization(userId: string, code: string) {
     try {
       const { accessToken, refreshToken } =
         await this.getGoogleAccessToken(code);
       const { uid, email, name } = await this.getGoogleUserInfo(accessToken);
 
-      const member = await this.findOrCreateMember({
+      const member = await this.findOrCreateMember(userId, {
         uid,
         email,
         name,
@@ -78,14 +78,17 @@ export class AuthService {
     }
   }
 
-  async findOrCreateMember(authorization: Auth.CommonAuthorizationResponse) {
+  async findOrCreateMember(
+    userId: string,
+    authorization: Auth.CommonAuthorizationResponse,
+  ) {
     const provider = await this.findProviderMember(authorization);
     return provider
       ? await this.updateProviderPassword(
           provider.id,
           authorization.refreshToken,
         )
-      : await this.createMember(authorization);
+      : await this.createMember(userId, authorization);
   }
 
   async findProviderMember(authorization: Auth.CommonAuthorizationResponse) {
@@ -107,25 +110,36 @@ export class AuthService {
     return member;
   }
 
-  async createMember(authorization: Auth.CommonAuthorizationResponse) {
-    const date = new Date().toISOString();
-    const { member } = await this.prisma.provider.create({
-      select: { member: { select: { id: true, name: true } } },
-      data: {
-        id: randomUUID(),
-        uid: authorization.uid,
-        password: authorization.refreshToken,
-        type: authorization.type,
-        created_at: date,
-        member: {
-          create: {
-            id: randomUUID(),
-            name: authorization.name,
-            created_at: date,
+  async createMember(
+    userId: string,
+    authorization: Auth.CommonAuthorizationResponse,
+  ) {
+    const memberId = randomUUID();
+    const date = DateTimeUtil.now();
+
+    const [{ member }] = await this.prisma.$transaction([
+      this.prisma.provider.create({
+        select: { member: { select: { id: true, name: true } } },
+        data: {
+          id: randomUUID(),
+          uid: authorization.uid,
+          password: authorization.refreshToken,
+          type: authorization.type,
+          created_at: date,
+          member: {
+            create: {
+              id: memberId,
+              name: authorization.name,
+              created_at: date,
+            },
           },
         },
-      },
-    });
+      }),
+      this.prisma.user.update({
+        where: { id: userId },
+        data: { member_id: memberId },
+      }),
+    ]);
 
     return member;
   }
