@@ -40,13 +40,12 @@ export namespace Character {
       'id' | 'memberId' | 'nickname' | 'image' | 'isPublic' | 'createdAt'
     > {
     personalities: Array<Personality['keyword']>;
+    experienceYears: number & tags.Type<'int64'>;
+    roomCount: number & tags.Type<'int64'>;
   }
 
   export interface GetByPageRequest extends PaginationUtil.Request {}
 
-  export interface GetByPageData
-    extends Pick<Character, 'id' | 'nickname' | 'createdAt'> {}
-
   export interface GetByPageResponse
-    extends PaginationUtil.Response<GetByPageData> {}
+    extends PaginationUtil.Response<GetResponse> {}
 }

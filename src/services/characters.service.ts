@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { Character } from 'src/interfaces/characters.interface';
+import { Experience } from 'src/interfaces/experiences.interface';
 import { DateTimeUtil } from 'src/util/dateTime.util';
 import { PaginationUtil } from 'src/util/pagination.util';
 import { PositionsService } from './positions.service';
@@ -110,13 +111,20 @@ export class CharactersService {
         id: true,
         member_id: true,
         is_public: true,
+        created_at: true,
         last_snapshot: {
           select: {
             snapshot: {
               select: {
                 nickname: true,
                 image: true,
-                created_at: true,
+                character_snapshot_experiences: {
+                  select: {
+                    experience: {
+                      select: { start_date: true, end_date: true },
+                    },
+                  },
+                },
               },
             },
           },
@@ -128,6 +136,7 @@ export class CharactersService {
             },
           },
         },
+        _count: { select: { rooms: true } },
       },
       where: { id, is_public: true },
     });
@@ -138,6 +147,10 @@ export class CharactersService {
       throw new NotFoundException();
     }
 
+    const experienceYears = this.getExperienceYears(
+      snapshot.character_snapshot_experiences,
+    );
+
     /**
      * mapping
      */
@@ -145,14 +158,16 @@ export class CharactersService {
       id: character.id,
       memberId: character.member_id,
       isPublic: character.is_public,
+      createdAt: character.created_at.toISOString(),
 
       nickname: snapshot.nickname,
       image: snapshot.image,
-      createdAt: snapshot.created_at.toISOString(),
 
       personalities: character.character_personalites.map(
         (el) => el.personality.keyword,
       ),
+      experienceYears: experienceYears,
+      roomCount: character._count.rooms,
     };
   }
 
@@ -168,15 +183,34 @@ export class CharactersService {
         select: {
           id: true,
           member_id: true,
+          is_public: true,
+          created_at: true,
           last_snapshot: {
             select: {
               snapshot: {
                 select: {
                   nickname: true,
-                  created_at: true,
+                  image: true,
+                  character_snapshot_experiences: {
+                    select: {
+                      experience: {
+                        select: { start_date: true, end_date: true },
+                      },
+                    },
+                  },
                 },
               },
             },
+          },
+          character_personalites: {
+            select: {
+              personality: {
+                select: { keyword: true },
+              },
+            },
+          },
+          _count: {
+            select: { rooms: true },
           },
         },
         where: whereInput,
@@ -189,14 +223,30 @@ export class CharactersService {
     /**
      * mapping
      */
-    const data = characters.map((el): Character.GetByPageData => {
-      if (!el?.last_snapshot?.snapshot) {
+    const data = characters.map((el): Character.GetResponse => {
+      const snapshot = el?.last_snapshot?.snapshot;
+
+      if (!snapshot) {
         throw new NotFoundException();
       }
+      const experienceYears = this.getExperienceYears(
+        snapshot.character_snapshot_experiences,
+      );
+
       return {
         id: el.id,
-        nickname: el.last_snapshot.snapshot.nickname,
-        createdAt: el.last_snapshot.snapshot.created_at.toISOString(),
+        memberId: el.member_id,
+        isPublic: el.is_public,
+        createdAt: el.created_at.toISOString(),
+
+        nickname: snapshot.nickname,
+        image: snapshot.image,
+
+        personalities: el.character_personalites.map(
+          (el) => el.personality.keyword,
+        ),
+        experienceYears: experienceYears,
+        roomCount: el._count.rooms,
       };
     });
 
@@ -224,5 +274,31 @@ export class CharactersService {
     await this.prisma.character_Personality.createMany({
       data: characterPersonalities,
     });
+  }
+
+  /**
+   * 경력들의 시작 날짜와 종료날짜를 받아 연차를 계산한다.
+   */
+  private getExperienceYears(
+    input: Array<{
+      experience: {
+        start_date: Experience['startDate'];
+        end_date: Experience['endDate'];
+      };
+    }>,
+  ): number {
+    const totalMonths = input.reduce((acc, el) => {
+      return (
+        acc +
+        DateTimeUtil.BetweenMonths(
+          el.experience.start_date,
+          el.experience.end_date,
+        )
+      );
+    }, 0);
+
+    const totalYears = Math.floor(totalMonths / 12) + 1;
+
+    return totalYears;
   }
 }
