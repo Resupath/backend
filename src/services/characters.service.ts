@@ -111,13 +111,13 @@ export class CharactersService {
         id: true,
         member_id: true,
         is_public: true,
+        created_at: true,
         last_snapshot: {
           select: {
             snapshot: {
               select: {
                 nickname: true,
                 image: true,
-                created_at: true,
                 character_snapshot_experiences: {
                   select: {
                     experience: {
@@ -157,10 +157,10 @@ export class CharactersService {
       id: character.id,
       memberId: character.member_id,
       isPublic: character.is_public,
+      createdAt: character.created_at.toISOString(),
 
       nickname: snapshot.nickname,
       image: snapshot.image,
-      createdAt: snapshot.created_at.toISOString(),
 
       personalities: character.character_personalites.map(
         (el) => el.personality.keyword,
@@ -182,13 +182,13 @@ export class CharactersService {
           id: true,
           member_id: true,
           is_public: true,
+          created_at: true,
           last_snapshot: {
             select: {
               snapshot: {
                 select: {
                   nickname: true,
                   image: true,
-                  created_at: true,
                   character_snapshot_experiences: {
                     select: {
                       experience: {
@@ -232,10 +232,10 @@ export class CharactersService {
         id: el.id,
         memberId: el.member_id,
         isPublic: el.is_public,
+        createdAt: el.created_at.toISOString(),
 
         nickname: snapshot.nickname,
         image: snapshot.image,
-        createdAt: snapshot.created_at.toISOString(),
 
         personalities: el.character_personalites.map(
           (el) => el.personality.keyword,
