@@ -7,12 +7,13 @@ import { AuthModule } from './modules/auth.module';
 import { CharactersModule } from './modules/characters.module';
 import { ChatsModule } from './modules/chats.module';
 import { ExperiencesModule } from './modules/experiences.module';
+import { OpenaiModule } from './modules/openai.module';
 import { PersonalitiesModule } from './modules/personalities.module';
 import { PositionsModule } from './modules/positions.module';
 import { PrismaModule } from './modules/prisma.module';
 import { RoomsModule } from './modules/rooms.module';
-import { OpenaiModule } from './modules/openai.module';
 import { SkillsModule } from './modules/skills.module';
+import { SourcesModule } from './modules/sources.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { SkillsModule } from './modules/skills.module';
     ChatsModule,
     RoomsModule,
     SkillsModule,
+    SourcesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
