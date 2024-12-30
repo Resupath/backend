@@ -1,6 +1,6 @@
 import { tags } from 'typia';
-import { User } from './user.interface';
 import { Character } from './characters.interface';
+import { User } from './user.interface';
 
 export interface Room {
   id: string & tags.Format<'uuid'>;
@@ -10,4 +10,11 @@ export interface Room {
   deletedAt: string & tags.Format<'date-time'>;
 }
 
-export namespace Room {}
+export namespace Room {
+  /**
+   * create
+   */
+  export interface CreateRequest extends Pick<Room, 'characterId'> {}
+
+  export interface CreateResponse extends Pick<Room, 'id'> {}
+}
