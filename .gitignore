@@ -60,6 +60,7 @@ src/api
 packages/api/*
 !packages/api/package-lock.json
 !packages/api/package.json
+!packages/api/tsconfig.json
 
 # Local Database Volumes
 db_data
