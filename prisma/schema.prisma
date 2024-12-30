@@ -106,6 +106,7 @@ model Source {
   /// 파일인 경우에는 'cover_letter' | 'portfolio' | 'resume'이 존재할 수 있다.
   /// 링크인 경우에는 'github' | 'notion' 이 있다.
   subtype      String
+  url          String /// 링크의 주소나 파일의 주소, file인 경우에도 S3에 업로드 되므로 분류와 관계 없이 url  형태가 된다.
   created_at   DateTime  @db.Timestamptz /// 소스가 등록된 시간
   deleted_at   DateTime? @db.Timestamptz /// 소스가 삭제된 시간
 

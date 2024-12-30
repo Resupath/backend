@@ -33,7 +33,7 @@ erDiagram
 
 ### `User`
 한 브라우저에서 입장하여 브라우저를 종료하기 전, 즉 세션을 유저라고 한다.
-이 유저가 언제 ��속해서 언제 퇴장했는지를 파악하기 위해 유저마다 생성 시간과 이탈 시간을 둔다.
+이 유저가 언제 접속해서 언제 퇴장했는지를 파악하기 위해 유저마다 생성 시간과 이탈 시간을 둔다.
 
 **Properties**
   - `id`: PK
@@ -88,6 +88,7 @@ erDiagram
   String character_id FK
   String type
   String subtype
+  String url
   DateTime created_at
   DateTime deleted_at "nullable"
 }
@@ -220,6 +221,7 @@ erDiagram
     > 파일이나 링크의 소분류.
     > 파일인 경우에는 'cover_letter' | 'portfolio' | 'resume'이 존재할 수 있다.
     > 링크인 경우에는 'github' | 'notion' 이 있다.
+  - `url`: 링크의 주소나 파일의 주소, file인 경우에도 S3에 업로드 되므로 분류와 관계 없이 url  형태가 된다.
   - `created_at`: 소스가 등록된 시간
   - `deleted_at`: 소스가 삭제된 시간
 
@@ -333,7 +335,7 @@ React, NestJS 기술 스택(스킬)의 정보를 저장한다.
 
 ### `User`
 한 브라우저에서 입장하여 브라우저를 종료하기 전, 즉 세션을 유저라고 한다.
-이 유저가 언제 ��속해서 언제 퇴장했는지를 파악하기 위해 유저마다 생성 시간과 이탈 시간을 둔다.
+이 유저가 언제 접속해서 언제 퇴장했는지를 파악하기 위해 유저마다 생성 시간과 이탈 시간을 둔다.
 
 **Properties**
   - `id`: PK
