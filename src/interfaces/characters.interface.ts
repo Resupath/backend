@@ -41,6 +41,7 @@ export namespace Character {
     > {
     personalities: Array<Personality['keyword']>;
     experienceYears: number & tags.Type<'int64'>;
+    roomCount: number & tags.Type<'int64'>;
   }
 
   export interface GetByPageRequest extends PaginationUtil.Request {}

@@ -136,6 +136,7 @@ export class CharactersService {
             },
           },
         },
+        _count: { select: { rooms: true } },
       },
       where: { id, is_public: true },
     });
@@ -166,6 +167,7 @@ export class CharactersService {
         (el) => el.personality.keyword,
       ),
       experienceYears: experienceYears,
+      roomCount: character._count.rooms,
     };
   }
 
@@ -207,6 +209,9 @@ export class CharactersService {
               },
             },
           },
+          _count: {
+            select: { rooms: true },
+          },
         },
         where: whereInput,
         skip,
@@ -241,6 +246,7 @@ export class CharactersService {
           (el) => el.personality.keyword,
         ),
         experienceYears: experienceYears,
+        roomCount: el._count.rooms,
       };
     });
 
