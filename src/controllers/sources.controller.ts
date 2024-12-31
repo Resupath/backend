@@ -19,4 +19,15 @@ export class SourcesController {
   ) {
     return await this.sourcesService.create(characterId, body);
   }
+
+  /**
+   * 소스 여러개를 저장한다.
+   */
+  @core.TypedRoute.Post('/bulk/:characterId')
+  async createSources(
+    @core.TypedParam('characterId') characterId: Source['characterId'],
+    @core.TypedBody() body: Array<Source.CreateRequest>,
+  ): Promise<{ count: number }> {
+    return await this.sourcesService.createMany(characterId, body);
+  }
 }

@@ -3,6 +3,7 @@ import { Source } from 'src/interfaces/source.interface';
 import { PrismaService } from './prisma.service';
 import { randomUUID } from 'crypto';
 import { DateTimeUtil } from 'src/util/dateTime.util';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class SourcesService {
@@ -27,5 +28,29 @@ export class SourcesService {
     });
 
     return source;
+  }
+
+  async createMany(
+    characterId: string,
+    body: Array<Source.CreateRequest>,
+  ): Promise<{ count: number }> {
+    const date = DateTimeUtil.now();
+
+    const createInput = body.map((el): Prisma.SourceCreateManyInput => {
+      return {
+        id: randomUUID(),
+        character_id: characterId,
+        type: el.type,
+        subtype: el.subtype,
+        url: el.url,
+        created_at: date,
+      };
+    });
+
+    const count = await this.prisma.source.createMany({
+      data: createInput,
+    });
+
+    return count;
   }
 }
