@@ -10,4 +10,15 @@ export namespace Files {
   export interface CreateResponse {
     url: string & tags.Format<'iri'>;
   }
+
+  /**
+   * get
+   */
+  export interface PresignedRequest {
+    key: string & tags.MinLength<1>;
+  }
+
+  export interface PresignedResponse {
+    url: string & tags.MinLength<1>;
+  }
 }

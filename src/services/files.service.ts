@@ -1,5 +1,6 @@
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
 import { Files } from 'src/interfaces/files.interface';
@@ -18,6 +19,9 @@ export class S3Service {
     });
   }
 
+  /**
+   * 파일 업로드 후 s3 url 반환
+   */
   async uploadFile(memberId: string, body: Files.CreateRequest): Promise<string> {
     const { file } = body;
 
@@ -36,6 +40,32 @@ export class S3Service {
     await this.s3.send(command);
 
     return `https://${bucketName}.s3.${regionName}.amazonaws.com/${key}`;
+  }
+
+  /**
+   * 다운로드 가능한 Pre-signed URL 반환
+   */
+  async createDownloadUrl(key: string): Promise<Files.PresignedResponse> {
+    const command = new GetObjectCommand({
+      Bucket: this.getBucket(),
+      Key: key,
+    });
+
+    const url = await getSignedUrl(this.s3, command, { expiresIn: 3600 });
+    return { url };
+  }
+
+  /**
+   * 업로드 가능한 Pre-signed URL 반환
+   */
+  async createUploadUrl(key: string): Promise<Files.PresignedResponse> {
+    const command = new PutObjectCommand({
+      Bucket: this.getBucket(),
+      Key: key,
+    });
+
+    const url = await getSignedUrl(this.s3, command, { expiresIn: 3600 });
+    return { url };
   }
 
   private async fileToBuffer(file: File): Promise<Buffer<ArrayBufferLike>> {
