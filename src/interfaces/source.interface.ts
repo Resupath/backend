@@ -20,6 +20,9 @@ export namespace Source {
 
   export interface CreateResponse extends Pick<Source, 'id'> {}
 
+  export interface CreateManyResponse {
+    count: number;
+  }
   /**
    * get
    */
