@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { Source } from 'src/interfaces/source.interface';
-import { PrismaService } from './prisma.service';
-import { randomUUID } from 'crypto';
-import { DateTimeUtil } from 'src/util/dateTime.util';
 import { Prisma } from '@prisma/client';
+import { randomUUID } from 'crypto';
+import { Source } from 'src/interfaces/source.interface';
+import { DateTimeUtil } from 'src/util/dateTime.util';
+import { PrismaService } from './prisma.service';
 
 @Injectable()
 export class SourcesService {
@@ -52,5 +52,34 @@ export class SourcesService {
     });
 
     return count;
+  }
+
+  async getAll(characterId: string): Promise<Source.GetAllResponse> {
+    const data = await this.prisma.source.findMany({
+      select: {
+        id: true,
+        type: true,
+        subtype: true,
+        url: true,
+        created_at: true,
+      },
+
+      where: { character_id: characterId, deleted_at: null },
+    });
+
+    /**
+     * mapping
+     */
+    const sources = data.map((el): Source.GetResponse => {
+      return {
+        id: el.id,
+        type: el.type as Source['type'],
+        subtype: el.subtype,
+        url: el.url,
+        createdAt: el.created_at.toISOString(),
+      };
+    });
+
+    return { characterId, sources };
   }
 }

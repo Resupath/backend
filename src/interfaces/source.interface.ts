@@ -19,4 +19,15 @@ export namespace Source {
     extends Pick<Source, 'type' | 'subtype' | 'url'> {}
 
   export interface CreateResponse extends Pick<Source, 'id'> {}
+
+  /**
+   * get
+   */
+
+  export interface GetResponse
+    extends Pick<Source, 'id' | 'type' | 'subtype' | 'url' | 'createdAt'> {}
+
+  export interface GetAllResponse extends Pick<Source, 'characterId'> {
+    sources: Array<GetResponse>;
+  }
 }

@@ -30,4 +30,14 @@ export class SourcesController {
   ): Promise<{ count: number }> {
     return await this.sourcesService.createMany(characterId, body);
   }
+
+  /**
+   * 캐릭터에 저장된 소스들을 조회한다.
+   */
+  @core.TypedRoute.Get('/:characterId')
+  async getSources(
+    @core.TypedParam('characterId') characterId: Source['characterId'],
+  ): Promise<Source.GetAllResponse> {
+    return await this.sourcesService.getAll(characterId);
+  }
 }
