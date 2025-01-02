@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { Skill } from 'src/interfaces/skills.interface';
-import { DateTimeUtil } from 'src/util/dateTime.util';
+import { DateTimeUtil } from 'src/util/datetime.util';
 import { PaginationUtil } from 'src/util/pagination.util';
 import { PrismaService } from './prisma.service';
 
@@ -19,9 +19,7 @@ export class SkillsService {
     });
   }
 
-  async findOrCreateMany(
-    body: Array<Skill.CreateRequest>,
-  ): Promise<Array<Skill['id']>> {
+  async findOrCreateMany(body: Array<Skill.CreateRequest>): Promise<Array<Skill['id']>> {
     const date = DateTimeUtil.now();
 
     return await Promise.all(

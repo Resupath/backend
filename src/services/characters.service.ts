@@ -3,7 +3,7 @@ import { Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { Character } from 'src/interfaces/characters.interface';
 import { Experience } from 'src/interfaces/experiences.interface';
-import { DateTimeUtil } from 'src/util/dateTime.util';
+import { DateTimeUtil } from 'src/util/datetime.util';
 import { PaginationUtil } from 'src/util/pagination.util';
 import { PositionsService } from './positions.service';
 import { PrismaService } from './prisma.service';

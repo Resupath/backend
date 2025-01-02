@@ -2,17 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { Source } from 'src/interfaces/source.interface';
-import { DateTimeUtil } from 'src/util/dateTime.util';
+import { DateTimeUtil } from 'src/util/datetime.util';
 import { PrismaService } from './prisma.service';
 
 @Injectable()
 export class SourcesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(
-    characterId: Source['characterId'],
-    body: Source.CreateRequest,
-  ): Promise<Source.CreateResponse> {
+  async create(characterId: Source['characterId'], body: Source.CreateRequest): Promise<Source.CreateResponse> {
     const date = DateTimeUtil.now();
 
     const source = await this.prisma.source.create({
@@ -30,10 +27,7 @@ export class SourcesService {
     return source;
   }
 
-  async createMany(
-    characterId: string,
-    body: Array<Source.CreateRequest>,
-  ): Promise<{ count: number }> {
+  async createMany(characterId: string, body: Array<Source.CreateRequest>): Promise<{ count: number }> {
     const date = DateTimeUtil.now();
 
     const createInput = body.map((el): Prisma.SourceCreateManyInput => {

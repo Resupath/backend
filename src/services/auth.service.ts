@@ -5,7 +5,7 @@ import axios from 'axios';
 import { randomUUID } from 'crypto';
 import { Auth } from 'src/interfaces/auth.interface';
 import { User } from 'src/interfaces/user.interface';
-import { DateTimeUtil } from 'src/util/dateTime.util';
+import { DateTimeUtil } from 'src/util/datetime.util';
 import { PrismaService } from './prisma.service';
 
 @Injectable()
@@ -58,8 +58,7 @@ export class AuthService {
    */
   async getGoogleAuthorization(userId: string, code: string) {
     try {
-      const { accessToken, refreshToken } =
-        await this.getGoogleAccessToken(code);
+      const { accessToken, refreshToken } = await this.getGoogleAccessToken(code);
       const { uid, email, name } = await this.getGoogleUserInfo(accessToken);
 
       const member = await this.findOrCreateMember(userId, {
@@ -78,16 +77,10 @@ export class AuthService {
     }
   }
 
-  async findOrCreateMember(
-    userId: string,
-    authorization: Auth.CommonAuthorizationResponse,
-  ) {
+  async findOrCreateMember(userId: string, authorization: Auth.CommonAuthorizationResponse) {
     const provider = await this.findProviderMember(authorization);
     return provider
-      ? await this.updateProviderPassword(
-          provider.id,
-          authorization.refreshToken,
-        )
+      ? await this.updateProviderPassword(provider.id, authorization.refreshToken)
       : await this.createMember(userId, authorization);
   }
 
@@ -110,10 +103,7 @@ export class AuthService {
     return member;
   }
 
-  async createMember(
-    userId: string,
-    authorization: Auth.CommonAuthorizationResponse,
-  ) {
+  async createMember(userId: string, authorization: Auth.CommonAuthorizationResponse) {
     const memberId = randomUUID();
     const date = DateTimeUtil.now();
 
@@ -144,9 +134,7 @@ export class AuthService {
     return member;
   }
 
-  private async verifyRefreshToken(
-    refreshToken: string,
-  ): Promise<{ id: string; name: string }> {
+  private async verifyRefreshToken(refreshToken: string): Promise<{ id: string; name: string }> {
     try {
       const payload = this.jwtService.verify(refreshToken, {
         secret: this.configService.get('JWT_REFRESH_SECRET_MEMBER'),

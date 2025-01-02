@@ -3,7 +3,7 @@ import { PrismaService } from './prisma.service';
 import { Personality } from 'src/interfaces/personalities.interface';
 import { Prisma } from '@prisma/client';
 import { PaginationUtil } from 'src/util/pagination.util';
-import { DateTimeUtil } from 'src/util/dateTime.util';
+import { DateTimeUtil } from 'src/util/datetime.util';
 import { randomUUID } from 'crypto';
 
 @Injectable()
@@ -28,9 +28,7 @@ export class PersonalitiesService {
     });
   }
 
-  async getByPage(
-    query: Personality.GetByPageRequest,
-  ): Promise<Personality.GetByPageResonse> {
+  async getByPage(query: Personality.GetByPageRequest): Promise<Personality.GetByPageResonse> {
     const { skip, take } = PaginationUtil.getOffset(query);
     const whereInput: Prisma.PersonalityWhereInput = { deleted_at: null };
 

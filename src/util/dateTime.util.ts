@@ -18,16 +18,11 @@ export namespace DateTimeUtil {
    * BetweenMonths("2024-10-31", "2025-01-01"); // 3
    * BetweenMonths("2022-05-15", "2024-06-20"); // 26
    */
-  export const BetweenMonths = (
-    startDate: string,
-    endDate: string | null,
-  ): number => {
+  export const BetweenMonths = (startDate: string, endDate: string | null): number => {
     const start = new Date(startDate);
     const end = endDate ? new Date(endDate) : new Date();
 
-    let months =
-      (end.getFullYear() - start.getFullYear()) * 12 +
-      (end.getMonth() - start.getMonth());
+    let months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
 
     // 같은 달이면 1개월로 처리
     if (months === 0) {

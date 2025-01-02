@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { Position } from 'src/interfaces/positions.interface';
-import { DateTimeUtil } from 'src/util/dateTime.util';
+import { DateTimeUtil } from 'src/util/datetime.util';
 import { PaginationUtil } from 'src/util/pagination.util';
 import { PrismaService } from './prisma.service';
 
@@ -19,9 +19,7 @@ export class PositionsService {
     });
   }
 
-  async findOrCreateMany(
-    body: Array<Position.CreateRequest>,
-  ): Promise<Array<Position['id']>> {
+  async findOrCreateMany(body: Array<Position.CreateRequest>): Promise<Array<Position['id']>> {
     const date = DateTimeUtil.now();
 
     return await Promise.all(
@@ -45,9 +43,7 @@ export class PositionsService {
     );
   }
 
-  async get(
-    keyword: Position['keyword'],
-  ): Promise<Position.GetResponse | null> {
+  async get(keyword: Position['keyword']): Promise<Position.GetResponse | null> {
     return await this.prisma.position.findFirst({
       select: { id: true, keyword: true },
       where: {
@@ -57,9 +53,7 @@ export class PositionsService {
     });
   }
 
-  async getByPage(
-    query: Position.GetByPageRequest,
-  ): Promise<Position.GetByPageResponse> {
+  async getByPage(query: Position.GetByPageRequest): Promise<Position.GetByPageResponse> {
     const { skip, take } = PaginationUtil.getOffset(query);
 
     const whereInput: Prisma.PositionWhereInput | undefined = query.search

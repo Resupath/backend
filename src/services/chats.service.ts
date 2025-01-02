@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { Chat } from 'src/interfaces/chats.interface';
-import { DateTimeUtil } from 'src/util/dateTime.util';
+import { DateTimeUtil } from 'src/util/datetime.util';
 import { OpenaiUtil } from 'src/util/openai.util';
 import { OpenaiService } from './openai.service';
 import { PrismaService } from './prisma.service';
@@ -65,9 +65,7 @@ export class ChatsService {
    * Room에 저장된 이전 대화 목록을 조회한다. 조회 결과를 Openai request 형태로 매핑한다.
    * 첫번째 질문이라면 system 프롬프트를 넣어준다.
    */
-  private async getChatHistories(
-    roomId: string,
-  ): Promise<Array<OpenaiUtil.ChatCompletionRequestType>> {
+  private async getChatHistories(roomId: string): Promise<Array<OpenaiUtil.ChatCompletionRequestType>> {
     const chats = await this.getAll(roomId);
 
     if (chats.length === 1) {
@@ -110,10 +108,7 @@ export class ChatsService {
     return prompt;
   }
 
-  async createUserChat(
-    roomId: string,
-    body: Pick<Chat.CreateRequst, 'userId' | 'message'>,
-  ): Promise<Chat.GetResponse> {
+  async createUserChat(roomId: string, body: Pick<Chat.CreateRequst, 'userId' | 'message'>): Promise<Chat.GetResponse> {
     return this.createChat(roomId, {
       userId: body.userId,
       characterId: null,
@@ -132,10 +127,7 @@ export class ChatsService {
     });
   }
 
-  async createSystemChat(
-    roomId: string,
-    body: Pick<Chat.CreateRequst, 'message'>,
-  ): Promise<Chat.GetResponse> {
+  async createSystemChat(roomId: string, body: Pick<Chat.CreateRequst, 'message'>): Promise<Chat.GetResponse> {
     return this.createChat(roomId, {
       userId: null,
       characterId: null,
@@ -143,10 +135,7 @@ export class ChatsService {
     });
   }
 
-  private async createChat(
-    roomId: string,
-    body: Chat.CreateRequst,
-  ): Promise<Chat.GetResponse> {
+  private async createChat(roomId: string, body: Chat.CreateRequst): Promise<Chat.GetResponse> {
     const date = DateTimeUtil.now();
 
     const chat = await this.prisma.chat.create({
