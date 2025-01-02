@@ -29,9 +29,7 @@ export class CharactersController {
    * 캐릭터를 페이지네이션으로 조회한다.
    */
   @core.TypedRoute.Get()
-  async getCharactersByPage(
-    @core.TypedQuery() query: Character.GetByPageRequest,
-  ) {
+  async getCharactersByPage(@core.TypedQuery() query: Character.GetByPageRequest) {
     return await this.charactersService.getBypage(query);
   }
 

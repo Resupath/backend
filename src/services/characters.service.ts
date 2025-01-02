@@ -23,9 +23,7 @@ export class CharactersService {
     const date = DateTimeUtil.now();
 
     // 0. 직군(Position), 스킬(Skill) 생성
-    const positions = await this.positionsService.findOrCreateMany(
-      input.positions,
-    );
+    const positions = await this.positionsService.findOrCreateMany(input.positions);
     const skills = await this.skillsService.findOrCreateMany(input.skills);
 
     // 1. 캐릭터 생성
@@ -50,9 +48,7 @@ export class CharactersService {
             character_snapshot_experiences: {
               createMany: {
                 data: input.experiences.map(
-                  (
-                    experince,
-                  ): Prisma.Character_Snapshot_ExperienceCreateManyCharacter_snapshotInput => {
+                  (experince): Prisma.Character_Snapshot_ExperienceCreateManyCharacter_snapshotInput => {
                     return {
                       experience_id: experince.id,
                       created_at: date,
@@ -64,9 +60,7 @@ export class CharactersService {
             character_snapshot_positions: {
               createMany: {
                 data: positions.map(
-                  (
-                    positionId,
-                  ): Prisma.Character_Snapshot_PositionCreateManyCharacter_snapshotInput => {
+                  (positionId): Prisma.Character_Snapshot_PositionCreateManyCharacter_snapshotInput => {
                     return {
                       position_id: positionId,
                     };
@@ -76,13 +70,9 @@ export class CharactersService {
             },
             character_snapshot_skills: {
               createMany: {
-                data: skills.map(
-                  (
-                    skillId,
-                  ): Prisma.Character_Snapshot_SkillCreateManyCharacter_snapshotInput => {
-                    return { skill_id: skillId };
-                  },
-                ),
+                data: skills.map((skillId): Prisma.Character_Snapshot_SkillCreateManyCharacter_snapshotInput => {
+                  return { skill_id: skillId };
+                }),
               },
             },
           },
@@ -96,11 +86,7 @@ export class CharactersService {
     });
 
     // 2. 캐릭터 ㅡ 성격 관계 지정
-    await this.createCharacterPersonalities(
-      characterId,
-      input.personalities,
-      date,
-    );
+    await this.createCharacterPersonalities(characterId, input.personalities, date);
 
     return character;
   }
@@ -147,9 +133,7 @@ export class CharactersService {
       throw new NotFoundException();
     }
 
-    const experienceYears = this.getExperienceYears(
-      snapshot.character_snapshot_experiences,
-    );
+    const experienceYears = this.getExperienceYears(snapshot.character_snapshot_experiences);
 
     /**
      * mapping
@@ -163,17 +147,13 @@ export class CharactersService {
       nickname: snapshot.nickname,
       image: snapshot.image,
 
-      personalities: character.character_personalites.map(
-        (el) => el.personality.keyword,
-      ),
+      personalities: character.character_personalites.map((el) => el.personality.keyword),
       experienceYears: experienceYears,
       roomCount: character._count.rooms,
     };
   }
 
-  async getBypage(
-    query: Character.GetByPageRequest,
-  ): Promise<Character.GetByPageResponse> {
+  async getBypage(query: Character.GetByPageRequest): Promise<Character.GetByPageResponse> {
     const { skip, take } = PaginationUtil.getOffset(query);
 
     const whereInput: Prisma.CharacterWhereInput = { is_public: true };
@@ -213,6 +193,11 @@ export class CharactersService {
             select: { rooms: true },
           },
         },
+        orderBy: {
+          rooms: {
+            _count: 'desc',
+          },
+        },
         where: whereInput,
         skip,
         take,
@@ -229,9 +214,7 @@ export class CharactersService {
       if (!snapshot) {
         throw new NotFoundException();
       }
-      const experienceYears = this.getExperienceYears(
-        snapshot.character_snapshot_experiences,
-      );
+      const experienceYears = this.getExperienceYears(snapshot.character_snapshot_experiences);
 
       return {
         id: el.id,
@@ -242,9 +225,7 @@ export class CharactersService {
         nickname: snapshot.nickname,
         image: snapshot.image,
 
-        personalities: el.character_personalites.map(
-          (el) => el.personality.keyword,
-        ),
+        personalities: el.character_personalites.map((el) => el.personality.keyword),
         experienceYears: experienceYears,
         roomCount: el._count.rooms,
       };
@@ -288,13 +269,7 @@ export class CharactersService {
     }>,
   ): number {
     const totalMonths = input.reduce((acc, el) => {
-      return (
-        acc +
-        DateTimeUtil.BetweenMonths(
-          el.experience.start_date,
-          el.experience.end_date,
-        )
-      );
+      return acc + DateTimeUtil.BetweenMonths(el.experience.start_date, el.experience.end_date);
     }, 0);
 
     const totalYears = Math.floor(totalMonths / 12) + 1;
