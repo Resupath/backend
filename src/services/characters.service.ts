@@ -107,7 +107,16 @@ export class CharactersService {
                 character_snapshot_experiences: {
                   select: {
                     experience: {
-                      select: { start_date: true, end_date: true },
+                      select: {
+                        id: true,
+                        company_name: true,
+                        position: true,
+                        description: true,
+                        start_date: true,
+                        end_date: true,
+                        created_at: true,
+                        sequence: true,
+                      },
                     },
                   },
                 },
@@ -115,10 +124,11 @@ export class CharactersService {
             },
           },
         },
+        sources: { select: { id: true, type: true, subtype: true, url: true, created_at: true } },
         character_personalites: {
           select: {
             personality: {
-              select: { keyword: true },
+              select: { id: true, keyword: true },
             },
           },
         },
@@ -146,8 +156,30 @@ export class CharactersService {
 
       nickname: snapshot.nickname,
       image: snapshot.image,
+      experiences: snapshot.character_snapshot_experiences.map((el) => {
+        return {
+          id: el.experience.id,
+          companyName: el.experience.company_name,
+          position: el.experience.position,
+          description: el.experience.description,
+          startDate: el.experience.start_date,
+          endDate: el.experience.end_date,
+          createdAt: el.experience.created_at.toISOString(),
+        };
+      }),
 
-      personalities: character.character_personalites.map((el) => el.personality.keyword),
+      personalities: character.character_personalites.map((el) => {
+        return { id: el.personality.id, keyword: el.personality.keyword };
+      }),
+      sources: character.sources.map((el) => {
+        return {
+          id: el.id,
+          type: el.type as 'link' | 'file',
+          subtype: el.subtype,
+          url: el.url,
+          createdAt: el.created_at.toISOString(),
+        };
+      }),
       experienceYears: experienceYears,
       roomCount: character._count.rooms,
     };
@@ -185,7 +217,7 @@ export class CharactersService {
           character_personalites: {
             select: {
               personality: {
-                select: { keyword: true },
+                select: { id: true, keyword: true },
               },
             },
           },
@@ -208,7 +240,7 @@ export class CharactersService {
     /**
      * mapping
      */
-    const data = characters.map((el): Character.GetResponse => {
+    const data = characters.map((el): Character.GetBypageData => {
       const snapshot = el?.last_snapshot?.snapshot;
 
       if (!snapshot) {
@@ -225,7 +257,9 @@ export class CharactersService {
         nickname: snapshot.nickname,
         image: snapshot.image,
 
-        personalities: el.character_personalites.map((el) => el.personality.keyword),
+        personalities: el.character_personalites.map((el) => {
+          return { id: el.personality.id, keyword: el.personality.keyword };
+        }),
         experienceYears: experienceYears,
         roomCount: el._count.rooms,
       };

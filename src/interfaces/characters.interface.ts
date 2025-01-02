@@ -5,6 +5,7 @@ import { Member } from './member.interface';
 import { Personality } from './personalities.interface';
 import { Position } from './positions.interface';
 import { Skill } from './skills.interface';
+import { Source } from './source.interface';
 
 export interface Character {
   id: string & tags.Format<'uuid'>;
@@ -20,9 +21,7 @@ export namespace Character {
   /**
    * create
    */
-  export interface CreateRequest
-    extends Pick<Character, 'nickname' | 'isPublic'>,
-      Partial<Pick<Character, 'image'>> {
+  export interface CreateRequest extends Pick<Character, 'nickname' | 'isPublic'>, Partial<Pick<Character, 'image'>> {
     personalities: Array<Pick<Personality, 'id'>> & tags.MinItems<1>;
     experiences: Array<Pick<Experience, 'id'>> & tags.MinItems<1>;
     positions: Array<Position.CreateRequest> & tags.MinItems<1>;
@@ -35,17 +34,31 @@ export namespace Character {
    * get
    */
   export interface GetResponse
-    extends Pick<
-      Character,
-      'id' | 'memberId' | 'nickname' | 'image' | 'isPublic' | 'createdAt'
-    > {
-    personalities: Array<Personality['keyword']>;
+    extends Pick<Character, 'id' | 'memberId' | 'nickname' | 'image' | 'isPublic' | 'createdAt'> {
+    personalities: Array<Pick<Personality, 'id' | 'keyword'>>;
+    sources: Array<Pick<Source, 'id' | 'type' | 'url' | 'subtype' | 'createdAt'>>;
+    experiences: Array<
+      Pick<Experience, 'id' | 'companyName' | 'startDate' | 'endDate' | 'position' | 'description' | 'createdAt'>
+    >;
     experienceYears: number & tags.Type<'int64'>;
     roomCount: number & tags.Type<'int64'>;
   }
 
   export interface GetByPageRequest extends PaginationUtil.Request {}
 
-  export interface GetByPageResponse
-    extends PaginationUtil.Response<GetResponse> {}
+  export interface GetBypageData
+    extends Pick<
+      GetResponse,
+      | 'id'
+      | 'memberId'
+      | 'nickname'
+      | 'image'
+      | 'isPublic'
+      | 'createdAt'
+      | 'personalities'
+      | 'experienceYears'
+      | 'roomCount'
+    > {}
+
+  export interface GetByPageResponse extends PaginationUtil.Response<Character.GetBypageData> {}
 }
