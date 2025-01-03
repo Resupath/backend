@@ -8,5 +8,6 @@ import { SkillsModule } from './skills.module';
   imports: [PositionsModule, SkillsModule],
   controllers: [CharactersController],
   providers: [CharactersService],
+  exports: [CharactersService],
 })
 export class CharactersModule {}
