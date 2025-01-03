@@ -36,6 +36,8 @@ export namespace Character {
   export interface GetResponse
     extends Pick<Character, 'id' | 'memberId' | 'nickname' | 'image' | 'isPublic' | 'createdAt'> {
     personalities: Array<Pick<Personality, 'id' | 'keyword'>>;
+    positions: Array<Pick<Position, 'id' | 'keyword'>>;
+    skills: Array<Pick<Skill, 'id' | 'keyword'>>;
     sources: Array<Pick<Source, 'id' | 'type' | 'url' | 'subtype' | 'createdAt'>>;
     experiences: Array<
       Pick<Experience, 'id' | 'companyName' | 'startDate' | 'endDate' | 'position' | 'description' | 'createdAt'>
@@ -56,6 +58,8 @@ export namespace Character {
       | 'isPublic'
       | 'createdAt'
       | 'personalities'
+      | 'positions'
+      | 'skills'
       | 'experienceYears'
       | 'roomCount'
     > {}

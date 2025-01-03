@@ -104,6 +104,20 @@ export class CharactersService {
               select: {
                 nickname: true,
                 image: true,
+                character_snapshot_positions: {
+                  select: {
+                    postion: {
+                      select: { id: true, keyword: true },
+                    },
+                  },
+                },
+                character_snapshot_skills: {
+                  select: {
+                    skill: {
+                      select: { id: true, keyword: true },
+                    },
+                  },
+                },
                 character_snapshot_experiences: {
                   select: {
                     experience: {
@@ -153,21 +167,6 @@ export class CharactersService {
       memberId: character.member_id,
       isPublic: character.is_public,
       createdAt: character.created_at.toISOString(),
-
-      nickname: snapshot.nickname,
-      image: snapshot.image,
-      experiences: snapshot.character_snapshot_experiences.map((el) => {
-        return {
-          id: el.experience.id,
-          companyName: el.experience.company_name,
-          position: el.experience.position,
-          description: el.experience.description,
-          startDate: el.experience.start_date,
-          endDate: el.experience.end_date,
-          createdAt: el.experience.created_at.toISOString(),
-        };
-      }),
-
       personalities: character.character_personalites.map((el) => {
         return { id: el.personality.id, keyword: el.personality.keyword };
       }),
@@ -180,6 +179,40 @@ export class CharactersService {
           createdAt: el.created_at.toISOString(),
         };
       }),
+
+      /**
+       * snapshot relation
+       */
+      nickname: snapshot.nickname,
+      image: snapshot.image,
+      positions: snapshot.character_snapshot_positions.map((el) => {
+        return {
+          id: el.postion.id,
+          keyword: el.postion.keyword,
+        };
+      }),
+      skills: snapshot.character_snapshot_skills.map((el) => {
+        return {
+          id: el.skill.id,
+          keyword: el.skill.keyword,
+        };
+      }),
+
+      experiences: snapshot.character_snapshot_experiences.map((el) => {
+        return {
+          id: el.experience.id,
+          companyName: el.experience.company_name,
+          position: el.experience.position,
+          description: el.experience.description,
+          startDate: el.experience.start_date,
+          endDate: el.experience.end_date,
+          createdAt: el.experience.created_at.toISOString(),
+        };
+      }),
+
+      /**
+       * aggregation
+       */
       experienceYears: experienceYears,
       roomCount: character._count.rooms,
     };
@@ -203,6 +236,23 @@ export class CharactersService {
                 select: {
                   nickname: true,
                   image: true,
+                  character_snapshot_positions: {
+                    select: {
+                      postion: {
+                        select: {
+                          id: true,
+                          keyword: true,
+                        },
+                      },
+                    },
+                  },
+                  character_snapshot_skills: {
+                    select: {
+                      skill: {
+                        select: { id: true, keyword: true },
+                      },
+                    },
+                  },
                   character_snapshot_experiences: {
                     select: {
                       experience: {
@@ -253,13 +303,31 @@ export class CharactersService {
         memberId: el.member_id,
         isPublic: el.is_public,
         createdAt: el.created_at.toISOString(),
-
-        nickname: snapshot.nickname,
-        image: snapshot.image,
-
         personalities: el.character_personalites.map((el) => {
           return { id: el.personality.id, keyword: el.personality.keyword };
         }),
+
+        /**
+         * snapshot relation
+         */
+        nickname: snapshot.nickname,
+        image: snapshot.image,
+        positions: snapshot.character_snapshot_positions.map((el) => {
+          return {
+            id: el.postion.id,
+            keyword: el.postion.keyword,
+          };
+        }),
+        skills: snapshot.character_snapshot_skills.map((el) => {
+          return {
+            id: el.skill.id,
+            keyword: el.skill.keyword,
+          };
+        }),
+
+        /**
+         * aggregation
+         */
         experienceYears: experienceYears,
         roomCount: el._count.rooms,
       };
