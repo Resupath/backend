@@ -1,9 +1,4 @@
-import {
-  CanActivate,
-  ExecutionContext,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/services/prisma.service';
@@ -44,7 +39,7 @@ export class UserGuard implements CanActivate {
   }
 
   private getBearerToken(request: any): string | null {
-    let authHeader = request.headers['X-User'];
+    let authHeader = request.headers['x-user'];
     authHeader = authHeader ?? request.headers['authorization'];
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
