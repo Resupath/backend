@@ -28,6 +28,7 @@ export class ChatsService {
         created_at: true,
       },
       where: { room_id: roomId },
+      orderBy: { created_at: 'asc' },
     });
 
     /**
