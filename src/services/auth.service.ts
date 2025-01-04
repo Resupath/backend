@@ -17,14 +17,8 @@ export class AuthService {
   ) {}
 
   /**
-   * userToken을 발급한다.
+   * user를 생성한다.
    */
-
-  async getUserToken() {
-    const user = await this.createUser();
-    return this.createUserToken(user);
-  }
-
   async createUser() {
     const date = DateTimeUtil.now();
 
@@ -32,6 +26,26 @@ export class AuthService {
       select: { id: true },
       data: { id: randomUUID(), created_at: date },
     });
+  }
+
+  /**
+   * memberId에 연관된 user를 찾아 반환한다.
+   * user가 없더라도 에러를 내면 안되기에 없다면 새로 생성한다.
+   */
+  async getOrCreateUser(memberId: string) {
+    const user = await this.prisma.user.findFirst({ select: { id: true }, where: { member: { id: memberId } } });
+
+    if (!user) {
+      const date = DateTimeUtil.now();
+
+      const newUser = await this.prisma.user.create({
+        select: { id: true },
+        data: { id: randomUUID(), member_id: memberId, created_at: date },
+      });
+
+      return newUser;
+    }
+    return user;
   }
 
   /**
@@ -134,6 +148,15 @@ export class AuthService {
     return member;
   }
 
+  createUserToken(user: Pick<User, 'id'>): Auth.UserToken {
+    const accessToken = this.jwtService.sign(user, {
+      secret: this.configService.get('JWT_SECRET_USER'),
+      expiresIn: this.configService.get('JWT_EXPIRATION_TIME_USER'),
+    });
+
+    return { accessToken };
+  }
+
   private async verifyRefreshToken(refreshToken: string): Promise<{ id: string; name: string }> {
     try {
       const payload = this.jwtService.verify(refreshToken, {
@@ -163,15 +186,6 @@ export class AuthService {
     });
 
     return { ...member, accessToken, refreshToken };
-  }
-
-  private createUserToken(user: Pick<User, 'id'>): Auth.UserToken {
-    const accessToken = this.jwtService.sign(user, {
-      secret: this.configService.get('JWT_SECRET_USER'),
-      expiresIn: this.configService.get('JWT_EXPIRATION_TIME_USER'),
-    });
-
-    return { accessToken };
   }
 
   private async getGoogleAccessToken(code: string) {

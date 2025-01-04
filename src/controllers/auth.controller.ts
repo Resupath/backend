@@ -1,7 +1,9 @@
 import core from '@nestia/core';
 import { Controller, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { Member } from 'src/decorators/member.decorator';
 import { User } from 'src/decorators/user.decorator';
+import { MemberGuard } from 'src/guards/member.guard';
 import { UserGuard } from 'src/guards/user.guard';
 import { Auth } from 'src/interfaces/auth.interface';
 import { Guard } from 'src/interfaces/guard.interface';
@@ -17,16 +19,25 @@ export class AuthController {
    */
   @core.TypedRoute.Get('user')
   async createUser(): Promise<Auth.UserToken> {
-    return await this.authService.getUserToken();
+    const user = await this.authService.createUser();
+    return this.authService.createUserToken(user);
   }
 
   /**
-   * AccessToken과 RefreshToken을 재발급 한다.
+   * 이미 회원가입한 member의 user 토큰을 발급한다.
+   */
+  @UseGuards(MemberGuard)
+  @core.TypedRoute.Get('member')
+  async getUserToken(@Member() member: Guard.MemberResponse): Promise<Auth.UserToken> {
+    const user = await this.authService.getOrCreateUser(member.id);
+    return this.authService.createUserToken(user);
+  }
+
+  /**
+   * AccessToken과 RefreshToken을 재발급한다.
    */
   @core.TypedRoute.Post('refresh')
-  async refresh(
-    @core.TypedBody() body: Auth.RefreshRequest,
-  ): Promise<Auth.LoginResponse> {
+  async refresh(@core.TypedBody() body: Auth.RefreshRequest): Promise<Auth.LoginResponse> {
     return await this.authService.memberRefresh(body.refreshToken);
   }
 
