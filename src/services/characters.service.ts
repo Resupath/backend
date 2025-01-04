@@ -36,6 +36,19 @@ export class CharactersService {
         member_id: memberId,
         is_public: input.isPublic,
         created_at: date,
+        sources: {
+          createMany: {
+            data: input.sources.map((source) => {
+              return {
+                id: randomUUID(),
+                type: source.type,
+                subtype: source.subtype,
+                url: source.url,
+                created_at: date,
+              };
+            }),
+          },
+        },
         snapshots: {
           create: {
             id: snapshotId,
@@ -47,30 +60,26 @@ export class CharactersService {
              */
             character_snapshot_experiences: {
               createMany: {
-                data: input.experiences.map(
-                  (experince): Prisma.Character_Snapshot_ExperienceCreateManyCharacter_snapshotInput => {
-                    return {
-                      experience_id: experince.id,
-                      created_at: date,
-                    };
-                  },
-                ),
+                data: input.experiences.map((experince) => {
+                  return {
+                    experience_id: experince.id,
+                    created_at: date,
+                  };
+                }),
               },
             },
             character_snapshot_positions: {
               createMany: {
-                data: positions.map(
-                  (positionId): Prisma.Character_Snapshot_PositionCreateManyCharacter_snapshotInput => {
-                    return {
-                      position_id: positionId,
-                    };
-                  },
-                ),
+                data: positions.map((positionId) => {
+                  return {
+                    position_id: positionId,
+                  };
+                }),
               },
             },
             character_snapshot_skills: {
               createMany: {
-                data: skills.map((skillId): Prisma.Character_Snapshot_SkillCreateManyCharacter_snapshotInput => {
+                data: skills.map((skillId) => {
                   return { skill_id: skillId };
                 }),
               },

@@ -26,6 +26,7 @@ export namespace Character {
     experiences: Array<Pick<Experience, 'id'>> & tags.MinItems<1>;
     positions: Array<Position.CreateRequest> & tags.MinItems<1>;
     skills: Array<Skill.CreateRequest> & tags.MinItems<1>;
+    sources: Array<Source.CreateRequest> & tags.MinItems<1>;
   }
 
   export interface CreateResponse extends Pick<Character, 'id'> {}
