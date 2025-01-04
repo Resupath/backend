@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { Experience } from 'src/interfaces/experiences.interface';
-import { DateTimeUtil } from 'src/util/datetime.util';
+import { DateTimeUtil } from 'src/util/date-time.util';
 import { PrismaService } from './prisma.service';
 
 @Injectable()

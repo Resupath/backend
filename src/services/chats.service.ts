@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { Chat } from 'src/interfaces/chats.interface';
-import { DateTimeUtil } from 'src/util/datetime.util';
+import { DateTimeUtil } from 'src/util/date-time.util';
 import { OpenaiUtil } from 'src/util/openai.util';
 import { PromptUtil } from 'src/util/prompt.util';
 import { CharactersService } from './characters.service';

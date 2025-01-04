@@ -3,7 +3,7 @@ import { PrismaService } from './prisma.service';
 import { Personality } from 'src/interfaces/personalities.interface';
 import { Prisma } from '@prisma/client';
 import { PaginationUtil } from 'src/util/pagination.util';
-import { DateTimeUtil } from 'src/util/datetime.util';
+import { DateTimeUtil } from 'src/util/date-time.util';
 import { randomUUID } from 'crypto';
 
 @Injectable()

@@ -5,7 +5,7 @@ import axios from 'axios';
 import { randomUUID } from 'crypto';
 import { Auth } from 'src/interfaces/auth.interface';
 import { User } from 'src/interfaces/user.interface';
-import { DateTimeUtil } from 'src/util/datetime.util';
+import { DateTimeUtil } from 'src/util/date-time.util';
 import { PrismaService } from './prisma.service';
 
 @Injectable()

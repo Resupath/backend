@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { Room } from 'src/interfaces/rooms.interface';
-import { DateTimeUtil } from 'src/util/datetime.util';
+import { DateTimeUtil } from 'src/util/date-time.util';
 import { PrismaService } from './prisma.service';
 
 @Injectable()
