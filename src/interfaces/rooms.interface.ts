@@ -17,4 +17,12 @@ export namespace Room {
   export interface CreateRequest extends Pick<Room, 'characterId'> {}
 
   export interface CreateResponse extends Pick<Room, 'id'> {}
+
+  /**
+   * get
+   */
+  export interface GetResponse extends Pick<Room, 'id' | 'createdAt'> {
+    user: Pick<User, 'id'>;
+    character: Pick<Character, 'id' | 'nickname' | 'createdAt'>;
+  }
 }

@@ -17,10 +17,16 @@ export class RoomsController {
    */
   @UseGuards(UserGuard)
   @core.TypedRoute.Post()
-  async createRoom(
-    @User() user: Guard.UserResponse,
-    @core.TypedBody() body: Room.CreateRequest,
-  ) {
+  async createRoom(@User() user: Guard.UserResponse, @core.TypedBody() body: Room.CreateRequest) {
     return this.roomsService.create(user.id, body);
+  }
+
+  /**
+   * 채팅방을 조회한다.
+   */
+  @UseGuards(UserGuard)
+  @core.TypedRoute.Get(':id')
+  async getRoom(@User() user: Guard.UserResponse, @core.TypedParam('id') id: Room['id']) {
+    return this.roomsService.get(user.id, id);
   }
 }

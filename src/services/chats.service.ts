@@ -3,14 +3,19 @@ import { randomUUID } from 'crypto';
 import { Chat } from 'src/interfaces/chats.interface';
 import { DateTimeUtil } from 'src/util/datetime.util';
 import { OpenaiUtil } from 'src/util/openai.util';
+import { PromptUtil } from 'src/util/prompt.util';
+import { CharactersService } from './characters.service';
 import { OpenaiService } from './openai.service';
 import { PrismaService } from './prisma.service';
+import { RoomsService } from './rooms.service';
 
 @Injectable()
 export class ChatsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly openaiService: OpenaiService,
+    private readonly roomsService: RoomsService,
+    private readonly charactersService: CharactersService,
   ) {}
 
   async getAll(roomId: string): Promise<Chat.GetAllResponse> {
@@ -23,6 +28,7 @@ export class ChatsService {
         created_at: true,
       },
       where: { room_id: roomId },
+      orderBy: { created_at: 'asc' },
     });
 
     /**
@@ -39,21 +45,29 @@ export class ChatsService {
     });
   }
 
-  async create(id: string, body: Chat.CreateRequst) {
+  async chat(userId: string, roomId: string, body: Chat.CreateRequst) {
+    const room = await this.roomsService.get(userId, roomId);
+
     // 1. 질문 저장
-    await this.createUserChat(id, {
-      userId: body.userId,
+    await this.createUserChat(roomId, {
+      userId,
       message: body.message,
     });
 
     // 2. 채팅 기록 조회 및 매핑
-    const histories = await this.getChatHistories(id);
+    const chats = await this.getAll(roomId);
+
+    if (chats.length === 1) {
+      const prompt = await this.createSystemPrompt(room.character.id, roomId);
+      chats.push(prompt);
+    }
+    const histories = this.mappingHistories(chats);
 
     // 3. 응답 생성 (API 요청)
     const answer = await this.openaiService.getAnswer(histories);
 
     // 4. 응답 저장
-    await this.createCharacterChat(id, {
+    await this.createCharacterChat(roomId, {
       characterId: body.characterId,
       message: answer,
     });
@@ -61,54 +75,7 @@ export class ChatsService {
     return answer;
   }
 
-  /**
-   * Room에 저장된 이전 대화 목록을 조회한다. 조회 결과를 Openai request 형태로 매핑한다.
-   * 첫번째 질문이라면 system 프롬프트를 넣어준다.
-   */
-  private async getChatHistories(roomId: string): Promise<Array<OpenaiUtil.ChatCompletionRequestType>> {
-    const chats = await this.getAll(roomId);
-
-    if (chats.length === 1) {
-      const prompt = await this.createSystemPrompt(roomId);
-      chats.push(prompt);
-    }
-
-    /**
-     * mapping
-     */
-    let histories = chats.map((el): OpenaiUtil.ChatCompletionRequestType => {
-      const content = OpenaiUtil.createContents(el.message, el.createdAt);
-
-      if (el.userId !== null) {
-        return {
-          role: 'user',
-          content: content,
-        };
-      } else if (el.characterId !== null) {
-        return {
-          role: 'assistant',
-          content: content,
-        };
-      } else {
-        return {
-          role: 'system',
-          content: content,
-        };
-      }
-    });
-
-    return histories;
-  }
-
-  private async createSystemPrompt(roomId: string): Promise<Chat.GetResponse> {
-    const message = ['여기에 프롬프트', '내용을 작성합니다.'].join('\n');
-
-    const prompt = await this.createSystemChat(roomId, { message });
-
-    return prompt;
-  }
-
-  async createUserChat(roomId: string, body: Pick<Chat.CreateRequst, 'userId' | 'message'>): Promise<Chat.GetResponse> {
+  async createUserChat(roomId: string, body: Pick<Chat, 'userId' | 'message'>): Promise<Chat.GetResponse> {
     return this.createChat(roomId, {
       userId: body.userId,
       characterId: null,
@@ -116,10 +83,7 @@ export class ChatsService {
     });
   }
 
-  async createCharacterChat(
-    roomId: string,
-    body: Pick<Chat.CreateRequst, 'characterId' | 'message'>,
-  ): Promise<Chat.GetResponse> {
+  async createCharacterChat(roomId: string, body: Pick<Chat, 'characterId' | 'message'>): Promise<Chat.GetResponse> {
     return this.createChat(roomId, {
       userId: null,
       characterId: body.characterId,
@@ -127,7 +91,7 @@ export class ChatsService {
     });
   }
 
-  async createSystemChat(roomId: string, body: Pick<Chat.CreateRequst, 'message'>): Promise<Chat.GetResponse> {
+  async createSystemChat(roomId: string, body: Pick<Chat, 'message'>): Promise<Chat.GetResponse> {
     return this.createChat(roomId, {
       userId: null,
       characterId: null,
@@ -135,7 +99,18 @@ export class ChatsService {
     });
   }
 
-  private async createChat(roomId: string, body: Chat.CreateRequst): Promise<Chat.GetResponse> {
+  private async createSystemPrompt(characterId: string, roomId: string): Promise<Chat.GetResponse> {
+    const character = await this.charactersService.get(characterId);
+    const prompt = PromptUtil.prompt(character);
+
+    const chat = await this.createSystemChat(roomId, { message: prompt });
+    return chat;
+  }
+
+  private async createChat(
+    roomId: string,
+    body: Pick<Chat, 'userId' | 'characterId' | 'message'>,
+  ): Promise<Chat.GetResponse> {
     const date = DateTimeUtil.now();
 
     const chat = await this.prisma.chat.create({
@@ -166,5 +141,30 @@ export class ChatsService {
       message: chat.message,
       createdAt: chat.created_at.toISOString(),
     };
+  }
+
+  private mappingHistories(chats: Chat.GetAllResponse): Array<OpenaiUtil.ChatCompletionRequestType> {
+    const histories = chats.map((el): OpenaiUtil.ChatCompletionRequestType => {
+      const content = OpenaiUtil.createContents(el.message, el.createdAt);
+
+      if (el.userId !== null) {
+        return {
+          role: 'user',
+          content: content,
+        };
+      } else if (el.characterId !== null) {
+        return {
+          role: 'assistant',
+          content: content,
+        };
+      } else {
+        return {
+          role: 'system',
+          content: content,
+        };
+      }
+    });
+
+    return histories;
   }
 }

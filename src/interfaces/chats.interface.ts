@@ -17,19 +17,14 @@ export namespace Chat {
   /**
    * create
    */
-  export interface CreateRequst
-    extends Pick<Chat, 'userId' | 'characterId' | 'message'> {}
+  export interface CreateRequst extends Pick<Chat, 'characterId' | 'message'> {}
 
   export interface CreateResponse extends Pick<Chat, 'id' | 'message'> {}
 
   /**
    * get
    */
-  export interface GetResponse
-    extends Pick<
-      Chat,
-      'id' | 'userId' | 'characterId' | 'message' | 'createdAt'
-    > {}
+  export interface GetResponse extends Pick<Chat, 'id' | 'userId' | 'characterId' | 'message' | 'createdAt'> {}
 
   export interface GetAllResponse extends Array<Chat.GetResponse> {}
 }
