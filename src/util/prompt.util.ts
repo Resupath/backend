@@ -1,3 +1,5 @@
+import { InternalServerErrorException } from '@nestjs/common';
+import axios from 'axios';
 import { Character } from 'src/interfaces/characters.interface';
 
 export namespace PromptUtil {
@@ -32,6 +34,10 @@ export namespace PromptUtil {
     );
   };
 
+  export const addIntro = (): string => {
+    return `이제 면접관(유저)이 질문을 시작할 것이다. 모든 답변은 자신감 있고 친절하며 구체적인 예시를 포함하도록 한다.`;
+  };
+
   export const addPositions = (input: Character.GetResponse): string => {
     return input.positions.map((el) => el.keyword).join(`, `);
   };
@@ -55,13 +61,19 @@ export namespace PromptUtil {
 
   export const addSources = (input: Character.GetResponse): string[] => {
     const sources = input.sources.map((el) => {
-      return [`- ${el.subtype}`, `${el.type === 'file' ? el.url : el.url}`].join(`\n`);
+      return [`- ${el.subtype}: `, `${el.type === 'file' ? el.url : readLink(el.url)}`].join(`\n`);
     });
 
     return sources;
   };
 
-  export const addIntro = (): string => {
-    return `이제 면접관(유저)이 질문을 시작할 것이다. 모든 답변은 자신감 있고 친절하며 구체적인 예시를 포함하도록 한다.`;
+  export const readLink = async (url: string): Promise<string> => {
+    try {
+      const response = await axios.get(url);
+      return response.data;
+    } catch (error) {
+      console.error(error);
+      throw new InternalServerErrorException();
+    }
   };
 }
