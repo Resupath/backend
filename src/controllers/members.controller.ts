@@ -29,7 +29,7 @@ export class MembersController {
    * 회원의 캐릭터 정보들를 페이지 네이션으로 조회한다.
    */
   @core.TypedRoute.Get('characters')
-  async getCharacters(@Member() member: Guard.MemberResponse) {
-    return 1;
+  async getCharacters(@Member() member: Guard.MemberResponse, @core.TypedQuery() query: Character.GetByPageRequest) {
+    return await this.charactersService.getBypage(query, member.id);
   }
 }

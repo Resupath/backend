@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Member, Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { Character } from 'src/interfaces/characters.interface';
 import { Experience } from 'src/interfaces/experiences.interface';
@@ -227,10 +227,9 @@ export class CharactersService {
     };
   }
 
-  async getBypage(query: Character.GetByPageRequest): Promise<Character.GetByPageResponse> {
+  async getBypage(query: Character.GetByPageRequest, memberId?: Member['id']): Promise<Character.GetByPageResponse> {
     const { skip, take } = PaginationUtil.getOffset(query);
-
-    const whereInput: Prisma.CharacterWhereInput = { is_public: true };
+    const whereInput: Prisma.CharacterWhereInput = { is_public: true, member_id: memberId };
 
     const [characters, count] = await this.prisma.$transaction([
       this.prisma.character.findMany({
