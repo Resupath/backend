@@ -15,6 +15,7 @@ import { RoomsModule } from './modules/rooms.module';
 import { SkillsModule } from './modules/skills.module';
 import { SourcesModule } from './modules/sources.module';
 import { FileModule } from './modules/files.module';
+import { MembersModule } from './modules/members.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { FileModule } from './modules/files.module';
     SkillsModule,
     SourcesModule,
     FileModule,
+    MembersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
