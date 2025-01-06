@@ -34,8 +34,8 @@ export class FilesController {
    */
   @UseGuards(MemberGuard)
   @core.TypedRoute.Get('upload-url')
-  async getPresignedUrlForUpload(@core.TypedQuery() query: Files.PresignedRequest): Promise<Files.PresignedResponse> {
-    return await this.s3Service.createUploadUrl(query.key);
+  async getPresignedUrlForUpload(@Member() member: Guard.MemberResponse): Promise<Files.PresignedResponse> {
+    return await this.s3Service.createUploadUrl(member.id);
   }
 
   /**

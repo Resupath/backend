@@ -4,6 +4,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
 import { Files } from 'src/interfaces/files.interface';
+import { Member } from 'src/interfaces/member.interface';
 
 @Injectable()
 export class S3Service {
@@ -58,7 +59,9 @@ export class S3Service {
   /**
    * 업로드 가능한 Pre-signed URL 반환
    */
-  async createUploadUrl(key: string): Promise<Files.PresignedResponse> {
+  async createUploadUrl(memberId: Member['id']): Promise<Files.PresignedResponse> {
+    const key = `${memberId}/${randomUUID()}`;
+
     const command = new PutObjectCommand({
       Bucket: this.getBucket(),
       Key: key,
