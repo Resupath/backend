@@ -15,6 +15,8 @@ export class CharactersController {
 
   /**
    * 캐릭터를 생성한다.
+   *
+   * @security x-member bearer
    */
   @UseGuards(MemberGuard)
   @core.TypedRoute.Post()

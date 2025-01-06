@@ -14,6 +14,8 @@ export class RoomsController {
 
   /**
    * 채팅방을 생성한다.
+   *
+   * @security x-user bearer
    */
   @UseGuards(UserGuard)
   @core.TypedRoute.Post()
@@ -23,6 +25,8 @@ export class RoomsController {
 
   /**
    * 채팅방을 조회한다.
+   *
+   * @security x-user bearer
    */
   @UseGuards(UserGuard)
   @core.TypedRoute.Get(':id')

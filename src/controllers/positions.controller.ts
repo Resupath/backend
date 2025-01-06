@@ -12,23 +12,20 @@ export class PositionsController {
 
   /**
    * 직군을 생성한다.
+   *
+   * @security x-member bearer
    */
   @UseGuards(MemberGuard)
   @core.TypedRoute.Post()
-  async createPosition(
-    @core.TypedBody() body: Position.CreateRequest,
-  ): Promise<Position.CreateResponse> {
+  async createPosition(@core.TypedBody() body: Position.CreateRequest): Promise<Position.CreateResponse> {
     return await this.positionsService.create(body);
   }
 
   /**
    * 직군을 페이지네이션으로 조회한다.
    */
-  @UseGuards(MemberGuard)
   @core.TypedRoute.Get()
-  async getPositionByPage(
-    @core.TypedQuery() query: Position.GetByPageRequest,
-  ): Promise<Position.GetByPageResponse> {
+  async getPositionByPage(@core.TypedQuery() query: Position.GetByPageRequest): Promise<Position.GetByPageResponse> {
     return await this.positionsService.getByPage(query);
   }
 }

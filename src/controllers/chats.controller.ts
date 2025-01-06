@@ -23,6 +23,8 @@ export class ChatsController {
 
   /**
    * 채팅방에 입력된 전체 채팅 기록을 바탕으로 캐릭터의 응답을 생성한다.
+   *
+   *  @security x-user bearer
    */
   @UseGuards(UserGuard)
   @core.TypedRoute.Post('/:roomId')

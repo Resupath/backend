@@ -14,6 +14,8 @@ export class ExperiencesController {
 
   /**
    * 경력들을 생성한다.
+   *
+   * @security x-member bearer
    */
   @UseGuards(MemberGuard)
   @core.TypedRoute.Post()
@@ -27,11 +29,8 @@ export class ExperiencesController {
   /**
    * 경력들을 조회한다.
    */
-  @UseGuards(MemberGuard)
   @core.TypedRoute.Get()
-  async getAllExperiences(
-    @Member() member: Guard.MemberResponse,
-  ): Promise<Experience.GetAllResponse> {
+  async getAllExperiences(@Member() member: Guard.MemberResponse): Promise<Experience.GetAllResponse> {
     return await this.experiencesService.getAll(member.id);
   }
 }

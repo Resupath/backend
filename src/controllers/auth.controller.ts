@@ -25,6 +25,8 @@ export class AuthController {
 
   /**
    * 이미 회원가입한 member의 user 토큰을 발급한다.
+   *
+   *  @security x-user bearer
    */
   @UseGuards(MemberGuard)
   @core.TypedRoute.Get('member')
@@ -51,6 +53,8 @@ export class AuthController {
 
   /**
    * 클라이언트에서 받은 코드를 이용해 유저를 검증하고 jwt를 발급한다.
+   *
+   * @security x-user bearer
    */
   @UseGuards(UserGuard)
   @core.TypedRoute.Get('google/callback')

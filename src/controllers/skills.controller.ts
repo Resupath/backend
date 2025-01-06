@@ -12,23 +12,23 @@ export class SkillsController {
 
   /**
    * 스킬을 생성한다.
+   *
+   * @security x-user bearer
    */
   @UseGuards(MemberGuard)
   @core.TypedRoute.Post()
-  async createSkill(
-    @core.TypedBody() body: Skill.CreateRequest,
-  ): Promise<Skill.CreateResponse> {
+  async createSkill(@core.TypedBody() body: Skill.CreateRequest): Promise<Skill.CreateResponse> {
     return await this.skillsService.create(body);
   }
 
   /**
    * 스킬을 페이지네이션으로 조회한다.
+   *
+   * @security x-user bearer
    */
   @UseGuards(MemberGuard)
   @core.TypedRoute.Get()
-  async getPositionByPage(
-    @core.TypedQuery() query: Skill.GetByPage,
-  ): Promise<Skill.GetByPageResponse> {
+  async getPositionByPage(@core.TypedQuery() query: Skill.GetByPage): Promise<Skill.GetByPageResponse> {
     return await this.skillsService.getByPage(query);
   }
 }

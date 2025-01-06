@@ -15,6 +15,8 @@ export class FilesController {
 
   /**
    * 파일을 업로드한 뒤 S3 파일 키를 반환합니다.
+   *
+   * @security x-member bearer
    */
   @UseGuards(MemberGuard)
   @core.TypedRoute.Post('upload')
@@ -27,6 +29,8 @@ export class FilesController {
 
   /**
    * key를 경로로 가지는 파일 업로드 Pre-signed URL 반환
+   *
+   * @security x-member bearer
    */
   @UseGuards(MemberGuard)
   @core.TypedRoute.Get('upload-url')
@@ -36,6 +40,8 @@ export class FilesController {
 
   /**
    * key를 사용하여 파일 다운로드 Pre-signed URL 반환
+   *
+   * @security x-member bearer
    */
   @UseGuards(MemberGuard)
   @core.TypedRoute.Get('download-url')
