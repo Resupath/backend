@@ -22,7 +22,7 @@ export class MembersController {
    */
   @core.TypedRoute.Get('info')
   async getMember(@Member() member: Guard.MemberResponse) {
-    return 1;
+    return await this.membersService.get(member.id);
   }
 
   /**
