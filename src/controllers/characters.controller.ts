@@ -30,7 +30,7 @@ export class CharactersController {
    */
   @core.TypedRoute.Get()
   async getCharactersByPage(@core.TypedQuery() query: Character.GetByPageRequest) {
-    return await this.charactersService.getBypage(query);
+    return await this.charactersService.getBypage(query, { isPublic: true });
   }
 
   /**

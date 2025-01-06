@@ -227,9 +227,15 @@ export class CharactersService {
     };
   }
 
-  async getBypage(query: Character.GetByPageRequest, memberId?: Member['id']): Promise<Character.GetByPageResponse> {
+  async getBypage(
+    query: Character.GetByPageRequest,
+    option: {
+      isPublic?: boolean;
+      memberId?: Member['id'];
+    },
+  ): Promise<Character.GetByPageResponse> {
     const { skip, take } = PaginationUtil.getOffset(query);
-    const whereInput: Prisma.CharacterWhereInput = { is_public: true, member_id: memberId };
+    const whereInput: Prisma.CharacterWhereInput = { is_public: option.isPublic, member_id: option.memberId };
 
     const [characters, count] = await this.prisma.$transaction([
       this.prisma.character.findMany({
@@ -348,6 +354,8 @@ export class CharactersService {
       take,
     });
   }
+
+  private async getFindManyInput() {}
 
   private async createCharacterPersonalities(
     characterId: string,

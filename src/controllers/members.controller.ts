@@ -30,6 +30,6 @@ export class MembersController {
    */
   @core.TypedRoute.Get('characters')
   async getCharacters(@Member() member: Guard.MemberResponse, @core.TypedQuery() query: Character.GetByPageRequest) {
-    return await this.charactersService.getBypage(query, member.id);
+    return await this.charactersService.getBypage(query, { memberId: member.id });
   }
 }
