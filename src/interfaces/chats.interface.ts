@@ -17,7 +17,7 @@ export namespace Chat {
   /**
    * create
    */
-  export interface CreateRequst extends Pick<Chat, 'characterId' | 'message'> {}
+  export interface CreateRequst extends Pick<Chat, 'message'> {}
 
   export interface CreateResponse extends Pick<Chat, 'id' | 'message'> {}
 

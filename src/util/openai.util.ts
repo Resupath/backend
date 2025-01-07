@@ -4,6 +4,7 @@ import {
   ChatCompletionSystemMessageParam,
   ChatCompletionUserMessageParam,
 } from 'openai/resources';
+import { Chat } from 'src/interfaces/chats.interface';
 
 export namespace OpenaiUtil {
   /**
@@ -19,19 +20,32 @@ export namespace OpenaiUtil {
   /**
    * funtion
    */
-  export function getContent(
-    input: ChatCompletion,
-  ): OpenaiUtil.ContentType | null {
+  export function getContent(input: ChatCompletion): OpenaiUtil.ContentType | null {
     return input.choices.at(0)?.message.content ?? null;
   }
 
-  export function createContents(
-    message: string,
-    createdAt: string,
-  ): OpenaiUtil.ContentType {
-    return JSON.stringify({
-      message: message,
-      createdAt: createdAt,
+  export function mappingHistories(chats: Chat.GetAllResponse): Array<OpenaiUtil.ChatCompletionRequestType> {
+    const histories = chats.map((el): OpenaiUtil.ChatCompletionRequestType => {
+      const content = el.message;
+
+      if (el.userId !== null) {
+        return {
+          role: 'user',
+          content: content,
+        };
+      } else if (el.characterId !== null) {
+        return {
+          role: 'assistant',
+          content: content,
+        };
+      } else {
+        return {
+          role: 'system',
+          content: content,
+        };
+      }
     });
+
+    return histories;
   }
 }
