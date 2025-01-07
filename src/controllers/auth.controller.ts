@@ -24,18 +24,6 @@ export class AuthController {
   }
 
   /**
-   * 이미 회원가입한 member의 user 토큰을 발급한다.
-   *
-   *  @security x-user bearer
-   */
-  @UseGuards(MemberGuard)
-  @core.TypedRoute.Get('member')
-  async getUserToken(@Member() member: Guard.MemberResponse): Promise<Auth.UserToken> {
-    const user = await this.authService.getOrCreateUser(member.id);
-    return this.authService.createUserToken(user);
-  }
-
-  /**
    * AccessToken과 RefreshToken을 재발급한다.
    */
   @core.TypedRoute.Post('refresh')

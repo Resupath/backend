@@ -29,26 +29,6 @@ export class AuthService {
   }
 
   /**
-   * memberId에 연관된 user를 찾아 반환한다.
-   * user가 없더라도 에러를 내면 안되기에 없다면 새로 생성한다.
-   */
-  async getOrCreateUser(memberId: string) {
-    const user = await this.prisma.user.findFirst({ select: { id: true }, where: { member: { id: memberId } } });
-
-    if (!user) {
-      const date = DateTimeUtil.now();
-
-      const newUser = await this.prisma.user.create({
-        select: { id: true },
-        data: { id: randomUUID(), member_id: memberId, created_at: date },
-      });
-
-      return newUser;
-    }
-    return user;
-  }
-
-  /**
    * Refresh Token을 검증하고 인증 정보를 재발급한다.
    */
   async memberRefresh(refreshToken: string) {
