@@ -18,7 +18,8 @@ export class ChatsController {
    */
   @core.TypedRoute.Get('/:roomId')
   async getAllChat(@core.TypedParam('roomId') roomId: Room['id']) {
-    return await this.chatsService.getAll(roomId);
+    const chats = await this.chatsService.getAll(roomId);
+    return chats.filter((el) => el.userId || el.characterId);
   }
 
   /**
