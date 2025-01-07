@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import axios from 'axios';
 import { randomUUID } from 'crypto';
 import { Auth } from 'src/interfaces/auth.interface';
+import { Provider } from 'src/interfaces/provider.interface';
 import { User } from 'src/interfaces/user.interface';
 import { DateTimeUtil } from 'src/util/date-time.util';
 import { PrismaService } from './prisma.service';
@@ -73,8 +74,9 @@ export class AuthService {
 
   async findOrCreateMember(userId: string, authorization: Auth.CommonAuthorizationResponse) {
     const provider = await this.findProviderMember(authorization);
+
     return provider
-      ? await this.updateProviderPassword(provider.id, authorization.refreshToken)
+      ? await this.updateProviderPassword(userId, provider.id, authorization.refreshToken)
       : await this.createMember(userId, authorization);
   }
 
@@ -87,11 +89,19 @@ export class AuthService {
     return provider;
   }
 
-  async updateProviderPassword(providerId: string, refreshToken: string) {
-    const { member } = await this.prisma.provider.update({
-      select: { member: { select: { id: true, name: true } } },
-      data: { password: refreshToken },
-      where: { id: providerId },
+  async updateProviderPassword(userId: User['id'], providerId: Provider['id'], refreshToken: string) {
+    const member = await this.prisma.$transaction(async (prisma) => {
+      const { member } = await prisma.provider.update({
+        select: { member: { select: { id: true, name: true } } },
+        data: { password: refreshToken },
+        where: { id: providerId },
+      });
+
+      await prisma.user.update({
+        where: { id: userId },
+        data: { member_id: member.id },
+      });
+      return member;
     });
 
     return member;
