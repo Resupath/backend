@@ -151,7 +151,6 @@ export class AuthService {
   createUserToken(user: Pick<User, 'id'>): Auth.UserToken {
     const accessToken = this.jwtService.sign(user, {
       secret: this.configService.get('JWT_SECRET_USER'),
-      expiresIn: this.configService.get('JWT_EXPIRATION_TIME_USER'),
     });
 
     return { accessToken };
