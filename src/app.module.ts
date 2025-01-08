@@ -7,7 +7,6 @@ import { AuthModule } from './modules/auth.module';
 import { CharactersModule } from './modules/characters.module';
 import { ChatsModule } from './modules/chats.module';
 import { ExperiencesModule } from './modules/experiences.module';
-import { OpenaiModule } from './modules/openai.module';
 import { PersonalitiesModule } from './modules/personalities.module';
 import { PositionsModule } from './modules/positions.module';
 import { PrismaModule } from './modules/prisma.module';
@@ -24,7 +23,6 @@ import { MembersModule } from './modules/members.module';
       isGlobal: true,
     }),
     PrismaModule,
-    OpenaiModule,
     AuthModule,
     CharactersModule,
     PersonalitiesModule,

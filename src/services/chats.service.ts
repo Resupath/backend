@@ -5,7 +5,6 @@ import { DateTimeUtil } from 'src/util/date-time.util';
 import { OpenaiUtil } from 'src/util/openai.util';
 import { PromptUtil } from 'src/util/prompt.util';
 import { CharactersService } from './characters.service';
-import { OpenaiService } from './openai.service';
 import { PrismaService } from './prisma.service';
 import { RoomsService } from './rooms.service';
 
@@ -13,7 +12,6 @@ import { RoomsService } from './rooms.service';
 export class ChatsService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly openaiService: OpenaiService,
     private readonly roomsService: RoomsService,
     private readonly charactersService: CharactersService,
   ) {}
@@ -45,8 +43,8 @@ export class ChatsService {
     });
   }
 
-  async chat(userId: string, roomId: string, body: Chat.CreateRequst) {
-    const { id, user, character } = await this.roomsService.get(userId, roomId);
+  async chat(roomId: string, body: Chat.CreateRequst) {
+    const { id, user, character } = await this.roomsService.get(roomId);
 
     // 1. 채팅 기록 조회
     const chats = await this.getAll(id);
@@ -68,7 +66,7 @@ export class ChatsService {
     const histories = OpenaiUtil.mappingHistories(chats);
 
     // 3. 응답 생성 (API 요청)
-    const answer = await this.openaiService.getAnswer(histories);
+    const answer = await OpenaiUtil.getAnswer(histories);
 
     // 4. 응답 저장
     await this.createCharacterChat(roomId, {
