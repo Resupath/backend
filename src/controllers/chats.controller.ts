@@ -16,9 +16,10 @@ export class ChatsController {
   /**
    * 채팅방에 입력된 전체 채팅 기록을 조회한다.
    */
+  @UseGuards(UserGuard)
   @core.TypedRoute.Get('/:roomId')
-  async getAllChat(@core.TypedParam('roomId') roomId: Room['id']) {
-    const chats = await this.chatsService.getAll(roomId);
+  async getAllChat(@User() user: Guard.UserResponse, @core.TypedParam('roomId') roomId: Room['id']) {
+    const chats = await this.chatsService.getAll(user.id, roomId);
     return chats.filter((el) => el.userId || el.characterId);
   }
 

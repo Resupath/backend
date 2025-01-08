@@ -16,38 +16,17 @@ export class ChatsService {
     private readonly charactersService: CharactersService,
   ) {}
 
-  async getAll(roomId: string): Promise<Chat.GetAllResponse> {
-    const chats = await this.prisma.chat.findMany({
-      select: {
-        id: true,
-        user_id: true,
-        character_id: true,
-        message: true,
-        created_at: true,
-      },
-      where: { room_id: roomId },
-      orderBy: { created_at: 'asc' },
-    });
+  async getAll(userId: string, roomId: string): Promise<Chat.GetAllResponse> {
+    const { id, ...rest } = await this.roomsService.get(userId, roomId);
 
-    /**
-     * mapping
-     */
-    return chats.map((el): Chat.GetResponse => {
-      return {
-        id: el.id,
-        userId: el.user_id,
-        characterId: el.character_id,
-        message: el.message,
-        createdAt: el.created_at.toISOString(),
-      };
-    });
+    return this.findMany(id);
   }
 
-  async chat(roomId: string, body: Chat.CreateRequst) {
-    const { id, user, character } = await this.roomsService.get(roomId);
+  async chat(userId: string, roomId: string, body: Chat.CreateRequst) {
+    const { id, user, character } = await this.roomsService.get(userId, roomId);
 
     // 1. 채팅 기록 조회
-    const chats = await this.getAll(id);
+    const chats = await this.findMany(id);
 
     // 1-1. 채팅 기록이 없다면 프롬프트 삽입
     if (!chats.length) {
@@ -75,6 +54,33 @@ export class ChatsService {
     });
 
     return answer;
+  }
+
+  private async findMany(roomId: string): Promise<Chat.GetAllResponse> {
+    const chats = await this.prisma.chat.findMany({
+      select: {
+        id: true,
+        user_id: true,
+        character_id: true,
+        message: true,
+        created_at: true,
+      },
+      where: { room_id: roomId },
+      orderBy: { created_at: 'asc' },
+    });
+
+    /**
+     * mapping
+     */
+    return chats.map((el): Chat.GetResponse => {
+      return {
+        id: el.id,
+        userId: el.user_id,
+        characterId: el.character_id,
+        message: el.message,
+        createdAt: el.created_at.toISOString(),
+      };
+    });
   }
 
   private async createUserChat(roomId: string, body: Pick<Chat, 'userId' | 'message'>): Promise<Chat.GetResponse> {

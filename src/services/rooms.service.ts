@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto';
 import { Room } from 'src/interfaces/rooms.interface';
 import { DateTimeUtil } from 'src/util/date-time.util';
 import { PrismaService } from './prisma.service';
+import { User } from 'src/interfaces/user.interface';
 
 @Injectable()
 export class RoomsService {
@@ -25,6 +26,8 @@ export class RoomsService {
   }
 
   async get(userId: string, id: string): Promise<Room.GetResponse> {
+    const userIds = await this.getUserIds(userId);
+
     const room = await this.prisma.room.findUnique({
       select: {
         id: true,
@@ -38,7 +41,11 @@ export class RoomsService {
           },
         },
       },
-      where: { id, user_id: userId, deleted_at: null },
+      where: {
+        id,
+        deleted_at: null,
+        user_id: { in: userIds },
+      },
     });
 
     if (!room || !room.character.last_snapshot) {
@@ -57,5 +64,18 @@ export class RoomsService {
         nickname: room.character.last_snapshot.snapshot.nickname,
       },
     };
+  }
+
+  private async getUserIds(userId: User['id']): Promise<Array<User['id']>> {
+    const users = await this.prisma.user.findMany({
+      select: {
+        id: true,
+      },
+      where: {
+        OR: [{ id: userId }, { member: { users: { some: { id: userId } } } }],
+      },
+    });
+
+    return users.map((user) => user.id);
   }
 }
