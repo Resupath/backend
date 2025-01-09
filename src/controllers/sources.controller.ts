@@ -40,8 +40,6 @@ export class SourcesController {
 
   /**
    * 캐릭터에 저장된 소스들을 조회한다.
-   *
-   * @security x-member bearer
    */
   @core.TypedRoute.Get('/:characterId')
   async getSources(@core.TypedParam('characterId') characterId: Source['characterId']): Promise<Source.GetAllResponse> {

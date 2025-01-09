@@ -23,10 +23,7 @@ export class SkillsController {
 
   /**
    * 스킬을 페이지네이션으로 조회한다.
-   *
-   * @security x-user bearer
    */
-  @UseGuards(MemberGuard)
   @core.TypedRoute.Get()
   async getPositionByPage(@core.TypedQuery() query: Skill.GetByPage): Promise<Skill.GetByPageResponse> {
     return await this.skillsService.getByPage(query);
