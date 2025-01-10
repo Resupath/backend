@@ -72,4 +72,16 @@ export class AuthController {
   ): Promise<void> {
     return this.authService.getNotionAuthorization(user.id, query.code);
   }
+
+  /**
+   * 노션 API 연동 여부를 확인한다.
+   *
+   * @security x-user bearer
+   */
+  @UseGuards(UserGuard)
+  @core.TypedRoute.Get('notion/verify')
+  async notionVerify(@User() user: Guard.UserResponse): Promise<true> {
+    await this.authService.getNotionAccessToken(user.id);
+    return true;
+  }
 }

@@ -104,6 +104,27 @@ export class AuthService {
     }
   }
 
+  /**
+   * 해당 유저와 연관된 멤버에게 notion provider 조회결과가 있는지 확인한다.
+   */
+  async getNotionAccessToken(userId: string): Promise<Pick<Provider, 'id' | 'password'>> {
+    const member = await this.getMember(userId);
+
+    const provider = await this.prisma.provider.findFirst({
+      select: { id: true, password: true },
+      where: {
+        member_id: member.memberId,
+        type: 'notion',
+      },
+    });
+
+    if (!provider) {
+      throw new NotFoundException();
+    }
+
+    return provider;
+  }
+
   async createProvider(memberId: string, authorization: Auth.CommonAuthorizationResponse): Promise<void> {
     const date = DateTimeUtil.now();
     await this.prisma.provider.create({
