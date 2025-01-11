@@ -19,18 +19,32 @@ export class RoomsController {
    */
   @UseGuards(UserGuard)
   @core.TypedRoute.Post()
-  async createRoom(@User() user: Guard.UserResponse, @core.TypedBody() body: Room.CreateRequest) {
+  async createRoom(
+    @User() user: Guard.UserResponse,
+    @core.TypedBody() body: Room.CreateRequest,
+  ): Promise<Room.CreateResponse> {
     return this.roomsService.create(user.id, body);
   }
 
   /**
-   * 채팅방을 조회한다.
+   * user의 채팅방 목록을 전체 조회한다.
+   *
+   * @security x-user bearer
+   */
+  @UseGuards(UserGuard)
+  @core.TypedRoute.Get('')
+  async getRooms(@User() user: Guard.UserResponse): Promise<Array<Room.GetResponse>> {
+    return this.roomsService.getAll(user.id);
+  }
+
+  /**
+   * user의 채팅방을 상세 조회한다.
    *
    * @security x-user bearer
    */
   @UseGuards(UserGuard)
   @core.TypedRoute.Get(':id')
-  async getRoom(@User() user: Guard.UserResponse, @core.TypedParam('id') id: Room['id']) {
+  async getRoom(@User() user: Guard.UserResponse, @core.TypedParam('id') id: Room['id']): Promise<Room.GetResponse> {
     return this.roomsService.get(user.id, id);
   }
 }

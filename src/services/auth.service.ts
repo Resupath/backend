@@ -158,6 +158,19 @@ export class AuthService {
     return provider;
   }
 
+  async findUserIds(userId: User['id']): Promise<Array<User['id']>> {
+    const users = await this.prisma.user.findMany({
+      select: {
+        id: true,
+      },
+      where: {
+        OR: [{ id: userId }, { member: { users: { some: { id: userId } } } }],
+      },
+    });
+
+    return users.map((user) => user.id);
+  }
+
   async updateProviderPassword(userId: User['id'], providerId: Provider['id'], refreshToken: string) {
     const member = await this.prisma.$transaction(async (prisma) => {
       const { member } = await prisma.provider.update({
