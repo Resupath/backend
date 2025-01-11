@@ -23,7 +23,7 @@ export class ExperiencesController {
     @Member() member: Guard.MemberResponse,
     @TypedBody() body: Experience.CreateRequest,
   ): Promise<void> {
-    return await this.experiencesService.create(member.id, body);
+    return await this.experiencesService.createMany(member.id, body);
   }
 
   /**

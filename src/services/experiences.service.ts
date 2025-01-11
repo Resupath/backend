@@ -9,7 +9,7 @@ import { PrismaService } from './prisma.service';
 export class ExperiencesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(memberId: string, body: Experience.CreateRequest): Promise<void> {
+  async createMany(memberId: string, body: Experience.CreateRequest): Promise<void> {
     const { experiences } = body;
     const date = DateTimeUtil.now();
 
