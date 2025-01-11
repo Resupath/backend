@@ -23,6 +23,6 @@ export namespace Room {
    */
   export interface GetResponse extends Pick<Room, 'id' | 'createdAt'> {
     user: Pick<User, 'id'>;
-    character: Pick<Character, 'id' | 'nickname' | 'createdAt'>;
+    character: Pick<Character, 'id' | 'nickname' | 'image' | 'createdAt'>;
   }
 }

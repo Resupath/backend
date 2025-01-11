@@ -37,7 +37,7 @@ export class RoomsService {
           select: {
             id: true,
             created_at: true,
-            last_snapshot: { select: { snapshot: { select: { nickname: true } } } },
+            last_snapshot: { select: { snapshot: { select: { nickname: true, image: true } } } },
           },
         },
       },
@@ -62,6 +62,7 @@ export class RoomsService {
         id: room.character.id,
         createdAt: room.character.created_at.toISOString(),
         nickname: room.character.last_snapshot.snapshot.nickname,
+        image: room.character.last_snapshot.snapshot.image,
       },
     };
   }
