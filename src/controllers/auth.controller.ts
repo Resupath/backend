@@ -1,9 +1,7 @@
 import core from '@nestia/core';
 import { Controller, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Member } from 'src/decorators/member.decorator';
 import { User } from 'src/decorators/user.decorator';
-import { MemberGuard } from 'src/guards/member.guard';
 import { UserGuard } from 'src/guards/user.guard';
 import { Auth } from 'src/interfaces/auth.interface';
 import { Guard } from 'src/interfaces/guard.interface';
@@ -40,7 +38,7 @@ export class AuthController {
   }
 
   /**
-   * 클라이언트에서 받은 코드를 이용해 유저를 검증하고 jwt를 발급한다.
+   * 클라이언트에서 받은 코드를 이용해 구글 로그인 유저를 검증하고 jwt를 발급한다.
    *
    * @security x-user bearer
    */
@@ -51,5 +49,39 @@ export class AuthController {
     @core.TypedQuery() query: Auth.LoginRequest,
   ): Promise<Auth.LoginResponse> {
     return this.authService.getGoogleAuthorization(user.id, query.code);
+  }
+
+  /**
+   * 노션 Authorization url을 반환한다.
+   */
+  @core.TypedRoute.Get('notion')
+  async getNotionAuthorizationUrl(): Promise<string> {
+    return this.authService.getNotionLoginUrl();
+  }
+
+  /**
+   * 노션 AccessToken을 발급 받아 저장한다.
+   *
+   * @security x-user bearer
+   */
+  @UseGuards(UserGuard)
+  @core.TypedRoute.Get('notion/callback')
+  async getNotionAuthorization(
+    @User() user: Guard.UserResponse,
+    @core.TypedQuery() query: Auth.LoginRequest,
+  ): Promise<void> {
+    return this.authService.getNotionAuthorization(user.id, query.code);
+  }
+
+  /**
+   * 노션 API 연동 여부를 확인한다.
+   *
+   * @security x-user bearer
+   */
+  @UseGuards(UserGuard)
+  @core.TypedRoute.Get('notion/verify')
+  async notionVerify(@User() user: Guard.UserResponse): Promise<true> {
+    await this.authService.getNotionAccessToken(user.id);
+    return true;
   }
 }

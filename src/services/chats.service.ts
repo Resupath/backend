@@ -3,10 +3,10 @@ import { randomUUID } from 'crypto';
 import { Chat } from 'src/interfaces/chats.interface';
 import { DateTimeUtil } from 'src/util/date-time.util';
 import { OpenaiUtil } from 'src/util/openai.util';
-import { PromptUtil } from 'src/util/prompt.util';
 import { CharactersService } from './characters.service';
 import { PrismaService } from './prisma.service';
 import { RoomsService } from './rooms.service';
+import { PromptsService } from './prompts.service';
 
 @Injectable()
 export class ChatsService {
@@ -14,6 +14,7 @@ export class ChatsService {
     private readonly prisma: PrismaService,
     private readonly roomsService: RoomsService,
     private readonly charactersService: CharactersService,
+    private readonly promptsService: PromptsService,
   ) {}
 
   async getAll(userId: string, roomId: string): Promise<Chat.GetAllResponse> {
@@ -30,7 +31,7 @@ export class ChatsService {
 
     // 1-1. 채팅 기록이 없다면 프롬프트 삽입
     if (!chats.length) {
-      const prompt = await this.createSystemPrompt(character.id, id);
+      const prompt = await this.createSystemPrompt(user.id, character.id, id);
       chats.push(prompt);
     }
 
@@ -110,9 +111,9 @@ export class ChatsService {
     });
   }
 
-  private async createSystemPrompt(characterId: string, roomId: string): Promise<Chat.GetResponse> {
+  private async createSystemPrompt(userId: string, characterId: string, roomId: string): Promise<Chat.GetResponse> {
     const character = await this.charactersService.get(characterId);
-    const prompt = PromptUtil.prompt(character);
+    const prompt = await this.promptsService.prompt(userId, character);
 
     const chat = await this.createSystemChat(roomId, { message: prompt });
     return chat;

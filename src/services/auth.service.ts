@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import axios from 'axios';
@@ -7,6 +7,7 @@ import { Auth } from 'src/interfaces/auth.interface';
 import { Provider } from 'src/interfaces/provider.interface';
 import { User } from 'src/interfaces/user.interface';
 import { DateTimeUtil } from 'src/util/date-time.util';
+import { NotionUtil } from 'src/util/notion.util';
 import { PrismaService } from './prisma.service';
 
 @Injectable()
@@ -72,6 +73,72 @@ export class AuthService {
     }
   }
 
+  /**
+   * 노션 로그인 페이지의 url을 반환한다.
+   */
+  async getNotionLoginUrl() {
+    const { clientId, redirectUri } = this.getNotionClient();
+    return `https://api.notion.com/v1/oauth/authorize?client_id=${clientId}&response_type=code&owner=user&redirect_uri=${redirectUri}`;
+  }
+
+  /**
+   * 노션 인증 결과를 검증하고 jwt를 발급한다.
+   * @param code 클라이언트의 로그인 성공 시 얻을수 있는 코드값.
+   */
+  async getNotionAuthorization(userId: string, code: string) {
+    try {
+      const notion = await this.getNotionAccessTokenAndUserinfo(code);
+      const { memberId } = await this.getMember(userId);
+
+      await this.createProvider(memberId, {
+        uid: notion.owner.user.id,
+        email: notion.owner.user.person.email,
+        name: notion.owner.user.name,
+        accessToken: notion.access_token,
+        refreshToken: notion.access_token, // 노션의 경우 access 토큰의 만료가 없음으로 access 토큰을 저장한다.
+        type: 'notion',
+      });
+    } catch (error) {
+      console.error(error);
+      throw new UnauthorizedException();
+    }
+  }
+
+  /**
+   * 해당 유저와 연관된 멤버에게 notion provider 조회결과가 있는지 확인한다.
+   */
+  async getNotionAccessToken(userId: string): Promise<Pick<Provider, 'id' | 'password'>> {
+    const member = await this.getMember(userId);
+
+    const provider = await this.prisma.provider.findFirst({
+      select: { id: true, password: true },
+      where: {
+        member_id: member.memberId,
+        type: 'notion',
+      },
+    });
+
+    if (!provider) {
+      throw new NotFoundException();
+    }
+
+    return provider;
+  }
+
+  async createProvider(memberId: string, authorization: Auth.CommonAuthorizationResponse): Promise<void> {
+    const date = DateTimeUtil.now();
+    await this.prisma.provider.create({
+      data: {
+        id: randomUUID(),
+        uid: authorization.uid,
+        password: authorization.refreshToken,
+        type: authorization.type,
+        created_at: date,
+        member_id: memberId,
+      },
+    });
+  }
+
   async findOrCreateMember(userId: string, authorization: Auth.CommonAuthorizationResponse) {
     const provider = await this.findProviderMember(authorization);
 
@@ -83,7 +150,9 @@ export class AuthService {
   async findProviderMember(authorization: Auth.CommonAuthorizationResponse) {
     const provider = await this.prisma.provider.findFirst({
       select: { id: true, member: { select: { id: true, name: true } } },
-      where: { uid: authorization.uid, type: authorization.type },
+      where: {
+        AND: [{ uid: authorization.uid }, { type: authorization.type }, { type: { not: 'notion' } }],
+      },
     });
 
     return provider;
@@ -144,6 +213,21 @@ export class AuthService {
     });
 
     return { accessToken };
+  }
+
+  private async getMember(userId: string): Promise<{ memberId: string }> {
+    const member = await this.prisma.user.findUnique({
+      select: { member_id: true },
+      where: {
+        id: userId,
+      },
+    });
+
+    if (!member || !member.member_id) {
+      throw new NotFoundException();
+    }
+
+    return { memberId: member.member_id };
   }
 
   private async verifyRefreshToken(refreshToken: string): Promise<{ id: string; name: string }> {
@@ -222,11 +306,42 @@ export class AuthService {
     };
   }
 
+  private async getNotionAccessTokenAndUserinfo(code: string) {
+    const { clientId, clientSecret, redirectUri } = this.getNotionClient();
+
+    const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+
+    const response = await axios.post<NotionUtil.AuthorizationResponse>(
+      `https://api.notion.com/v1/oauth/token`,
+      {
+        grant_type: 'authorization_code',
+        code,
+        redirect_uri: redirectUri,
+      },
+      {
+        headers: {
+          Authorization: `Basic ${basicAuth}`,
+          'Content-Type': 'application/json',
+        },
+      },
+    );
+
+    return response.data;
+  }
+
   private getGoogleClient() {
     return {
       clientId: this.configService.get<string>('GOOGLE_CLIENT_ID'),
       clientSecret: this.configService.get<string>('GOOGLE_CLIENT_SECRET'),
       redirectUri: this.configService.get<string>('GOOGLE_REDIRECT_URI'),
+    };
+  }
+
+  private getNotionClient() {
+    return {
+      clientId: this.configService.get<string>('NOTION_CLIENT_ID'),
+      clientSecret: this.configService.get<string>('NOTION_CLIENT_SECRET'),
+      redirectUri: this.configService.get<string>('NOTION_REDIRECT_URI'),
     };
   }
 }
