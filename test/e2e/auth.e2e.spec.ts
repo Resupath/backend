@@ -4,6 +4,7 @@ import { NestFactory } from '@nestjs/core';
 import { randomInt } from 'crypto';
 import { AppModule } from 'src/app.module';
 import { test_api_createUser } from 'test/features/auth/test_api_createUser';
+import { test_api_refresh } from 'test/features/auth/test_api_refresh';
 
 describe('Auth Test', () => {
   let app: INestApplication;
@@ -33,5 +34,9 @@ describe('Auth Test', () => {
 
   it('GET user token', async () => {
     await test_api_createUser(connection);
+  });
+
+  it('POST token refresh', async () => {
+    await test_api_refresh(connection);
   });
 });
