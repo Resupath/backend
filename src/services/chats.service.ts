@@ -55,7 +55,6 @@ export class ChatsService {
     });
 
     return answer;
-    return '';
   }
 
   private async findMany(roomId: string): Promise<Chat.GetAllResponse> {

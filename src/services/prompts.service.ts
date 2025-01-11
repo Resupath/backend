@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Client } from '@notionhq/client';
 import axios from 'axios';
 import { NotionToMarkdown } from 'notion-to-md';
@@ -72,5 +72,50 @@ export class PromptsService {
   private async addSources(userId: string, input: Character.GetResponse['sources']): Promise<string> {
     const sources = await Promise.all(input.map((el) => this.formatSource(userId, el)));
     return sources.join(`\n`);
+  }
+
+  private async formatSource(userId: string, input: Character.GetResponse['sources'][0]): Promise<string> {
+    const content = await this.handleSource(userId, input.type, input.url);
+    return `- ${input.subtype}: ${content}`;
+  }
+
+  private async handleSource(userId: string, type: Source['type'], url: Source['url']): Promise<string> {
+    return type === 'link' ? this.handleNotion(userId, url) : url;
+  }
+
+  /**
+   * @todo public notion url 콘텐츠 읽기 기능 추가
+   */
+  private async handleNotion(userId: string, url: Source['url']): Promise<string> {
+    if (NotionUtil.isValidPublicNotionUrl(url)) {
+      return `${url}\n 노션 웹 링크 콘텐츠 읽기에 실패했습니다.`;
+    }
+
+    const id = NotionUtil.getPrivateNotionId(url);
+    if (!id) {
+      return `${url}\n 노션 링크 콘텐츠 읽기에 실패했습니다.`;
+    }
+
+    const notion = await this.authService.getNotionAccessToken(userId);
+    return this.getNotionToMd(notion.password, id);
+  }
+
+  private async getNotionToMd(accessToken: string, id: string): Promise<string> {
+    const notionClient = new Client({ auth: accessToken });
+    const n2m = new NotionToMarkdown({ notionClient, config: { separateChildPage: false } });
+    const mdblocks = await n2m.pageToMarkdown(id);
+    const mdString = n2m.toMarkdownString(mdblocks);
+
+    return mdString?.parent ?? '';
+  }
+
+  private async fetchUrl(url: Source['url']): Promise<string> {
+    try {
+      const response = await axios.get(url);
+      return response.data;
+    } catch (error) {
+      console.error(error);
+      return `${url}\n 링크 콘텐츠 읽기에 실패했습니다.`;
+    }
   }
 }
