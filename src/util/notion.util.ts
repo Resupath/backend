@@ -19,15 +19,8 @@ export namespace NotionUtil {
     workspace_icon?: string;
   }
 
-  const publiSiteRegex = /notion\.site/;
-  /**
-   * 노션 public url을 검증한다.
-   */
-  export function isValidPublicNotionUrl(url: string): boolean {
-    return publiSiteRegex.test(url);
-  }
-
   const privateNotionIdRegex = /https?:\/\/(www\.)?notion\.so\/(?:[^/]+\/)?[^\s/]*?([a-f0-9]{32})(?:\?[^\s]*)?$/;
+
   /**
    * 노션 private url에서 id 부분을 반환한다.
    * private url 형식이 아니거나, id가 추출되지 않으면 null을 반환한다.
