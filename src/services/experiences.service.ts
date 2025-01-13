@@ -29,8 +29,36 @@ export class ExperiencesService {
     } as const;
   }
 
-  createOutputs(experiences): Array<Experience.GetResponse> {
-    return experiences.map((el): Experience.GetResponse => this.mappingOutput(el));
+  mappingOutput(experience: {
+    id: string;
+    created_at: Date;
+    last_snapshot: {
+      snapshot: {
+        position: string;
+        company_name: string;
+        start_date: string;
+        end_date: string | null;
+        description: string | null;
+        sequence: number;
+      };
+    } | null;
+  }): Experience.GetResponse {
+    const snapshot = experience.last_snapshot?.snapshot;
+
+    if (!snapshot) {
+      throw new NotFoundException();
+    }
+
+    return {
+      id: experience.id,
+      createdAt: experience.created_at.toISOString(),
+      companyName: snapshot.company_name,
+      position: snapshot.position,
+      description: snapshot.description,
+      startDate: snapshot.start_date,
+      endDate: snapshot.end_date,
+      sequence: snapshot.sequence,
+    };
   }
 
   async createMany(memberId: string, body: Experience.CreateRequest): Promise<Array<Experience.GetResponse>> {
@@ -72,7 +100,7 @@ export class ExperiencesService {
       );
     });
 
-    return this.createOutputs(newExperiences);
+    return newExperiences.map((el) => this.mappingOutput(el));
   }
 
   async getAll(memberId: string): Promise<Array<Experience.GetResponse>> {
@@ -82,7 +110,7 @@ export class ExperiencesService {
       orderBy: { last_snapshot: { snapshot: { sequence: 'asc' } } },
     });
 
-    return this.createOutputs(experiences);
+    return experiences.map((el) => this.mappingOutput(el));
   }
 
   /**
@@ -96,23 +124,5 @@ export class ExperiencesService {
     const totalYears = Math.floor(totalMonths / 12) + 1;
 
     return totalYears;
-  }
-
-  private mappingOutput(experience): Experience.GetResponse {
-    const snapshot = experience.last_snapshot?.snapshot;
-    if (!snapshot) {
-      throw new NotFoundException();
-    }
-
-    return {
-      id: experience.id,
-      createdAt: experience.created_at.toISOString(),
-      companyName: snapshot.company_name,
-      position: snapshot.position,
-      description: snapshot.description,
-      startDate: snapshot.start_date,
-      endDate: snapshot.end_date,
-      sequence: snapshot.sequence,
-    };
   }
 }

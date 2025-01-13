@@ -2,9 +2,9 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { Member, Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { Character } from 'src/interfaces/characters.interface';
-import { Experience } from 'src/interfaces/experiences.interface';
 import { DateTimeUtil } from 'src/util/date-time.util';
 import { PaginationUtil } from 'src/util/pagination.util';
+import { ExperiencesService } from './experiences.service';
 import { PositionsService } from './positions.service';
 import { PrismaService } from './prisma.service';
 import { SkillsService } from './skills.service';
@@ -13,6 +13,7 @@ import { SkillsService } from './skills.service';
 export class CharactersService {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly experiencesService: ExperiencesService,
     private readonly positionsService: PositionsService,
     private readonly skillsService: SkillsService,
   ) {}
@@ -130,16 +131,7 @@ export class CharactersService {
                 character_snapshot_experiences: {
                   select: {
                     experience: {
-                      select: {
-                        id: true,
-                        company_name: true,
-                        position: true,
-                        description: true,
-                        start_date: true,
-                        end_date: true,
-                        created_at: true,
-                        sequence: true,
-                      },
+                      select: this.experiencesService.createSelectInput(),
                     },
                   },
                 },
@@ -166,7 +158,14 @@ export class CharactersService {
       throw new NotFoundException();
     }
 
-    const experienceYears = this.getExperienceYears(snapshot.character_snapshot_experiences);
+    /**
+     * mapping experinece
+     */
+    const experiences = snapshot.character_snapshot_experiences.map((el) =>
+      this.experiencesService.mappingOutput(el.experience),
+    );
+
+    const experienceYears = this.experiencesService.getExperienceYears(experiences);
 
     /**
      * mapping
@@ -206,18 +205,7 @@ export class CharactersService {
           keyword: el.skill.keyword,
         };
       }),
-
-      experiences: snapshot.character_snapshot_experiences.map((el) => {
-        return {
-          id: el.experience.id,
-          companyName: el.experience.company_name,
-          position: el.experience.position,
-          description: el.experience.description,
-          startDate: el.experience.start_date,
-          endDate: el.experience.end_date,
-          createdAt: el.experience.created_at.toISOString(),
-        };
-      }),
+      experiences: experiences,
 
       /**
        * aggregation
@@ -270,7 +258,7 @@ export class CharactersService {
                   character_snapshot_experiences: {
                     select: {
                       experience: {
-                        select: { start_date: true, end_date: true },
+                        select: this.experiencesService.createSelectInput(),
                       },
                     },
                   },
@@ -310,7 +298,11 @@ export class CharactersService {
       if (!snapshot) {
         throw new NotFoundException();
       }
-      const experienceYears = this.getExperienceYears(snapshot.character_snapshot_experiences);
+
+      const experiences = snapshot.character_snapshot_experiences.map((el) =>
+        this.experiencesService.mappingOutput(el.experience),
+      );
+      const experienceYears = this.experiencesService.getExperienceYears(experiences);
 
       return {
         id: el.id,
@@ -355,8 +347,6 @@ export class CharactersService {
     });
   }
 
-  private async getFindManyInput() {}
-
   private async createCharacterPersonalities(
     characterId: string,
     personalities: Character.CreateRequest['personalities'],
@@ -373,25 +363,5 @@ export class CharactersService {
     await this.prisma.character_Personality.createMany({
       data: characterPersonalities,
     });
-  }
-
-  /**
-   * 경력들의 시작 날짜와 종료날짜를 받아 연차를 계산한다.
-   */
-  private getExperienceYears(
-    input: Array<{
-      experience: {
-        start_date: Experience['startDate'];
-        end_date: Experience['endDate'];
-      };
-    }>,
-  ): number {
-    const totalMonths = input.reduce((acc, el) => {
-      return acc + DateTimeUtil.BetweenMonths(el.experience.start_date, el.experience.end_date);
-    }, 0);
-
-    const totalYears = Math.floor(totalMonths / 12) + 1;
-
-    return totalYears;
   }
 }
