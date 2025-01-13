@@ -68,6 +68,12 @@ erDiagram
 "Experience" {
   String id PK
   String member_id FK
+  DateTime created_at
+  DateTime deleted_at "nullable"
+}
+"Experience_Snapshot" {
+  String id PK
+  String experience_id FK
   String company_name
   String position
   String start_date
@@ -75,7 +81,10 @@ erDiagram
   String description "nullable"
   Int sequence
   DateTime created_at
-  DateTime deleted_at "nullable"
+}
+"Experience_Last_Snapshot" {
+  String experience_id PK
+  String experience_snapshot_id FK
 }
 "Character_Snapshot_Experience" {
   String character_snapshot_id FK
@@ -164,6 +173,9 @@ erDiagram
   DateTime deleted_at "nullable"
   String member_id FK "nullable"
 }
+"Experience_Snapshot" }o--|| "Experience" : experience
+"Experience_Last_Snapshot" |o--|| "Experience" : experience
+"Experience_Last_Snapshot" |o--|| "Experience_Snapshot" : snapshot
 "Character_Snapshot_Experience" }o--|| "Character_Snapshot" : character_snapshot
 "Character_Snapshot_Experience" }o--|| "Experience" : experience
 "Source" }o--|| "Character" : character
@@ -189,14 +201,29 @@ erDiagram
 **Properties**
   - `id`: PK
   - `member_id`: 가입된 사용자가 경력을 입력할 수 있다.
+  - `created_at`: 경력을 최초 입력후 저장한 시간.
+  - `deleted_at`: 경력을 삭제한 경우.
+
+### `Experience_Snapshot`
+Experience의 스냅샷
+
+**Properties**
+  - `id`: PK
+  - `experience_id`: 
   - `company_name`: 
   - `position`: 직군을 입력한다. 
   - `start_date`: 근무 시작 날짜. 월까지 입력한다.
   - `end_date`: 근무 종료 날짜. 월까지 입력하며, 현재 재직 중일 경우 null이다.
   - `description`: 경력에 대한 설명. 업문 내용 등 사용자가 입력하고 싶은 것들을 적으며, 비워둘 수 있다.
   - `sequence`: 경력의 순서를 저장하는 필드이다. 유저에게 보여줄때 순서를 보장하기 위해 사용한다.
-  - `created_at`: 경력을 최초 입력후 저장한 시간.
-  - `deleted_at`: 경력을 삭제한 경우.
+  - `created_at`: 스냅샷 생성 시간.
+
+### `Experience_Last_Snapshot`
+Experience의 마지막 스냅샷
+
+**Properties**
+  - `experience_id`: 
+  - `experience_snapshot_id`: 
 
 ### `Character_Snapshot_Experience`
 캐릭터의 학습에 사용된 경력 사항들을 저장한다. 캐릭터 스냅샷과 다대다 관계를 가진다.
