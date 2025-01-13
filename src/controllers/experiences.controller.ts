@@ -22,7 +22,7 @@ export class ExperiencesController {
   async createExperiences(
     @Member() member: Guard.MemberResponse,
     @TypedBody() body: Experience.CreateRequest,
-  ): Promise<void> {
+  ): Promise<Array<Experience.GetResponse>> {
     return await this.experiencesService.createMany(member.id, body);
   }
 
@@ -33,7 +33,7 @@ export class ExperiencesController {
    */
   @UseGuards(MemberGuard)
   @core.TypedRoute.Get()
-  async getAllExperiences(@Member() member: Guard.MemberResponse): Promise<Experience.GetAllResponse> {
+  async getAllExperiences(@Member() member: Guard.MemberResponse): Promise<Array<Experience.GetResponse>> {
     return await this.experiencesService.getAll(member.id);
   }
 }

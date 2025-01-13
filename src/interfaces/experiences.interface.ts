@@ -17,10 +17,7 @@ export namespace Experience {
    * create
    */
   export interface CreateData
-    extends Pick<
-        Experience,
-        'companyName' | 'position' | 'startDate' | 'endDate' | 'sequence'
-      >,
+    extends Pick<Experience, 'companyName' | 'position' | 'startDate' | 'endDate' | 'sequence'>,
       Partial<Pick<Experience, 'description'>> {}
 
   export interface CreateRequest {
@@ -33,14 +30,6 @@ export namespace Experience {
   export interface GetResponse
     extends Pick<
       Experience,
-      | 'id'
-      | 'companyName'
-      | 'position'
-      | 'description'
-      | 'startDate'
-      | 'sequence'
-      | 'endDate'
+      'id' | 'companyName' | 'position' | 'description' | 'startDate' | 'sequence' | 'endDate' | 'createdAt'
     > {}
-
-  export interface GetAllResponse extends Array<GetResponse> {}
 }
