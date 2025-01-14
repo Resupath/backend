@@ -65,4 +65,18 @@ export class ExperiencesController {
   ): Promise<Experience.UpdateResponse> {
     return await this.experiencesService.update(member.id, id, body);
   }
+
+  /**
+   * 경력을 삭제한다.
+   *
+   * @security x-member bearer
+   */
+  @UseGuards(MemberGuard)
+  @core.TypedRoute.Delete('/:id')
+  async deleteExperience(
+    @Member() member: Guard.MemberResponse,
+    @core.TypedParam('id') id: Experience['id'],
+  ): Promise<Experience.UpdateResponse> {
+    return await this.experiencesService.delete(member.id, id);
+  }
 }

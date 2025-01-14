@@ -154,6 +154,18 @@ export class ExperiencesService {
     return { id };
   }
 
+  async delete(memberId: string, id: Experience['id']): Promise<Experience.UpdateResponse> {
+    const experience = await this.get(memberId, id);
+    const date = DateTimeUtil.now();
+
+    await this.prisma.experience.update({
+      where: { id },
+      data: { deleted_at: date },
+    });
+
+    return { id };
+  }
+
   private async updateSnapshot(
     id: Experience['id'],
     sequence: Experience['sequence'],
