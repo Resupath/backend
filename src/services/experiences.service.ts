@@ -65,13 +65,13 @@ export class ExperiencesService {
     const { experiences } = body;
     const date = DateTimeUtil.now();
 
-    const id = randomUUID();
-    const snapshotId = randomUUID();
-
     const newExperiences = await this.prisma.$transaction(async (tx) => {
       return await Promise.all(
-        experiences.map((el) =>
-          tx.experience.create({
+        experiences.map((el) => {
+          const id = randomUUID();
+          const snapshotId = randomUUID();
+
+          return tx.experience.create({
             select: this.createSelectInput(),
             data: {
               id: id,
@@ -95,8 +95,8 @@ export class ExperiencesService {
                 },
               },
             },
-          }),
-        ),
+          });
+        }),
       );
     });
 

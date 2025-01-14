@@ -41,7 +41,7 @@ describe('Experiences Test', () => {
 
   it('경력을 생성한다. 1개 이상의 경력을 생성할 수 있어야 한다.', async () => {
     const inputLength = 3; // 여기서는 3개의 경력을 생성한다.
-    const input: Experience.CreateRequest = {
+    const input: Experience.CreateManyRequest = {
       experiences: new Array(inputLength).fill(0).map((el, index) => {
         return {
           companyName: `test_companyName_${index}`,
