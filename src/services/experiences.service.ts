@@ -61,7 +61,7 @@ export class ExperiencesService {
     };
   }
 
-  async createMany(memberId: string, body: Experience.CreateRequest): Promise<Array<Experience.GetResponse>> {
+  async createMany(memberId: string, body: Experience.CreateManyRequest): Promise<Array<Experience.GetResponse>> {
     const { experiences } = body;
     const date = DateTimeUtil.now();
 
@@ -124,5 +124,50 @@ export class ExperiencesService {
     const totalYears = Math.floor(totalMonths / 12) + 1;
 
     return totalYears;
+  }
+
+  async get(memberId: string, id: Experience['id']): Promise<Experience.GetResponse> {
+    const experience = await this.prisma.experience.findUnique({
+      select: this.createSelectInput(),
+      where: { id, member_id: memberId },
+    });
+
+    if (!experience) {
+      throw new NotFoundException();
+    }
+    return this.mappingOutput(experience);
+  }
+
+  async update(
+    memberId: string,
+    id: Experience['id'],
+    body: Experience.UpdateRequest,
+  ): Promise<Experience.UpdateResponse> {
+    const experience = await this.get(memberId, id);
+    const date = DateTimeUtil.now();
+
+    return await this.prisma.$transaction(async (tx) => {
+      const newSnapshot = await tx.experience_Snapshot.create({
+        select: { id: true },
+        data: {
+          id: randomUUID(),
+          experience_id: id,
+          company_name: body.companyName,
+          position: body.position,
+          start_date: body.startDate,
+          end_date: body.endDate,
+          description: body.description,
+          sequence: experience.sequence,
+          created_at: date,
+        },
+      });
+
+      await tx.experience_Last_Snapshot.update({
+        where: { experience_id: id },
+        data: { experience_snapshot_id: newSnapshot.id },
+      });
+
+      return newSnapshot;
+    });
   }
 }

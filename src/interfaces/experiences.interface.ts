@@ -16,12 +16,12 @@ export namespace Experience {
   /**
    * create
    */
-  export interface CreateData
+  export interface CreateRequest
     extends Pick<Experience, 'companyName' | 'position' | 'startDate' | 'endDate' | 'sequence'>,
       Partial<Pick<Experience, 'description'>> {}
 
-  export interface CreateRequest {
-    experiences: Array<CreateData> & tags.MinItems<1>;
+  export interface CreateManyRequest {
+    experiences: Array<CreateRequest> & tags.MinItems<1>;
   }
 
   /**
@@ -32,4 +32,11 @@ export namespace Experience {
       Experience,
       'id' | 'companyName' | 'position' | 'description' | 'startDate' | 'sequence' | 'endDate' | 'createdAt'
     > {}
+
+  /**
+   * update
+   */
+  export interface UpdateRequest extends Omit<CreateRequest, 'sequence'> {}
+
+  export interface UpdateResponse extends Pick<Experience, 'id'> {}
 }
