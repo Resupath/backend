@@ -129,7 +129,7 @@ export class ExperiencesService {
   async get(memberId: string, id: Experience['id']): Promise<Experience.GetResponse> {
     const experience = await this.prisma.experience.findUnique({
       select: this.createSelectInput(),
-      where: { id, member_id: memberId },
+      where: { id, member_id: memberId, deleted_at: null },
     });
 
     if (!experience) {
@@ -144,9 +144,24 @@ export class ExperiencesService {
     body: Experience.UpdateRequest,
   ): Promise<Experience.UpdateResponse> {
     const experience = await this.get(memberId, id);
+
+    Object.keys(body).forEach(async (key) => {
+      if (experience[key] !== body[key]) {
+        await this.updateSnapshot(id, experience.sequence, body);
+      }
+    });
+
+    return { id };
+  }
+
+  private async updateSnapshot(
+    id: Experience['id'],
+    sequence: Experience['sequence'],
+    body: Experience.UpdateRequest,
+  ): Promise<void> {
     const date = DateTimeUtil.now();
 
-    return await this.prisma.$transaction(async (tx) => {
+    await this.prisma.$transaction(async (tx) => {
       const newSnapshot = await tx.experience_Snapshot.create({
         select: { id: true },
         data: {
@@ -157,7 +172,7 @@ export class ExperiencesService {
           start_date: body.startDate,
           end_date: body.endDate,
           description: body.description,
-          sequence: experience.sequence,
+          sequence: sequence,
           created_at: date,
         },
       });
