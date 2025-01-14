@@ -38,6 +38,20 @@ export class ExperiencesController {
   }
 
   /**
+   * 경력을 조회한다.
+   *
+   * @security x-member bearer
+   */
+  @UseGuards(MemberGuard)
+  @core.TypedRoute.Get('/:id')
+  async getExperience(
+    @Member() member: Guard.MemberResponse,
+    @core.TypedParam('id') id: Experience['id'],
+  ): Promise<Experience.GetResponse> {
+    return await this.experiencesService.get(member.id, id);
+  }
+
+  /**
    * 경력을 수정한다.
    *
    * @security x-member bearer
