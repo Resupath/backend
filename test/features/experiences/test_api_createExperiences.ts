@@ -18,4 +18,6 @@ export const test_api_createExperiences = async (connection: api.IConnection, in
 
   const output = await api.functional.experiences.createExperiences(connection, newInput);
   typia.assert(output);
+
+  return output;
 };
