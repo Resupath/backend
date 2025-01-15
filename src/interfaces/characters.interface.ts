@@ -40,9 +40,7 @@ export namespace Character {
     positions: Array<Pick<Position, 'id' | 'keyword'>>;
     skills: Array<Pick<Skill, 'id' | 'keyword'>>;
     sources: Array<Pick<Source, 'id' | 'type' | 'url' | 'subtype' | 'createdAt'>>;
-    experiences: Array<
-      Pick<Experience, 'id' | 'companyName' | 'startDate' | 'endDate' | 'position' | 'description' | 'createdAt'>
-    >;
+    experiences: Array<Experience.GetResponse>;
     experienceYears: number & tags.Type<'int64'>;
     roomCount: number & tags.Type<'int64'>;
   }

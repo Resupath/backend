@@ -2,8 +2,8 @@ import api from 'src/api';
 import { Experience } from 'src/interfaces/experiences.interface';
 import typia from 'typia';
 
-export const test_api_createExperiences = async (connection: api.IConnection, input?: Experience.CreateRequest) => {
-  const newInput: Experience.CreateRequest = input ?? {
+export const test_api_createExperiences = async (connection: api.IConnection, input?: Experience.CreateManyRequest) => {
+  const newInput: Experience.CreateManyRequest = input ?? {
     experiences: new Array(1).fill(0).map((el, index) => {
       return {
         companyName: `test_companyName_${index}`,
@@ -18,4 +18,6 @@ export const test_api_createExperiences = async (connection: api.IConnection, in
 
   const output = await api.functional.experiences.createExperiences(connection, newInput);
   typia.assert(output);
+
+  return output;
 };
