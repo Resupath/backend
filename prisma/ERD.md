@@ -3,6 +3,7 @@
 
 - [Actor](#actor)
 - [Character](#character)
+- [Log](#log)
 
 ## Actor
 ```mermaid
@@ -254,7 +255,7 @@ Experience의 마지막 스냅샷
 
 ### `Character`
 멤버가 생성한 캐릭터.
-멤버는 면접 대상자를 등록하여 면접을 예행연습할 수 있다.
+멤버는 면접 대상자를 등록하여 면접을 예행연습할 ��� 있다.
 
 **Properties**
   - `id`: PK
@@ -369,3 +370,40 @@ React, NestJS 기술 스택(스킬)의 정보를 저장한다.
   - `created_at`: 유저가 입장한 시간
   - `deleted_at`: 유저가 이탈한 시간
   - `member_id`: 유저가 누군지 식별 가능한 시점에 member_id를 기입한다.
+
+
+## Log
+```mermaid
+erDiagram
+"Log" {
+  String id PK
+  String user_id FK "nullable"
+  String method
+  String url
+  String headers
+  String query "nullable"
+  String param "nullable"
+  String body "nullable"
+  Int ttl "nullable"
+  Boolean error
+  String response "nullable"
+  DateTime created_at
+}
+```
+
+### `Log`
+로그. 모든 요청과 응답에 대해 기록한다.
+
+**Properties**
+  - `id`: 
+  - `user_id`: 
+  - `method`: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' 
+  - `url`: request path
+  - `headers`: req.headers
+  - `query`: req.query
+  - `param`: req.params
+  - `body`: req.body
+  - `ttl`: ms 단위, 해당 요청에 대한 요청부터 응답까지의 시간을 측정한 것이다. 값이 null이면 서버가 응답을 하지 않고 장애가 난 것으로 판단.
+  - `error`: 에러 발생 true
+  - `response`: 응답 값. 에러 발생시 에러 내용이 담긴다.
+  - `created_at`: 요청이 진입된 시간으로, 응답 시간은 해당 칼럼에 ttL을 더함으로써 알 수 있다.
