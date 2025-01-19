@@ -215,15 +215,30 @@ export class CharactersService {
     };
   }
 
+  /**
+   * 캐릭터를 페이지네이션 조회한다.
+   * @param query 페이지네이션 요청 쿼리 객체이다.
+   *
+   * @param option 조회시 where 조건에 사용되는 옵셔널 파라미터의 객체이다.
+   * isPublic : 공개 여부이다. 공개된 캐릭터만 조회할 경우 true로 설정해야 한다,
+   * memberId : 특정 멤버의 캐릭터만 조회하고 싶다면, 이 파라미터에 아이디를 넣어주어야 한다.
+   * deletedAt : 삭제 여부이다. 삭제된 캐릭터도 조회하고 싶다면 true로 설정한다.
+   */
   async getBypage(
     query: Character.GetByPageRequest,
     option: {
-      isPublic?: boolean;
+      isPublic?: true;
       memberId?: Member['id'];
+      deletedAt?: true;
     },
   ): Promise<Character.GetByPageResponse> {
     const { skip, take } = PaginationUtil.getOffset(query);
-    const whereInput: Prisma.CharacterWhereInput = { is_public: option.isPublic, member_id: option.memberId };
+
+    const whereInput: Prisma.CharacterWhereInput = {
+      is_public: option.isPublic,
+      member_id: option.memberId,
+      deleted_at: option.deletedAt ? undefined : null,
+    };
 
     const [characters, count] = await this.prisma.$transaction([
       this.prisma.character.findMany({
