@@ -26,7 +26,15 @@ export class AdminController {
   }
 
   /**
-   * 캐릭터에 생성된 채팅방을 페이지네이션으로 조회한다.
+   * 채팅방을 페이지네이션으로 조회한다. 이미 삭제된 채팅방을 포함한다.
+   */
+  @core.TypedRoute.Get('rooms')
+  async getRooms(@core.TypedQuery() query: Room.GetByPageRequest): Promise<Room.GetByPageResponse> {
+    return this.roomsService.getByPage(query, { deletedAt: true });
+  }
+
+  /**
+   * 캐릭터에 생성된 채팅방을 페이지네이션으로 조회한다. 이미 삭제된 방을 포함한다.
    */
   @core.TypedRoute.Get('characters/:characterId/rooms')
   async getCharacterRooms(
