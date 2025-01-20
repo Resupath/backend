@@ -3,8 +3,10 @@ import { Controller } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Character } from 'src/interfaces/characters.interface';
 import { Personality } from 'src/interfaces/personalities.interface';
+import { Room } from 'src/interfaces/rooms.interface';
 import { CharactersService } from 'src/services/characters.service';
 import { PersonalitiesService } from 'src/services/personalities.service';
+import { RoomsService } from 'src/services/rooms.service';
 
 @ApiTags('Admin')
 @Controller('admin')
@@ -12,6 +14,7 @@ export class AdminController {
   constructor(
     private readonly personalitiesService: PersonalitiesService,
     private readonly charactersService: CharactersService,
+    private readonly roomsService: RoomsService,
   ) {}
 
   /**
@@ -20,6 +23,17 @@ export class AdminController {
   @core.TypedRoute.Post('personalities/bulk')
   async createPersonalities(@core.TypedBody() body: Personality.CreateBulkRequest): Promise<void> {
     return this.personalitiesService.createBulk(body);
+  }
+
+  /**
+   * 캐릭터에 생성된 채팅방을 페이지네이션으로 조회한다.
+   */
+  @core.TypedRoute.Get('characters/:characterId/rooms')
+  async getCharacterRooms(
+    @core.TypedParam('characterId') characterId: string,
+    @core.TypedQuery() query: Room.GetByPageRequest,
+  ): Promise<Room.GetByPageResponse> {
+    return this.roomsService.getByPage(query, { characterId: characterId, deletedAt: true });
   }
 
   /**
