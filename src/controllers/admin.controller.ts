@@ -2,9 +2,11 @@ import core from '@nestia/core';
 import { Controller } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Character } from 'src/interfaces/characters.interface';
+import { Chat } from 'src/interfaces/chats.interface';
 import { Personality } from 'src/interfaces/personalities.interface';
 import { Room } from 'src/interfaces/rooms.interface';
 import { CharactersService } from 'src/services/characters.service';
+import { ChatsService } from 'src/services/chats.service';
 import { PersonalitiesService } from 'src/services/personalities.service';
 import { RoomsService } from 'src/services/rooms.service';
 
@@ -15,6 +17,7 @@ export class AdminController {
     private readonly personalitiesService: PersonalitiesService,
     private readonly charactersService: CharactersService,
     private readonly roomsService: RoomsService,
+    private readonly chatsService: ChatsService,
   ) {}
 
   /**
@@ -23,6 +26,14 @@ export class AdminController {
   @core.TypedRoute.Post('personalities/bulk')
   async createPersonalities(@core.TypedBody() body: Personality.CreateBulkRequest): Promise<void> {
     return this.personalitiesService.createBulk(body);
+  }
+
+  /**
+   * 채팅방의 채팅 목록을 조회한다. 내용은 프롬프트를 포함한다.
+   */
+  @core.TypedRoute.Get('rooms/:roomId/chats')
+  async getCharacterChats(@core.TypedParam('roomId') roomId: Room['id']): Promise<Chat.GetAllResponse> {
+    return this.chatsService.getAllAdmin(roomId);
   }
 
   /**
