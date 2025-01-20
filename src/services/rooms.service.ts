@@ -1,7 +1,10 @@
+import { Prisma } from '.prisma/client';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'crypto';
+import { Character } from 'src/interfaces/characters.interface';
 import { Room } from 'src/interfaces/rooms.interface';
 import { DateTimeUtil } from 'src/util/date-time.util';
+import { PaginationUtil } from 'src/util/pagination.util';
 import { AuthService } from './auth.service';
 import { PrismaService } from './prisma.service';
 
@@ -48,6 +51,7 @@ export class RoomsService {
         deleted_at: null,
         user_id: { in: userIds },
       },
+      orderBy: { created_at: 'desc' },
     });
 
     /**
@@ -71,6 +75,54 @@ export class RoomsService {
           image: el.character.last_snapshot.snapshot.image,
         },
       };
+    });
+  }
+
+  /**
+   * 채팅방을 페이지네이션으로 조회한다.
+   * 
+   * @param query 페이지네이션 요청 객체이다.
+   * 
+   * @param option 조회 옵션에 관련된 옵셔널 파라미터들이 들어있다.
+   *
+   * {characterId?: Character['id']} : 특정캐릭터의 데이터만을 조회하고 싶다면 id를 입력한다.
+
+   * {deletedAt?: true} : 삭제된 데이터를 포함해서 보고 싶다면 true로 설정한다.
+   */
+  async getByPage(
+    query: Room.GetByPageRequest,
+    option: { characterId?: Character['id']; deletedAt?: true },
+  ): Promise<Room.GetByPageResponse> {
+    const { skip, take } = PaginationUtil.getOffset(query);
+
+    const whereInput: Prisma.RoomWhereInput = {
+      deleted_at: option.deletedAt ? undefined : null,
+    };
+
+    const [rooms, count] = await this.prisma.$transaction([
+      this.prisma.room.findMany({
+        select: { id: true, user_id: true, character_id: true, created_at: true },
+        where: whereInput,
+        orderBy: { created_at: 'desc' },
+        skip,
+        take,
+      }),
+
+      this.prisma.room.count({ where: whereInput }),
+    ]);
+
+    /**
+     * mapping
+     */
+    const data = rooms.map((el): Room.GetByPageData => {
+      return { id: el.id, userId: el.user_id, characterId: el.character_id, createdAt: el.created_at.toISOString() };
+    });
+
+    return PaginationUtil.createResponse({
+      data,
+      count,
+      skip,
+      take,
     });
   }
 

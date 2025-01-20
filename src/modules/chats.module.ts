@@ -9,5 +9,6 @@ import { RoomsModule } from './rooms.module';
   imports: [RoomsModule, CharactersModule],
   controllers: [ChatsController],
   providers: [ChatsService, PromptsService],
+  exports: [ChatsService],
 })
 export class ChatsModule {}
