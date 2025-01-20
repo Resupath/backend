@@ -51,6 +51,7 @@ export class RoomsService {
         deleted_at: null,
         user_id: { in: userIds },
       },
+      orderBy: { created_at: 'desc' },
     });
 
     /**
@@ -102,6 +103,7 @@ export class RoomsService {
       this.prisma.room.findMany({
         select: { id: true, user_id: true, character_id: true, created_at: true },
         where: whereInput,
+        orderBy: { created_at: 'desc' },
         skip,
         take,
       }),
