@@ -16,12 +16,14 @@ import { PrismaModule } from './modules/prisma.module';
 import { RoomsModule } from './modules/rooms.module';
 import { SkillsModule } from './modules/skills.module';
 import { SourcesModule } from './modules/sources.module';
+console.log(process.env.NODE_ENV);
 
 @Module({
   imports: [
     JwtModule.register({ global: true }),
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: [process.env.NODE_ENV === 'development' ? '.env.dev' : '.env.prod', '.env'],
     }),
     PrismaModule,
     AuthModule,
@@ -42,5 +44,6 @@ import { SourcesModule } from './modules/sources.module';
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(LoggerMiddleware).forRoutes('*');
+    console.log(process.env.DATABASE_URL);
   }
 }
