@@ -16,7 +16,6 @@ import { PrismaModule } from './modules/prisma.module';
 import { RoomsModule } from './modules/rooms.module';
 import { SkillsModule } from './modules/skills.module';
 import { SourcesModule } from './modules/sources.module';
-console.log(process.env.NODE_ENV);
 
 @Module({
   imports: [
@@ -44,6 +43,5 @@ console.log(process.env.NODE_ENV);
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(LoggerMiddleware).forRoutes('*');
-    console.log(process.env.DATABASE_URL);
   }
 }
