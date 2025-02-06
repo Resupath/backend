@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule } from '@nestjs/swagger';
-import { readFileSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
 import * as path from 'path';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './filter/http-exception.filter';
@@ -12,7 +12,12 @@ async function bootstrap() {
   app.useGlobalFilters(new HttpExceptionFilter());
 
   // Swgger 세팅
-  const swaagerConfig = readFileSync(path.join(__dirname, '../swagger.json'), 'utf8');
+  const swaggerFilePath = path.join(__dirname, '../swagger.json');
+
+  if (!existsSync(swaggerFilePath)) {
+    writeFileSync(swaggerFilePath, '{}');
+  }
+  const swaagerConfig = readFileSync(swaggerFilePath, 'utf8');
   const swaggerDocument = JSON.parse(swaagerConfig);
   SwaggerModule.setup('api/swagger', app, swaggerDocument);
 
