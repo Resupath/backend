@@ -3,7 +3,7 @@ name: Deploy to Build Repository
 on:
   push:
     branches:
-      - main
+      - feature/deploy
 
 jobs:
   deploy:
@@ -25,7 +25,7 @@ jobs:
         run: npm ci
 
       - name: Build Project
-        run: npm run build
+        run: npx nestia swagger & npm run build
 
       - name: Check if /dist Exists
         run: |
@@ -44,7 +44,9 @@ jobs:
       - name: Copy Build Artifacts to Build Repository
         run: |
           rsync -av --delete dist/ backend-build/dist
+          rsync -av --delete prisma/ backend-build/prisma
           rsync -av --delete package.json backend-build/package.json
+          rsync -av --delete swagger.json backend-build/swagger.json
 
       - name: Configure Git
         run: |
