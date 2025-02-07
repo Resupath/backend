@@ -3,7 +3,7 @@ name: Deploy to Build Repository
 on:
   push:
     branches:
-      - feature/deploy
+      - main
 
 jobs:
   deploy:
