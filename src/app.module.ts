@@ -16,6 +16,7 @@ import { PrismaModule } from './modules/prisma.module';
 import { RoomsModule } from './modules/rooms.module';
 import { SkillsModule } from './modules/skills.module';
 import { SourcesModule } from './modules/sources.module';
+import { AdminModule } from './modules/admin.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { SourcesModule } from './modules/sources.module';
     SourcesModule,
     FileModule,
     MembersModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

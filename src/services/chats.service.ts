@@ -5,8 +5,8 @@ import { DateTimeUtil } from 'src/util/date-time.util';
 import { OpenaiUtil } from 'src/util/openai.util';
 import { CharactersService } from './characters.service';
 import { PrismaService } from './prisma.service';
-import { RoomsService } from './rooms.service';
 import { PromptsService } from './prompts.service';
+import { RoomsService } from './rooms.service';
 
 @Injectable()
 export class ChatsService {
@@ -17,12 +17,39 @@ export class ChatsService {
     private readonly promptsService: PromptsService,
   ) {}
 
+  /**
+   * 기본 채팅 조회 로직, 프롬프트까지 모두 조회해 가져온다. 삭제한 채팅방인 경우 에러가 발생한다.
+   *
+   * 채팅 내용은 생성한 유저나 멤버로 관계된 유저만 확인할 수 있어야 한다.
+   * 따라서 조회시 정말 본인이 생성한 채팅방인지 항상 확인 후 조회한다.
+   *
+   * @param userId 채팅방을 조회하려는 유저의 아이디 다. 유저 토큰에 담긴 아이디를 이용한다.
+   * @param roomId 조회하려는 채팅방의 아이디 이다.
+   */
   async getAll(userId: string, roomId: string): Promise<Chat.GetAllResponse> {
     const { id, ...rest } = await this.roomsService.get(userId, roomId);
 
     return this.findMany(id);
   }
 
+  /**
+   * 어드민 전용 API 이다. 유저 인증없이 roomId 만으로 모든 채팅 내용을 조회한다.
+   *
+   * @param roomId 조회할 채팅방의 아이디
+   */
+  async getAllAdmin(roomId: string): Promise<Chat.GetAllResponse> {
+    return this.findMany(roomId);
+  }
+
+  /**
+   * 채팅 API. Openai API를 통해 질문에 대한 응답을 생성한다.
+   *
+   * 첫 대화일 경우, 캐릭터와 관계된 정보로 프롬프트를 생성한다.
+   *
+   * @param userId 채팅을 요청한 사용자의 아이디
+   * @param roomId 채팅이 요청된 채팅방의 아이디
+   * @param body 사용자가 입력한 질문 등
+   */
   async chat(userId: string, roomId: string, body: Chat.CreateRequst) {
     const { id, user, character } = await this.roomsService.get(userId, roomId);
 

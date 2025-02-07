@@ -5,5 +5,6 @@ import { PersonalitiesService } from '../services/personalities.service';
 @Module({
   controllers: [PersonalitiesController],
   providers: [PersonalitiesService],
+  exports: [PersonalitiesService],
 })
 export class PersonalitiesModule {}
