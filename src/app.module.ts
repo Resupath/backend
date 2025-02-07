@@ -22,6 +22,7 @@ import { SourcesModule } from './modules/sources.module';
     JwtModule.register({ global: true }),
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: [process.env.NODE_ENV === 'development' ? '.env.dev' : '.env.prod', '.env'],
     }),
     PrismaModule,
     AuthModule,
