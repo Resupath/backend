@@ -1,15 +1,9 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
-import { PrismaService } from 'src/services/prisma.service';
 
 @Injectable()
 export class AdminGuard implements CanActivate {
-  constructor(
-    private readonly configService: ConfigService,
-    private readonly jwtService: JwtService,
-    private readonly prisma: PrismaService,
-  ) {}
+  constructor(private readonly configService: ConfigService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     try {
@@ -23,7 +17,7 @@ export class AdminGuard implements CanActivate {
 
       return accessToken === adminSecret ? true : false;
     } catch (error) {
-      console.error('User Guard Error:', error);
+      console.error('Admin Guard Error:', error);
       throw new UnauthorizedException();
     }
   }
