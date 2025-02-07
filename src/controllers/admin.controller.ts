@@ -1,6 +1,7 @@
 import core from '@nestia/core';
-import { Controller } from '@nestjs/common';
+import { Controller, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { AdminGuard } from 'src/guards/admin.guard';
 import { Character } from 'src/interfaces/characters.interface';
 import { Chat } from 'src/interfaces/chats.interface';
 import { Personality } from 'src/interfaces/personalities.interface';
@@ -11,6 +12,7 @@ import { PersonalitiesService } from 'src/services/personalities.service';
 import { RoomsService } from 'src/services/rooms.service';
 
 @ApiTags('Admin')
+@UseGuards(AdminGuard)
 @Controller('admin')
 export class AdminController {
   constructor(
