@@ -106,20 +106,27 @@ export class AuthService {
 
   /**
    * 해당 유저와 연관된 멤버에게 notion provider 조회결과가 있는지 확인한다.
+   * @param userId
    */
-  async getNotionAccessToken(userId: string): Promise<Pick<Provider, 'id' | 'password'>> {
-    const member = await this.getMember(userId);
+  async getNotionAccessTokenByUserId(userId: string): Promise<Pick<Provider, 'id' | 'password'>> {
+    const { memberId } = await this.getMember(userId);
+    return await this.getNotionAccessTokenByMemberId(memberId);
+  }
 
+  /**
+   * 해당 멤버의 notion provider 조회 결과가 있는지 확인한다.
+   */
+  async getNotionAccessTokenByMemberId(memberId: string): Promise<Pick<Provider, 'id' | 'password'>> {
     const provider = await this.prisma.provider.findFirst({
       select: { id: true, password: true },
       where: {
-        member_id: member.memberId,
+        member_id: memberId,
         type: 'notion',
       },
     });
 
     if (!provider) {
-      throw new NotFoundException();
+      throw new NotFoundException('노션 연동정보가 존재하지 않습니다.');
     }
 
     return provider;

@@ -81,7 +81,7 @@ export class AuthController {
   @UseGuards(UserGuard)
   @core.TypedRoute.Get('notion/verify')
   async notionVerify(@User() user: Guard.UserResponse): Promise<true> {
-    await this.authService.getNotionAccessToken(user.id);
+    await this.authService.getNotionAccessTokenByUserId(user.id);
     return true;
   }
 }
