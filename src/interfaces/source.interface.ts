@@ -15,20 +15,12 @@ export namespace Source {
   /**
    * create
    */
-  export interface CreateRequest
-    extends Pick<Source, 'type' | 'subtype' | 'url'> {}
+  export interface CreateRequest extends Pick<Source, 'type' | 'subtype' | 'url'> {}
 
-  export interface CreateResponse extends Pick<Source, 'id'> {}
-
-  export interface CreateManyResponse {
-    count: number;
-  }
   /**
    * get
    */
-
-  export interface GetResponse
-    extends Pick<Source, 'id' | 'type' | 'subtype' | 'url' | 'createdAt'> {}
+  export interface GetResponse extends Pick<Source, 'id' | 'type' | 'subtype' | 'url' | 'createdAt'> {}
 
   export interface GetAllResponse extends Pick<Source, 'characterId'> {
     sources: Array<GetResponse>;

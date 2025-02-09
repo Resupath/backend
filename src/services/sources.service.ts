@@ -9,11 +9,14 @@ import { PrismaService } from './prisma.service';
 export class SourcesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(characterId: Source['characterId'], body: Source.CreateRequest): Promise<Source.CreateResponse> {
+  /**
+   * 캐릭터의 소스를 생성한다.
+   */
+  async create(characterId: Source['characterId'], body: Source.CreateRequest): Promise<Source.GetResponse> {
     const date = DateTimeUtil.now();
 
     const source = await this.prisma.source.create({
-      select: { id: true },
+      select: { id: true, type: true, subtype: true, url: true, created_at: true },
       data: {
         id: randomUUID(),
         character_id: characterId,
@@ -24,10 +27,13 @@ export class SourcesService {
       },
     });
 
-    return source;
+    return this.mapping(source);
   }
 
-  async createMany(characterId: string, body: Array<Source.CreateRequest>): Promise<{ count: number }> {
+  /**
+   * 캐릭터의 소스를 여러개 생성한다.
+   */
+  async createMany(characterId: string, body: Array<Source.CreateRequest>): Promise<Source.GetAllResponse> {
     const date = DateTimeUtil.now();
 
     const createInput = body.map((el): Prisma.SourceCreateManyInput => {
@@ -41,13 +47,23 @@ export class SourcesService {
       };
     });
 
-    const count = await this.prisma.source.createMany({
+    const data = await this.prisma.source.createManyAndReturn({
+      select: { id: true, type: true, subtype: true, url: true, created_at: true },
       data: createInput,
     });
 
-    return count;
+    /**
+     * mapping
+     */
+    const sources = data.map((el): Source.GetResponse => this.mapping(el));
+
+    return { characterId, sources };
   }
 
+  /**
+   * 캐릭터에 저장된 소스들을 전체 반환한다.
+   * @param characterId
+   */
   async getAll(characterId: string): Promise<Source.GetAllResponse> {
     const data = await this.prisma.source.findMany({
       select: {
@@ -64,16 +80,28 @@ export class SourcesService {
     /**
      * mapping
      */
-    const sources = data.map((el): Source.GetResponse => {
-      return {
-        id: el.id,
-        type: el.type as Source['type'],
-        subtype: el.subtype,
-        url: el.url,
-        createdAt: el.created_at.toISOString(),
-      };
-    });
+    const sources = data.map((el): Source.GetResponse => this.mapping(el));
 
     return { characterId, sources };
+  }
+
+  /**
+   * 프리즈마 객체를 인터페이스 타입으로 매핑한다.
+   * @param input source 프리즈마 내부 타입 그대로의 객체이다.
+   */
+  private mapping(source: {
+    id: string;
+    type: string;
+    subtype: string;
+    url: string;
+    created_at: Date;
+  }): Source.GetResponse {
+    return {
+      id: source.id,
+      type: source.type as Source['type'],
+      subtype: source.subtype,
+      url: source.url,
+      createdAt: source.created_at.toISOString(),
+    };
   }
 }

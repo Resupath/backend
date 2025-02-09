@@ -41,7 +41,7 @@ export class SourcesController {
   async createSources(
     @core.TypedParam('characterId') characterId: Source['characterId'],
     @core.TypedBody() body: Array<Source.CreateRequest>,
-  ): Promise<Source.CreateManyResponse> {
+  ): Promise<Source.GetAllResponse> {
     return await this.sourcesService.createMany(characterId, body);
   }
 
