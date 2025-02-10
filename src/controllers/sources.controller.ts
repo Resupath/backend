@@ -56,7 +56,7 @@ export class SourcesController {
   /**
    * 프로젝트에서 id 추출을 지원하는 노션 링크인지 검증한다. 지원하는 url 아니라면 exception이 발생한다.
    */
-  @core.TypedRoute.Get('/notion/verify')
+  @core.TypedRoute.Post('/notion/verify')
   async verifyNotionUrl(@core.TypedBody() body: Pick<Source, 'url'>): Promise<NotionUtil.VerifyUrlResponse> {
     const pageId = this.notionService.verifyNotionUrl(body.url);
     return { pageId };
@@ -66,7 +66,7 @@ export class SourcesController {
    * 노션 링크를 받아 콘텐츠를 읽어 마크다운 문자열로 변환한다.
    */
   @UseGuards(MemberGuard)
-  @core.TypedRoute.Get('/notion/markdown')
+  @core.TypedRoute.Post('/notion/markdown')
   async notionToMarkdown(
     @Member() member: Guard.MemberResponse,
     @core.TypedBody() body: Pick<Source, 'url'>,
