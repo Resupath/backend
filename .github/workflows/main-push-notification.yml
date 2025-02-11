@@ -14,4 +14,4 @@ jobs:
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         with:
-          args: "새로운 코드가 배포되었습니다! 🚀\n커밋 메시지: ${{ github.event.head_commit.message }}"
+          args: "🚀 새로운 코드가 배포되었습니다! \n\n https://github.com/Resupath/backend \ncommit message:${{ github.event.head_commit.message }}"
