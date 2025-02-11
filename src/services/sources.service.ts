@@ -1,8 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
+import { Member } from 'src/interfaces/member.interface';
 import { Source } from 'src/interfaces/source.interface';
 import { DateTimeUtil } from 'src/util/date-time.util';
+import { ObjectUtil } from 'src/util/object.util';
 import { PrismaService } from './prisma.service';
 
 @Injectable()
@@ -61,9 +63,24 @@ export class SourcesService {
   }
 
   /**
-   * 캐릭터에 저장된 특정 소스를 조회한다.
+   * 캐릭터에 저장된 특정 소스를 조회합니다.
+   * @param characterId 캐릭터의 아이디
+   * @param id 소스의 아이디
+   * @param option 조회 옵셔널 파라미터 입니다. 다음과 같습니다.
+   *   - memberId: 특정 멤버에 저장되어있는 소스를 조회하려면, 값으로 아이디를 입력합니다.
    */
-  async get(characterId: Source['characterId'], id: Source['id']): Promise<Source.GetResponse> {
+  async get(
+    characterId: Source['characterId'],
+    id: Source['id'],
+    option?: { memberId?: Member['id'] },
+  ): Promise<Source.GetResponse> {
+    const whereInput: Prisma.SourceWhereUniqueInput = {
+      id,
+      character_id: characterId,
+      deleted_at: null,
+      ...(option?.memberId ? { character: { member_id: option.memberId } } : undefined),
+    };
+
     const source = await this.prisma.source.findUnique({
       select: {
         id: true,
@@ -72,8 +89,7 @@ export class SourcesService {
         url: true,
         created_at: true,
       },
-
-      where: { id, character_id: characterId, deleted_at: null },
+      where: whereInput,
     });
 
     if (!source) {
@@ -81,6 +97,41 @@ export class SourcesService {
     }
 
     return this.mapping(source);
+  }
+
+  /**
+   * 소스를 수정한다. 변경된 내용이 있을때만 수정한다.
+   */
+  async update(
+    memberId: Member['id'],
+    characterId: Source['characterId'],
+    id: Source['id'],
+    body: Source.UpdateRequest,
+  ) {
+    const source = await this.get(characterId, id, { memberId: memberId });
+    const isChanged = ObjectUtil.isChanged(source, body);
+
+    if (!isChanged) {
+      return { message: '변경된 내용이 없습니다.' };
+    }
+
+    const updatedSource = await this.prisma.source.update({
+      select: {
+        id: true,
+        type: true,
+        subtype: true,
+        url: true,
+        created_at: true,
+      },
+      where: { id: id },
+      data: {
+        type: body.type,
+        subtype: body.subtype,
+        url: body.url,
+      },
+    });
+
+    return this.mapping(updatedSource);
   }
 
   /**

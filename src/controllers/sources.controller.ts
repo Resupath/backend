@@ -57,6 +57,22 @@ export class SourcesController {
   }
 
   /**
+   * 캐릭터의 특정 소스를 수정한다. 변경된 내용이 있을때만 수정한다.
+   *
+   * @security x-member bearer
+   */
+  @UseGuards(MemberGuard)
+  @core.TypedRoute.Patch('/:characterId/:id')
+  async updateSource(
+    @Member() member: Guard.MemberResponse,
+    @core.TypedParam('characterId') characterId: Source['characterId'],
+    @core.TypedParam('id') id: Source['id'],
+    @core.TypedBody() body: Source.UpdateRequest,
+  ) {
+    return await this.sourcesService.update(member.id, characterId, id, body);
+  }
+
+  /**
    * 캐릭터에 저장된 소스들을 조회한다.
    */
   @core.TypedRoute.Get('/:characterId')

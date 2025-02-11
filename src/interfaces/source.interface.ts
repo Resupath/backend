@@ -25,4 +25,9 @@ export namespace Source {
   export interface GetAllResponse extends Pick<Source, 'characterId'> {
     sources: Array<GetResponse>;
   }
+
+  /**
+   * update
+   */
+  export interface UpdateRequest extends CreateRequest {}
 }
