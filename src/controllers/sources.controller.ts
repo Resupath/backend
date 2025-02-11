@@ -101,9 +101,9 @@ export class SourcesController {
    * 프로젝트에서 id 추출을 지원하는 노션 링크인지 검증한다. 지원하는 url 아니라면 exception이 발생한다.
    */
   @core.TypedRoute.Post('/notion/verify')
-  async verifyNotionUrl(@core.TypedBody() body: Pick<Source, 'url'>): Promise<NotionUtil.VerifyUrlResponse> {
-    const pageId = this.notionService.verifyNotionUrl(body.url);
-    return { pageId };
+  async verifyNotionUrl(@core.TypedBody() body: Pick<Source, 'url'>): Promise<boolean> {
+    const pageId = this.notionService.getPrivateNotionId(body.url);
+    return pageId ? true : false;
   }
 
   /**

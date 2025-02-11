@@ -23,13 +23,6 @@ export namespace NotionUtil {
   }
 
   /**
-   * 노션 페이지 아이디 응답값
-   */
-  export interface VerifyUrlResponse {
-    pageId: string;
-  }
-
-  /**
    * 노션 페이지 마크다운 변환 응답값
    */
   export interface ToMarkdownResponse {
