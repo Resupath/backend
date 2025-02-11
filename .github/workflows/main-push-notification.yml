@@ -1,0 +1,17 @@
+name: Notification on Push
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Discord Notification
+        uses: Ilshidur/action-discord@master
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        with:
+          args: "새로운 코드가 배포되었습니다! 🚀\n커밋 메시지: ${{ github.event.head_commit.message }}"
