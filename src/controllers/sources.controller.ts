@@ -3,6 +3,7 @@ import { Controller, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Member } from 'src/decorators/member.decorator';
 import { MemberGuard } from 'src/guards/member.guard';
+import { Common } from 'src/interfaces/common.interface';
 import { Guard } from 'src/interfaces/guard.interface';
 import { Source } from 'src/interfaces/source.interface';
 import { NotionService } from 'src/services/notion.service';
@@ -68,7 +69,7 @@ export class SourcesController {
     @core.TypedParam('characterId') characterId: Source['characterId'],
     @core.TypedParam('id') id: Source['id'],
     @core.TypedBody() body: Source.UpdateRequest,
-  ) {
+  ): Promise<Source.GetResponse | Common.Response> {
     const updatedSource = await this.sourcesService.update(member.id, characterId, id, body);
     return updatedSource ?? { message: '변경된 내용이 없습니다.' };
   }
@@ -84,7 +85,7 @@ export class SourcesController {
     @Member() member: Guard.MemberResponse,
     @core.TypedParam('characterId') characterId: Source['characterId'],
     @core.TypedParam('id') id: Source['id'],
-  ) {
+  ): Promise<Common.Response> {
     await this.sourcesService.delete(member.id, characterId, id);
     return { message: '첨부 파일이 삭제되었습니다. ' };
   }
