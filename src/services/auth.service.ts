@@ -69,7 +69,7 @@ export class AuthService {
       return this.login(member);
     } catch (error) {
       console.error(error);
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('구글 로그인에 실패했습니다.');
     }
   }
 
@@ -100,7 +100,7 @@ export class AuthService {
       });
     } catch (error) {
       console.error(error);
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('노션 연동에 실패했습니다.');
     }
   }
 
@@ -244,7 +244,7 @@ export class AuthService {
     });
 
     if (!member || !member.member_id) {
-      throw new NotFoundException();
+      throw new NotFoundException('멤버 정보가 존재하지 않습니다.');
     }
 
     return { memberId: member.member_id };
@@ -258,7 +258,7 @@ export class AuthService {
       return payload as { id: string; name: string };
     } catch (error) {
       console.error(error);
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('잘못된 토큰입니다.');
     }
   }
 

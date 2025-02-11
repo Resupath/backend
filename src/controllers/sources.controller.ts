@@ -27,7 +27,7 @@ export class SourcesController {
   async createSource(
     @core.TypedParam('characterId') characterId: Source['characterId'],
     @core.TypedBody() body: Source.CreateRequest,
-  ) {
+  ): Promise<Source.GetResponse> {
     return await this.sourcesService.create(characterId, body);
   }
 
@@ -108,6 +108,8 @@ export class SourcesController {
 
   /**
    * 노션 링크를 받아 콘텐츠를 읽어 마크다운 문자열로 변환한다.
+   *
+   * @security x-member bearer
    */
   @UseGuards(MemberGuard)
   @core.TypedRoute.Post('/notion/markdown')
