@@ -93,7 +93,7 @@ export class SourcesService {
     });
 
     if (!source) {
-      throw new NotFoundException('존재하지 않는 소스 입니다.');
+      throw new NotFoundException('존재하지 않는 첨부파일 입니다.');
     }
 
     return this.mapping(source);
@@ -132,6 +132,28 @@ export class SourcesService {
     });
 
     return this.mapping(updatedSource);
+  }
+
+  /**
+   * 소스를 삭제한다.
+   */
+  async delete(memberId: Member['id'], characterId: Source['characterId'], id: Source['id']): Promise<void> {
+    const date = DateTimeUtil.now();
+    await this.get(characterId, id, { memberId: memberId });
+
+    await this.prisma.source.update({
+      select: {
+        id: true,
+        type: true,
+        subtype: true,
+        url: true,
+        created_at: true,
+      },
+      where: { id: id },
+      data: {
+        deleted_at: date,
+      },
+    });
   }
 
   /**

@@ -74,6 +74,22 @@ export class SourcesController {
   }
 
   /**
+   * 캐릭터의 특정 소스를 삭제한다. (soft-del)
+   *
+   * @security x-member bearer
+   */
+  @UseGuards(MemberGuard)
+  @core.TypedRoute.Delete('/:characterId/:id')
+  async deleteSource(
+    @Member() member: Guard.MemberResponse,
+    @core.TypedParam('characterId') characterId: Source['characterId'],
+    @core.TypedParam('id') id: Source['id'],
+  ) {
+    await this.sourcesService.delete(member.id, characterId, id);
+    return { message: '첨부 파일이 삭제되었습니다. ' };
+  }
+
+  /**
    * 캐릭터에 저장된 소스들을 조회한다.
    */
   @core.TypedRoute.Get('/:characterId')
