@@ -69,7 +69,8 @@ export class SourcesController {
     @core.TypedParam('id') id: Source['id'],
     @core.TypedBody() body: Source.UpdateRequest,
   ) {
-    return await this.sourcesService.update(member.id, characterId, id, body);
+    const updatedSource = await this.sourcesService.update(member.id, characterId, id, body);
+    return updatedSource ?? { message: '변경된 내용이 없습니다.' };
   }
 
   /**

@@ -107,12 +107,12 @@ export class SourcesService {
     characterId: Source['characterId'],
     id: Source['id'],
     body: Source.UpdateRequest,
-  ) {
+  ): Promise<Source.GetResponse | null> {
     const source = await this.get(characterId, id, { memberId: memberId });
     const isChanged = ObjectUtil.isChanged(source, body);
 
     if (!isChanged) {
-      return { message: '변경된 내용이 없습니다.' };
+      return null;
     }
 
     const updatedSource = await this.prisma.source.update({
