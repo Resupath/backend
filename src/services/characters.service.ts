@@ -139,7 +139,10 @@ export class CharactersService {
             },
           },
         },
-        sources: { select: { id: true, type: true, subtype: true, url: true, created_at: true } },
+        sources: {
+          select: { id: true, type: true, subtype: true, url: true, created_at: true },
+          where: { deleted_at: null },
+        },
         character_personalites: {
           select: {
             personality: {
