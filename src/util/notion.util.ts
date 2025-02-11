@@ -1,4 +1,7 @@
 export namespace NotionUtil {
+  /**
+   * 노션 OAuth 인증 응답값
+   */
   export interface AuthorizationResponse {
     access_token: string;
     bot_id: string;
@@ -19,14 +22,15 @@ export namespace NotionUtil {
     workspace_icon?: string;
   }
 
-  const privateNotionIdRegex = /https?:\/\/(www\.)?notion\.so\/(?:[^/]+\/)?[^\s/]*?([a-f0-9]{32})(?:\?[^\s]*)?$/;
+  /**
+   * 노션 페이지 마크다운 변환 응답값
+   */
+  export interface ToMarkdownResponse {
+    content: string;
+  }
 
   /**
-   * 노션 private url에서 id 부분을 반환한다.
-   * private url 형식이 아니거나, id가 추출되지 않으면 null을 반환한다.
+   * 노션 프라이빗 페이지 아이디 추출 정규식
    */
-  export function getPrivateNotionId(url: string): string | null {
-    const match = url.match(privateNotionIdRegex);
-    return match ? match[2] : null;
-  }
+  export const privateNotionIdRegex = /https?:\/\/(www\.)?notion\.so\/(?:[^/]+\/)?[^\s/]*?([a-f0-9]{32})(?:\?[^\s]*)?$/;
 }

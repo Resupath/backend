@@ -69,7 +69,7 @@ export class AuthService {
       return this.login(member);
     } catch (error) {
       console.error(error);
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('구글 로그인에 실패했습니다.');
     }
   }
 
@@ -100,26 +100,33 @@ export class AuthService {
       });
     } catch (error) {
       console.error(error);
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('노션 연동에 실패했습니다.');
     }
   }
 
   /**
    * 해당 유저와 연관된 멤버에게 notion provider 조회결과가 있는지 확인한다.
+   * @param userId
    */
-  async getNotionAccessToken(userId: string): Promise<Pick<Provider, 'id' | 'password'>> {
-    const member = await this.getMember(userId);
+  async getNotionAccessTokenByUserId(userId: string): Promise<Pick<Provider, 'id' | 'password'>> {
+    const { memberId } = await this.getMember(userId);
+    return await this.getNotionAccessTokenByMemberId(memberId);
+  }
 
+  /**
+   * 해당 멤버의 notion provider 조회 결과가 있는지 확인한다.
+   */
+  async getNotionAccessTokenByMemberId(memberId: string): Promise<Pick<Provider, 'id' | 'password'>> {
     const provider = await this.prisma.provider.findFirst({
       select: { id: true, password: true },
       where: {
-        member_id: member.memberId,
+        member_id: memberId,
         type: 'notion',
       },
     });
 
     if (!provider) {
-      throw new NotFoundException();
+      throw new NotFoundException('노션 연동정보가 존재하지 않습니다.');
     }
 
     return provider;
@@ -237,7 +244,7 @@ export class AuthService {
     });
 
     if (!member || !member.member_id) {
-      throw new NotFoundException();
+      throw new NotFoundException('멤버 정보가 존재하지 않습니다.');
     }
 
     return { memberId: member.member_id };
@@ -251,7 +258,7 @@ export class AuthService {
       return payload as { id: string; name: string };
     } catch (error) {
       console.error(error);
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('잘못된 토큰입니다.');
     }
   }
 

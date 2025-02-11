@@ -1,16 +1,18 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { Client } from '@notionhq/client';
-import axios from 'axios';
-import { NotionToMarkdown } from 'notion-to-md';
+import { Injectable } from '@nestjs/common';
 import { Character } from 'src/interfaces/characters.interface';
 import { Source } from 'src/interfaces/source.interface';
-import { NotionUtil } from 'src/util/notion.util';
-import { AuthService } from './auth.service';
+import { NotionService } from './notion.service';
 
 @Injectable()
 export class PromptsService {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly notionService: NotionService) {}
 
+  /**
+   * 채팅에 앞서 캐릭터에 입력된 정보에 따라 시스템 프롬프트를 생성합니다.
+   *
+   * @param userId 사용자 아이디 특정 Source의 권한(OAuth 연동 등)여부를 확인하기 위해 사용됩니다.
+   * @param input 캐릭터에 입력된 정보, 캐릭터 상세 조회와 인터페이스 동일
+   */
   async prompt(userId: string, input: Character.GetResponse): Promise<string> {
     const prompt = [
       `# 1. 반드시 지켜야 할 사항:`,
@@ -33,12 +35,15 @@ export class PromptsService {
       await this.addSources(userId, input.sources),
       ``,
       `# 3. 이제 면접관(유저)이 질문을 시작할 것이다:`,
-      this.addIntro(),
+      this.addOutro(),
     ];
 
     return prompt.join(`\n`);
   }
 
+  /**
+   * 기본 정책을 반환합니다. 프롬프트 최상단으로 들어갑니다.
+   */
   private addPolicy(): string {
     return [
       `- 지금부터 가상 면접을 진행합니다. 면접관은 유저이며, 나는 면접 대상자로 행동합니다.`,
@@ -50,7 +55,10 @@ export class PromptsService {
     ].join(`\n`);
   }
 
-  private addIntro(): string {
+  /**
+   * 프롬프트의 마지막에 들어가는 명령들입니다.
+   */
+  private addOutro(): string {
     return [
       `- 모든 답변은 공손하며, 간결하고 논리적인 구조를 따른다.`,
       `- 구체적인 예시와 실질적 경험을 포함하여 신뢰성을 높인다.`,
@@ -60,6 +68,9 @@ export class PromptsService {
     ].join(`\n`);
   }
 
+  /**
+   * 직군, 기술스택, 성격과 같은 키워드성 데이터를 ',' 으로 연결해 반환합니다.
+   */
   private formatKeywords(
     input:
       | Character.GetResponse['positions']
@@ -69,6 +80,14 @@ export class PromptsService {
     return input.map((el) => el.keyword).join(', ');
   }
 
+  /**
+   * 경력 사항을 아래 포멧 문자열로 조합합니다.
+   *
+   * ### 회사명:
+   *  - 근무 기간:
+   *  - 직무:
+   *  - 주요 업무 및 성과:
+   */
   private addExperiences(input: Character.GetResponse['experiences']): string {
     return input
       .map((el) => {
@@ -82,51 +101,33 @@ export class PromptsService {
       .join(`\n\n`);
   }
 
+  /**
+   * 소스들을 읽어 문자열로 반환합니다.
+   * @param userId 노션과 같은 리소스 접근에 토큰이 필요한 경우, 토큰을 받아오기 위해 사용됩니다.
+   * @param input 소스들의 데이터
+   */
   private async addSources(userId: string, input: Character.GetResponse['sources']): Promise<string> {
     const sources = await Promise.all(input.map((el) => this.formatSource(userId, el)));
     return sources.join(`\n\n`);
   }
 
-  private async formatSource(userId: string, input: Character.GetResponse['sources'][0]): Promise<string> {
+  /**
+   * 소스 한 개를 읽어 마크다운 문자열로 반환합니다.
+   * @param userId 노션과 같은 리소스 접근에 토큰이 필요한 경우, 토큰을 받아오기 위해 사용됩니다.
+   * @param input 소스 한개의 데이터
+   */
+  private async formatSource(userId: string, input: Character.GetResponse['sources'][number]): Promise<string> {
     const content = await this.handleSource(userId, input.type, input.url);
     return [`### ${input.subtype}`, '```md', `${content}`, '```'].join('\n');
   }
 
+  /**
+   * 소스의 type과 url에 따라 콘텐츠를 읽어올 수 있도록 핸들링 합니다.
+   * @todo 노션외 다른 타입도 검증할 수 있도록 고도화
+   */
   private async handleSource(userId: string, type: Source['type'], url: Source['url']): Promise<string> {
-    return type === 'link' ? this.handleNotion(userId, url) : url;
-  }
-
-  private async handleNotion(userId: string, url: Source['url']): Promise<string> {
-    try {
-      const id = NotionUtil.getPrivateNotionId(url);
-
-      if (!id) {
-        throw new NotFoundException();
-      }
-      const notion = await this.authService.getNotionAccessToken(userId);
-      return this.getNotionToMd(notion.password, id);
-    } catch (err) {
-      console.error(err);
-      return [url, `노션 콘텐츠 읽기에 실패 했습니다.`].join('\n');
-    }
-  }
-
-  private async getNotionToMd(accessToken: string, id: string): Promise<string> {
-    const notionClient = new Client({ auth: accessToken });
-    const n2m = new NotionToMarkdown({ notionClient, config: { separateChildPage: false } });
-    const mdblocks = await n2m.pageToMarkdown(id);
-    const mdString = n2m.toMarkdownString(mdblocks);
-
-    return mdString?.parent ?? '';
-  }
-
-  private async fetchUrl(url: Source['url']): Promise<string> {
-    try {
-      const response = await axios.get(url);
-      return response.data;
-    } catch (error) {
-      console.error(error);
-      return `${url}\n 링크 콘텐츠 읽기에 실패했습니다.`;
-    }
+    return type === 'link' && url.includes('notion')
+      ? await this.notionService.notionToMarkdownByUserId(userId, url)
+      : url;
   }
 }
