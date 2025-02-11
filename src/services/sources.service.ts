@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { Source } from 'src/interfaces/source.interface';
@@ -58,6 +58,29 @@ export class SourcesService {
     const sources = data.map((el): Source.GetResponse => this.mapping(el));
 
     return { characterId, sources };
+  }
+
+  /**
+   * 캐릭터에 저장된 특정 소스를 조회한다.
+   */
+  async get(characterId: Source['characterId'], id: Source['id']): Promise<Source.GetResponse> {
+    const source = await this.prisma.source.findUnique({
+      select: {
+        id: true,
+        type: true,
+        subtype: true,
+        url: true,
+        created_at: true,
+      },
+
+      where: { id, character_id: characterId, deleted_at: null },
+    });
+
+    if (!source) {
+      throw new NotFoundException('존재하지 않는 소스 입니다.');
+    }
+
+    return this.mapping(source);
   }
 
   /**

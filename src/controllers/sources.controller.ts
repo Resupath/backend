@@ -46,6 +46,17 @@ export class SourcesController {
   }
 
   /**
+   * 캐릭터의 특정 소스를 조회한다.
+   */
+  @core.TypedRoute.Get('/:characterId/:id')
+  async getSource(
+    @core.TypedParam('characterId') characterId: Source['characterId'],
+    @core.TypedParam('id') id: Source['id'],
+  ): Promise<Source.GetResponse> {
+    return await this.sourcesService.get(characterId, id);
+  }
+
+  /**
    * 캐릭터에 저장된 소스들을 조회한다.
    */
   @core.TypedRoute.Get('/:characterId')
