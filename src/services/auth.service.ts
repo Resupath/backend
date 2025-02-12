@@ -41,20 +41,20 @@ export class AuthService {
   /**
    * 구글 로그인 페이지의 url을 반환한다.
    */
-  async getGoogleLoginUrl() {
-    const { clientId, redirectUri } = this.getGoogleClient();
+  async getGoogleLoginUrl(redirectUri?: string) {
+    const google = this.getGoogleClient();
     const scope = encodeURIComponent('profile email'); // 허용된 스코프는 프로필과 이메일이다.
 
-    return `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}&response_type=code&access_type=offline&prompt=consent`;
+    return `https://accounts.google.com/o/oauth2/v2/auth?client_id=${google.clientId}&redirect_uri=${redirectUri ?? google.redirectUri}&scope=${scope}&response_type=code&access_type=offline&prompt=consent`;
   }
 
   /**
    * 구글 로그인 결과를 검증하고 jwt를 발급한다.
    * @param code 클라이언트의 로그인 성공 시 얻을수 있는 코드값.
    */
-  async getGoogleAuthorization(userId: string, code: string) {
+  async getGoogleAuthorization(userId: string, input: Auth.LoginRequest) {
     try {
-      const { accessToken, refreshToken } = await this.getGoogleAccessToken(code);
+      const { accessToken, refreshToken } = await this.getGoogleAccessToken(input);
       const { uid, email, name } = await this.getGoogleUserInfo(accessToken);
 
       const member = await this.findOrCreateMember(userId, {
@@ -76,18 +76,18 @@ export class AuthService {
   /**
    * 노션 로그인 페이지의 url을 반환한다.
    */
-  async getNotionLoginUrl() {
-    const { clientId, redirectUri } = this.getNotionClient();
-    return `https://api.notion.com/v1/oauth/authorize?client_id=${clientId}&response_type=code&owner=user&redirect_uri=${redirectUri}`;
+  async getNotionLoginUrl(redirectUri?: string) {
+    const notion = this.getNotionClient();
+    return `https://api.notion.com/v1/oauth/authorize?client_id=${notion.clientId}&response_type=code&owner=user&redirect_uri=${redirectUri ?? notion.redirectUri}`;
   }
 
   /**
    * 노션 인증 결과를 검증하고 jwt를 발급한다.
    * @param code 클라이언트의 로그인 성공 시 얻을수 있는 코드값.
    */
-  async getNotionAuthorization(userId: string, code: string) {
+  async getNotionAuthorization(userId: string, input: Auth.LoginRequest) {
     try {
-      const notion = await this.getNotionAccessTokenAndUserinfo(code);
+      const notion = await this.getNotionAccessTokenAndUserinfo(input);
       const { memberId } = await this.getMember(userId);
 
       await this.createProvider(memberId, {
@@ -281,7 +281,7 @@ export class AuthService {
     return { ...member, accessToken, refreshToken };
   }
 
-  private async getGoogleAccessToken(code: string) {
+  private async getGoogleAccessToken(input: Auth.LoginRequest) {
     const { clientId, clientSecret, redirectUri } = this.getGoogleClient();
 
     const response = await axios.post<{
@@ -291,10 +291,10 @@ export class AuthService {
       scope: string;
       expires_in: number;
     }>(`https://oauth2.googleapis.com/token`, {
-      code,
+      code: input.code,
       client_id: clientId,
       client_secret: clientSecret,
-      redirect_uri: redirectUri,
+      redirect_uri: input.redirectUri ?? redirectUri,
       grant_type: 'authorization_code',
     });
 
@@ -326,7 +326,7 @@ export class AuthService {
     };
   }
 
-  private async getNotionAccessTokenAndUserinfo(code: string) {
+  private async getNotionAccessTokenAndUserinfo(input: Auth.LoginRequest) {
     const { clientId, clientSecret, redirectUri } = this.getNotionClient();
 
     const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
@@ -335,8 +335,8 @@ export class AuthService {
       `https://api.notion.com/v1/oauth/token`,
       {
         grant_type: 'authorization_code',
-        code,
-        redirect_uri: redirectUri,
+        code: input.code,
+        redirect_uri: input.redirectUri ?? redirectUri,
       },
       {
         headers: {

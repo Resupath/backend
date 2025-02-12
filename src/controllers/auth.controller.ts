@@ -33,8 +33,8 @@ export class AuthController {
    * 클라이언트 요청에 따라 구글 로그인 url을 반환한다.
    */
   @core.TypedRoute.Get('google')
-  async getGoogleLoginUrl(): Promise<string> {
-    return await this.authService.getGoogleLoginUrl();
+  async getGoogleLoginUrl(@core.TypedQuery() query: Auth.GetUrlRequest): Promise<string> {
+    return await this.authService.getGoogleLoginUrl(query.redirectUri);
   }
 
   /**
@@ -48,15 +48,15 @@ export class AuthController {
     @User() user: Guard.UserResponse,
     @core.TypedQuery() query: Auth.LoginRequest,
   ): Promise<Auth.LoginResponse> {
-    return this.authService.getGoogleAuthorization(user.id, query.code);
+    return this.authService.getGoogleAuthorization(user.id, query);
   }
 
   /**
    * 노션 Authorization url을 반환한다.
    */
   @core.TypedRoute.Get('notion')
-  async getNotionAuthorizationUrl(): Promise<string> {
-    return this.authService.getNotionLoginUrl();
+  async getNotionAuthorizationUrl(@core.TypedQuery() query: Auth.GetUrlRequest): Promise<string> {
+    return this.authService.getNotionLoginUrl(query.redirectUri);
   }
 
   /**
@@ -70,7 +70,7 @@ export class AuthController {
     @User() user: Guard.UserResponse,
     @core.TypedQuery() query: Auth.LoginRequest,
   ): Promise<void> {
-    return this.authService.getNotionAuthorization(user.id, query.code);
+    return this.authService.getNotionAuthorization(user.id, query);
   }
 
   /**
