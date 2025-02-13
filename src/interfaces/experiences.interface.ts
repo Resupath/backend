@@ -37,6 +37,4 @@ export namespace Experience {
    * update
    */
   export interface UpdateRequest extends Omit<CreateRequest, 'sequence'> {}
-
-  export interface UpdateResponse extends Pick<Experience, 'id'> {}
 }
