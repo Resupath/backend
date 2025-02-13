@@ -165,7 +165,7 @@ export class CharactersService {
      * mapping experinece
      */
     const experiences = snapshot.character_snapshot_experiences.map((el) =>
-      this.experiencesService.mappingOutput(el.experience),
+      this.experiencesService.mapping(el.experience),
     );
 
     const experienceYears = this.experiencesService.getExperienceYears(experiences);
@@ -381,7 +381,7 @@ export class CharactersService {
       }
 
       const experiences = snapshot.character_snapshot_experiences.map((el) =>
-        this.experiencesService.mappingOutput(el.experience),
+        this.experiencesService.mapping(el.experience),
       );
       const experienceYears = this.experiencesService.getExperienceYears(experiences);
 

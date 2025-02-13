@@ -29,7 +29,7 @@ export class ExperiencesService {
     } as const;
   }
 
-  mappingOutput(experience: {
+  mapping(experience: {
     id: string;
     created_at: Date;
     last_snapshot: {
@@ -46,7 +46,7 @@ export class ExperiencesService {
     const snapshot = experience.last_snapshot?.snapshot;
 
     if (!snapshot) {
-      throw new NotFoundException();
+      throw new NotFoundException('경력 정보를 찾을 수 없습니다.');
     }
 
     return {
@@ -100,9 +100,13 @@ export class ExperiencesService {
       );
     });
 
-    return newExperiences.map((el) => this.mappingOutput(el));
+    return newExperiences.map((el) => this.mapping(el));
   }
 
+  /**
+   * 멤버가 저장한 경력을 조회한다. 삭제한 경력은 조회되지 않는다.
+   * @param memberId 조회할 멤버의 아이디.
+   */
   async getAll(memberId: string): Promise<Array<Experience.GetResponse>> {
     const experiences = await this.prisma.experience.findMany({
       select: this.createSelectInput(),
@@ -110,7 +114,44 @@ export class ExperiencesService {
       orderBy: { last_snapshot: { snapshot: { sequence: 'asc' } } },
     });
 
-    return experiences.map((el) => this.mappingOutput(el));
+    return experiences.map((el) => this.mapping(el));
+  }
+
+  /**
+   * 캐릭터의 마지막 스냅샷에 저장된 경력들을 전체 조회합니다.
+   * @param characterId 조회한 캐릭터의 아이디
+   */
+  async getAllByCharacterId(characterId: string): Promise<Array<Experience.GetResponse>> {
+    const character = await this.prisma.character.findUnique({
+      select: {
+        last_snapshot: {
+          select: {
+            snapshot: {
+              select: {
+                character_snapshot_experiences: {
+                  select: {
+                    experience: {
+                      select: this.createSelectInput(),
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      where: {
+        id: characterId,
+        deleted_at: null,
+      },
+    });
+
+    const snapshot = character?.last_snapshot?.snapshot;
+    if (!snapshot) {
+      throw new NotFoundException('캐릭터 정보를 찾을 수 없습니다.');
+    }
+
+    return snapshot.character_snapshot_experiences.map((el) => this.mapping(el.experience));
   }
 
   /**
@@ -135,7 +176,7 @@ export class ExperiencesService {
     if (!experience) {
       throw new NotFoundException();
     }
-    return this.mappingOutput(experience);
+    return this.mapping(experience);
   }
 
   async update(
