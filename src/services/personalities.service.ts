@@ -37,6 +37,8 @@ export class PersonalitiesService {
   async getAll(): Promise<Array<Personality.GetResponse>> {
     const personalities = await this.prisma.personality.findMany({
       select: { id: true, keyword: true, created_at: true },
+      where: { deleted_at: null },
+      orderBy: { keyword: 'asc' },
     });
 
     /**
@@ -58,6 +60,7 @@ export class PersonalitiesService {
       this.prisma.personality.findMany({
         select: { id: true, keyword: true, created_at: true },
         where: whereInput,
+        orderBy: { keyword: 'asc' },
         skip,
         take,
       }),
