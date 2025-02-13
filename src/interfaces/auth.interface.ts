@@ -11,7 +11,11 @@ export namespace Auth {
     refreshToken: string & tags.MinLength<1>;
   }
 
-  export interface LoginRequest {
+  export interface GetUrlRequest {
+    redirectUri?: string;
+  }
+
+  export interface LoginRequest extends GetUrlRequest {
     code: string & tags.MinLength<1>;
   }
 
