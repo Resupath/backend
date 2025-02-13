@@ -21,8 +21,7 @@ export namespace Personality {
   /**
    * get
    */
-  export interface GetByPageData extends Pick<Personality, 'id' | 'keyword'> {}
+  export interface GetResponse extends Pick<Personality, 'id' | 'keyword' | 'createdAt'> {}
 
-  export interface GetByPageResonse
-    extends PaginationUtil.Response<GetByPageData> {}
+  export interface GetByPageResponse extends PaginationUtil.Response<GetResponse> {}
 }
