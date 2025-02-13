@@ -119,6 +119,63 @@ export class ExperiencesService {
   }
 
   /**
+   * 특정 경력을 사용하고 있는 캐릭터를 전체 반환한다.
+   * 경력을 반환하는게 아니라 캐릭터 리스트를 반환합니다.
+   *
+   * @param id 조회할 경력의 아이디 입니다.
+   */
+  async getCharacters(id: Experience['id']): Promise<Array<Omit<Character, 'deletedAt' | 'memberId'>>> {
+    const characters = await this.prisma.character.findMany({
+      select: {
+        id: true,
+        is_public: true,
+        created_at: true,
+        last_snapshot: {
+          select: {
+            snapshot: {
+              select: {
+                nickname: true,
+                image: true,
+              },
+            },
+          },
+        },
+      },
+      where: {
+        last_snapshot: {
+          snapshot: {
+            character_snapshot_experiences: {
+              some: {
+                experience_id: id,
+                deleted_at: null,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    /**
+     * mapping
+     */
+    return characters.map((el) => {
+      const snapshot = el.last_snapshot?.snapshot;
+
+      if (!snapshot) {
+        throw new NotFoundException(`캐릭터 스냅샷이 존재하지 않습니다. id: ${el.id}`);
+      }
+
+      return {
+        id: el.id,
+        nickname: snapshot.nickname,
+        image: snapshot.image,
+        isPublic: el.is_public,
+        createdAt: el.created_at.toISOString(),
+      };
+    });
+  }
+
+  /**
    * 멤버가 저장한 경력들을 전체 조회한다. 삭제한 경력은 조회되지 않는다.
    *
    * @param memberId 조회할 멤버의 아이디.

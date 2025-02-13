@@ -40,6 +40,19 @@ export class ExperiencesController {
   }
 
   /**
+   * 특정 경력을 사용하고 있는 캐릭터들을 반환한다.
+   *
+   * @security x-member bearer
+   */
+  @UseGuards(MemberGuard)
+  @core.TypedRoute.Get('/:id/characters')
+  async getCharacters(
+    @core.TypedParam('id') id: Experience['id'],
+  ): Promise<Array<Omit<Character, 'deletedAt' | 'memberId'>>> {
+    return await this.experiencesService.getCharacters(id);
+  }
+
+  /**
    * 경력을 조회한다.
    *
    * @security x-member bearer
