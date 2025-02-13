@@ -3,6 +3,7 @@ import { Controller, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Member } from 'src/decorators/member.decorator';
 import { MemberGuard } from 'src/guards/member.guard';
+import { Character } from 'src/interfaces/characters.interface';
 import { Common } from 'src/interfaces/common.interface';
 import { Experience } from 'src/interfaces/experiences.interface';
 import { Guard } from 'src/interfaces/guard.interface';
@@ -69,7 +70,8 @@ export class ExperiencesController {
   }
 
   /**
-   * 경력을 삭제한다.
+   * 경력을 삭제한다. 등록된 캐릭터가 있다면 이후 생성되는 채팅에 영향을 줍니다.
+   * 수정 이전의 채팅방의 경우 유지됩니다.
    *
    * @security x-member bearer
    */

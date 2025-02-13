@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'crypto';
+import { Character } from 'src/interfaces/characters.interface';
 import { Experience } from 'src/interfaces/experiences.interface';
 import { DateTimeUtil } from 'src/util/date-time.util';
 import { ObjectUtil } from 'src/util/object.util';
@@ -238,16 +239,22 @@ export class ExperiencesService {
   }
 
   /**
-   * 경력을 soft-del 처리합니다.
-   * 캐릭터 스냅샷에 영향주지 않습니다.
+   * 경력을 soft-del 처리합니다. 캐릭터 스냅샷에 영향을 줍니다.
    */
   async delete(memberId: string, id: Experience['id']): Promise<void> {
     const experience = await this.get(memberId, id);
     const date = DateTimeUtil.now();
 
-    await this.prisma.experience.update({
-      where: { id },
-      data: { deleted_at: date },
+    await this.prisma.$transaction(async (tx) => {
+      await tx.experience.update({
+        where: { id },
+        data: { deleted_at: date },
+      });
+
+      await tx.character_Snapshot_Experience.updateMany({
+        where: { experience_id: id },
+        data: { deleted_at: date },
+      });
     });
   }
 
