@@ -18,6 +18,9 @@ export class CharactersService {
     private readonly skillsService: SkillsService,
   ) {}
 
+  /**
+   * 캐릭터를 생성한다.
+   */
   async create(memberId: string, input: Character.CreateRequest) {
     const characterId = randomUUID();
     const snapshotId = randomUUID();
@@ -101,6 +104,9 @@ export class CharactersService {
     return character;
   }
 
+  /**
+   * 특정 캐릭터를 조회한다.
+   */
   async get(id: string): Promise<Character.GetResponse> {
     const character = await this.prisma.character.findUnique({
       select: {
@@ -221,16 +227,11 @@ export class CharactersService {
   /**
    * 캐릭터를 페이지네이션 조회한다.
    *
-   * @param query 페이지네이션/정렬/검색 요청 쿼리이다.
-   * sort : 정렬조건, latest(최신순), roomCount(채팅방순)
-   * search : 검색조건, 캐릭터 닉네임, 직군, 기술명을 포함해 검색하도록 한다.
-   * position : 검색조건, 입력된 직군을 포함해 검색한다.
-   * skill : 검색조건, 입력된 기술명을 포함해 검색한다.
-   *
+   * @param query 페이지네이션 요청 쿼리 객체.
    * @param option 조회시 where 조건에 사용되는 옵셔널 파라미터의 객체이다.
-   * isPublic : 공개 여부이다. 공개된 캐릭터만 조회할 경우 true로 설정해야 한다,
-   * memberId : 특정 멤버의 캐릭터만 조회하고 싶다면, 이 파라미터에 아이디를 넣어주어야 한다.
-   * deletedAt : 삭제 여부이다. 삭제된 캐릭터도 조회하고 싶다면 true로 설정한다.
+   *    - isPublic : 공개 여부이다. 공개된 캐릭터만 조회할 경우 true로 설정해야 한다,
+   *    - memberId : 특정 멤버의 캐릭터만 조회하고 싶다면, 이 파라미터에 아이디를 넣어주어야 한다.
+   *    - deletedAt : 삭제 여부이다. 삭제된 캐릭터도 조회하고 싶다면 true로 설정한다.
    */
   async getBypage(
     query: Character.GetByPageRequest,
@@ -445,4 +446,9 @@ export class CharactersService {
       data: characterPersonalities,
     });
   }
+
+  /**
+   * 캐릭터를 수정한다.
+   */
+  async update(memberId: Member['id'], id: Character['id'], body: Character.UpdateRequest) {}
 }
