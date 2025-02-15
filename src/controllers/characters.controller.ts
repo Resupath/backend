@@ -1,5 +1,5 @@
 import core from '@nestia/core';
-import { Controller, UseGuards } from '@nestjs/common';
+import { Body, Controller, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Member } from 'src/decorators/member.decorator';
 import { MemberGuard } from 'src/guards/member.guard';
@@ -52,5 +52,20 @@ export class CharactersController {
   @core.TypedRoute.Get(':id')
   async getCharacter(@core.TypedParam('id') id: Character['id']) {
     return await this.charactersService.get(id);
+  }
+
+  /**
+   * 캐릭터를 수정한다.
+   *
+   * @security x-member bearer
+   */
+  @UseGuards(MemberGuard)
+  @core.TypedRoute.Patch(':id')
+  async updateCharacter(
+    @Member() member: Guard.MemberResponse,
+    @core.TypedParam('id') id: Character['id'],
+    @core.TypedBody() body: Character.UpdateRequest,
+  ) {
+    return await this.charactersService.update(member.id, id, body);
   }
 }

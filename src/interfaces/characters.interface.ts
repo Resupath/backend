@@ -67,4 +67,9 @@ export namespace Character {
     > {}
 
   export interface GetByPageResponse extends PaginationUtil.Response<Character.GetBypageData> {}
+
+  /**
+   * update
+   */
+  export interface UpdateRequest extends Partial<Character.CreateRequest> {}
 }
