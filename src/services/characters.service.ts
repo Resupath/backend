@@ -296,9 +296,7 @@ export class CharactersService {
           },
         },
         orderBy: {
-          rooms: {
-            _count: 'desc',
-          },
+          created_at: 'desc',
         },
         where: whereInput,
         skip,
