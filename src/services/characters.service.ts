@@ -220,7 +220,7 @@ export class CharactersService {
 
   /**
    * 캐릭터를 페이지네이션 조회한다.
-   * @param query 페이지네이션 요청 쿼리 객체이다.
+   * @param query 페이지네이션 및 정렬조건 요청 쿼리이다.
    *
    * @param option 조회시 where 조건에 사용되는 옵셔널 파라미터의 객체이다.
    * isPublic : 공개 여부이다. 공개된 캐릭터만 조회할 경우 true로 설정해야 한다,
@@ -242,6 +242,15 @@ export class CharactersService {
       member_id: option.memberId,
       deleted_at: option.deletedAt ? undefined : null,
     };
+
+    const orderInput: Prisma.CharacterOrderByWithRelationInput =
+      query.sort === 'roomCount' // 누적 대화순
+        ? {
+            rooms: {
+              _count: 'desc',
+            },
+          }
+        : { created_at: 'desc' }; // 최신순
 
     const [characters, count] = await this.prisma.$transaction([
       this.prisma.character.findMany({
@@ -295,9 +304,7 @@ export class CharactersService {
             select: { rooms: true },
           },
         },
-        orderBy: {
-          created_at: 'desc',
-        },
+        orderBy: orderInput,
         where: whereInput,
         skip,
         take,
