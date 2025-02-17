@@ -10,29 +10,28 @@ import { Source } from './source.interface';
 export interface Character {
   id: string & tags.Format<'uuid'>;
   memberId: Member['id'];
+  nickname: CharacterSnapshot['nickname'];
+  image: CharacterSnapshot['image'];
+  isPublic: boolean;
+  createdAt: string & tags.Format<'date-time'>;
+  deletedAt: string & tags.Format<'date-time'>;
+}
+
+export interface CharacterSnapshot {
+  id: string & tags.Format<'uuid'>;
+  characterId: Character['id'];
   nickname: string & tags.MinLength<1>;
   image: (string & tags.MinLength<1>) | null;
-  isPublic: boolean;
   createdAt: string & tags.Format<'date-time'>;
   deletedAt: string & tags.Format<'date-time'>;
 }
 
 export namespace Character {
   /**
-   * 스냅샷 생성 요청 객체
-   */
-  export interface CreateSnapshotRequest extends Pick<Character, 'nickname'>, Partial<Pick<Character, 'image'>> {}
-
-  /**
-   * 스냅샷 생성 응답 객체
-   */
-  export interface CreateSnapshotResponse extends Pick<Character, 'id' | 'nickname' | 'image' | 'createdAt'> {}
-
-  /**
    * 캐릭터 생성 요청 객체
    */
   export interface CreateRequest {
-    character: Character.CreateSnapshotRequest & Pick<Character, 'isPublic'>;
+    character: CharacterSnapshot.CreateRequest & Pick<Character, 'isPublic'>;
     personalities: Array<Pick<Personality, 'id'>> & tags.MinItems<1>;
     experiences: Array<Pick<Experience, 'id'>> & tags.MinItems<1>;
     positions: Array<Position.CreateRequest> & tags.MinItems<1>;
@@ -82,4 +81,18 @@ export namespace Character {
    * 캐릭터 수정 요청 객체 (현재 생성 객체랑 동일)
    */
   export interface UpdateRequest extends CreateRequest {}
+}
+
+export namespace CharacterSnapshot {
+  /**
+   * 스냅샷 생성 요청 객체
+   */
+  export interface CreateRequest
+    extends Pick<CharacterSnapshot, 'nickname'>,
+      Partial<Pick<CharacterSnapshot, 'image'>> {}
+
+  /**
+   * 스냅샷 응답 객체
+   */
+  export interface GetResponse extends Pick<CharacterSnapshot, 'id' | 'nickname' | 'image' | 'createdAt'> {}
 }

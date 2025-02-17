@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { Member, Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
-import { Character } from 'src/interfaces/characters.interface';
+import { Character, CharacterSnapshot } from 'src/interfaces/characters.interface';
 import { DateTimeUtil } from 'src/util/date-time.util';
 import { ObjectUtil } from 'src/util/object.util';
 import { PaginationUtil } from 'src/util/pagination.util';
@@ -481,7 +481,55 @@ export class CharactersService {
        * 변경이 있다면 새로운 스냅샷을 생성하고 마지막 스냅샷을 업데이트 한다.
        */
       const newSnapshot = await this.createNewSnapshot(tx, id, origin.character, newData.character, date);
+
+      /**
+       * 2. 하위에서 관계를 업데이트 하기위해 스냅샷 아이디를 저장한다.
+       * 앞서 새로 생성되지 않았다면, 가장 최근 스냅샷을 가져온다.
+       */
+      const snapshotId = newSnapshot?.id ?? (await this.getLastSnapshot(id, tx)).id;
     });
+  }
+
+  /**
+   * 캐릭터의 마지막 스냅샷을 조회한다.
+   * @param characterId
+   */
+  async getLastSnapshot(
+    characterId: Character['id'],
+    tx?: Prisma.TransactionClient,
+  ): Promise<CharacterSnapshot.GetResponse> {
+    const lastSnapshot = await (tx ?? this.prisma).character.findUnique({
+      select: {
+        last_snapshot: {
+          select: {
+            snapshot: {
+              select: {
+                id: true,
+                nickname: true,
+                image: true,
+                created_at: true,
+              },
+            },
+          },
+        },
+      },
+      where: {
+        id: characterId,
+      },
+    });
+
+    const snapshot = lastSnapshot?.last_snapshot?.snapshot;
+
+    if (!snapshot) {
+      throw new NotFoundException('캐릭터 마지막 스냅샷 조회 실패. 스냅샷 데이터가 존재하지 않습니다.');
+    }
+
+    return {
+      id: snapshot.id,
+      nickname: snapshot.nickname,
+      image: snapshot.image,
+      createdAt: snapshot.created_at.toDateString(),
+    };
   }
 
   /**
@@ -498,10 +546,10 @@ export class CharactersService {
   private async createNewSnapshot(
     tx: Prisma.TransactionClient,
     characterId: Character['id'],
-    origin: Character.CreateSnapshotRequest,
-    newData: Character.CreateSnapshotRequest,
+    origin: CharacterSnapshot.CreateRequest,
+    newData: CharacterSnapshot.CreateRequest,
     createdAt: string,
-  ): Promise<Character.CreateSnapshotResponse | null> {
+  ): Promise<CharacterSnapshot.GetResponse | null> {
     /**
      * 변경점이 있을때만 스냅샷을 생성한다.
      */
