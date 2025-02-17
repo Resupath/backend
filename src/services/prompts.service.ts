@@ -23,7 +23,7 @@ export class PromptsService {
       this.formatKeywords(input.personalities),
       ``,
       `## 기본 정보`,
-      `- 이름: ${input.nickname}`,
+      `- 이름: ${input.character.nickname}`,
       `- 직무: ${this.formatKeywords(input.positions)}`,
       `- 사용 기술: ${this.formatKeywords(input.skills)}`,
       `- 경력: ${input.experienceYears}년`,

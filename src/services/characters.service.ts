@@ -38,7 +38,7 @@ export class CharactersService {
       data: {
         id: characterId,
         member_id: memberId,
-        is_public: input.isPublic,
+        is_public: input.character.isPublic,
         created_at: date,
         sources: {
           createMany: {
@@ -56,8 +56,8 @@ export class CharactersService {
         snapshots: {
           create: {
             id: snapshotId,
-            nickname: input.nickname,
-            image: input.image,
+            nickname: input.character.nickname,
+            image: input.character.image,
             created_at: date,
             /**
              * snapshot relations
@@ -180,10 +180,15 @@ export class CharactersService {
      * mapping
      */
     return {
-      id: character.id,
-      memberId: character.member_id,
-      isPublic: character.is_public,
-      createdAt: character.created_at.toISOString(),
+      character: {
+        id: character.id,
+        memberId: character.member_id,
+        isPublic: character.is_public,
+        createdAt: character.created_at.toISOString(),
+        nickname: snapshot.nickname,
+        image: snapshot.image,
+      },
+
       personalities: character.character_personalites.map((el) => {
         return { id: el.personality.id, keyword: el.personality.keyword };
       }),
@@ -200,8 +205,6 @@ export class CharactersService {
       /**
        * snapshot relation
        */
-      nickname: snapshot.nickname,
-      image: snapshot.image,
       positions: snapshot.character_snapshot_positions.map((el) => {
         return {
           id: el.postion.id,
@@ -387,10 +390,14 @@ export class CharactersService {
       const experienceYears = this.experiencesService.getExperienceYears(experiences);
 
       return {
-        id: el.id,
-        memberId: el.member_id,
-        isPublic: el.is_public,
-        createdAt: el.created_at.toISOString(),
+        character: {
+          id: el.id,
+          memberId: el.member_id,
+          isPublic: el.is_public,
+          createdAt: el.created_at.toISOString(),
+          nickname: snapshot.nickname,
+          image: snapshot.image,
+        },
         personalities: el.character_personalites.map((el) => {
           return { id: el.personality.id, keyword: el.personality.keyword };
         }),
@@ -398,8 +405,6 @@ export class CharactersService {
         /**
          * snapshot relation
          */
-        nickname: snapshot.nickname,
-        image: snapshot.image,
         positions: snapshot.character_snapshot_positions.map((el) => {
           return {
             id: el.postion.id,
