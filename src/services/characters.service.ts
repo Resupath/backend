@@ -470,6 +470,13 @@ export class CharactersService {
 
     await this.prisma.$transaction(async (tx) => {
       /**
+       * 0. 캐릭터 공개 여부 수정
+       */
+      if (origin.character.isPublic !== newData.character.isPublic) {
+        await tx.character.update({ data: { is_public: newData.character.isPublic }, where: { id: id } });
+      }
+
+      /**
        * 1. 캐릭터 기본 정보 업데이트
        * 변경이 있다면 새로운 스냅샷을 생성하고 마지막 스냅샷을 업데이트 한다.
        */
