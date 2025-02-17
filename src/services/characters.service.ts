@@ -165,7 +165,7 @@ export class CharactersService {
     const snapshot = character?.last_snapshot?.snapshot;
 
     if (!snapshot) {
-      throw new NotFoundException();
+      throw new NotFoundException('캐릭터 조회 실패. 캐릭터 스냅샷이 존재하지 않습니다.');
     }
 
     /**
@@ -382,7 +382,9 @@ export class CharactersService {
       const snapshot = el?.last_snapshot?.snapshot;
 
       if (!snapshot) {
-        throw new NotFoundException();
+        throw new NotFoundException(
+          `캐릭터 목록 조회 실패. 캐릭터 스냅샷 데이터가 존재하지않습니다. characterId: ${el.id}`,
+        );
       }
 
       const experiences = snapshot.character_snapshot_experiences.map((el) =>
@@ -461,7 +463,9 @@ export class CharactersService {
     const date = DateTimeUtil.now();
 
     if (origin.character.memberId !== memberId) {
-      throw new ForbiddenException('캐릭터 수정 권한이 없습니다. 본인의 캐릭터만 수정할 수 있습니다.');
+      throw new ForbiddenException(
+        '캐릭터 수정 실패. 캐릭터 수정 권한이 없습니다. 본인의 캐릭터만 수정할 수 있습니다.',
+      );
     }
 
     await this.prisma.$transaction(async (tx) => {
@@ -469,7 +473,7 @@ export class CharactersService {
        * 1. 캐릭터 기본 정보 업데이트
        * 변경이 있다면 새로운 스냅샷을 생성하고 마지막 스냅샷을 업데이트 한다.
        */
-      const newSnapshot = this.createNewSnapshot(tx, id, origin.character, newData.character, date);
+      const newSnapshot = await this.createNewSnapshot(tx, id, origin.character, newData.character, date);
     });
   }
 
