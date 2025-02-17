@@ -273,7 +273,13 @@ export class ExperiencesService {
     body: Experience.UpdateRequest,
   ): Promise<Experience.GetResponse | null> {
     const experience = await this.get(memberId, id);
-    const isChanged = ObjectUtil.isChanged(experience, body);
+    const isChanged = ObjectUtil.isChanged(experience, body, [
+      'companyName',
+      'description',
+      'position',
+      'startDate',
+      'endDate',
+    ]);
 
     if (!isChanged) {
       return null;

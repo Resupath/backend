@@ -109,7 +109,7 @@ export class SourcesService {
     body: Source.UpdateRequest,
   ): Promise<Source.GetResponse | null> {
     const source = await this.get(characterId, id, { memberId: memberId });
-    const isChanged = ObjectUtil.isChanged(source, body);
+    const isChanged = ObjectUtil.isChanged(source, body, ['type', 'subtype', 'url']);
 
     if (!isChanged) {
       return null;

@@ -498,7 +498,7 @@ export class CharactersService {
     /**
      * 변경점이 있을때만 스냅샷을 생성한다.
      */
-    if (ObjectUtil.isChanged(origin, newData)) {
+    if (ObjectUtil.isChanged(origin, newData, ['nickname', 'image'])) {
       const snapshotId = randomUUID();
       const newSnapshot = await tx.character_Snapshot.create({
         select: { id: true, nickname: true, image: true, created_at: true },
