@@ -19,9 +19,15 @@ export interface Character {
 
 export namespace Character {
   /**
-   * create
+   * 스냅샷 생성 요청 객체
    */
-  export interface CreateRequest extends Pick<Character, 'nickname' | 'isPublic'>, Partial<Pick<Character, 'image'>> {
+  export interface CreateSnapshotRequest extends Pick<Character, 'nickname'>, Partial<Pick<Character, 'image'>> {}
+
+  /**
+   * 캐릭터 생성 요청 객체
+   */
+  export interface CreateRequest {
+    character: Character.CreateSnapshotRequest & Pick<Character, 'isPublic'>;
     personalities: Array<Pick<Personality, 'id'>> & tags.MinItems<1>;
     experiences: Array<Pick<Experience, 'id'>> & tags.MinItems<1>;
     positions: Array<Position.CreateRequest> & tags.MinItems<1>;
@@ -29,13 +35,16 @@ export namespace Character {
     sources: Array<Source.CreateRequest> & tags.MinItems<1>;
   }
 
+  /**
+   * 캐릭터 생성 응답 객체
+   */
   export interface CreateResponse extends Pick<Character, 'id'> {}
 
   /**
-   * get
+   * 캐릭터 상세 조회 응답 객체
    */
-  export interface GetResponse
-    extends Pick<Character, 'id' | 'memberId' | 'nickname' | 'image' | 'isPublic' | 'createdAt'> {
+  export interface GetResponse {
+    character: Pick<Character, 'id' | 'memberId' | 'nickname' | 'image' | 'isPublic' | 'createdAt'>;
     personalities: Array<Pick<Personality, 'id' | 'keyword'>>;
     positions: Array<Pick<Position, 'id' | 'keyword'>>;
     skills: Array<Pick<Skill, 'id' | 'keyword'>>;
@@ -50,26 +59,22 @@ export namespace Character {
     search?: Character['nickname'] | Position['keyword'] | Skill['keyword'] | null;
   }
 
+  /**
+   * 캐릭터 페이지네이션 단일 객체
+   */
   export interface GetBypageData
     extends Pick<
       GetResponse,
-      | 'id'
-      | 'memberId'
-      | 'nickname'
-      | 'image'
-      | 'isPublic'
-      | 'createdAt'
-      | 'personalities'
-      | 'positions'
-      | 'skills'
-      | 'experienceYears'
-      | 'roomCount'
+      'character' | 'personalities' | 'positions' | 'skills' | 'experienceYears' | 'roomCount'
     > {}
 
+  /**
+   * 캐릭터 페이지네이션 전체 응답 객체
+   */
   export interface GetByPageResponse extends PaginationUtil.Response<Character.GetBypageData> {}
 
   /**
-   * update
+   * 캐릭터 수정 요청 객체 (현재 생성 객체랑 동일)
    */
-  export interface UpdateRequest extends Partial<Character.CreateRequest> {}
+  export interface UpdateRequest extends CreateRequest {}
 }
