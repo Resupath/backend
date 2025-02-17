@@ -24,6 +24,11 @@ export namespace Character {
   export interface CreateSnapshotRequest extends Pick<Character, 'nickname'>, Partial<Pick<Character, 'image'>> {}
 
   /**
+   * 스냅샷 생성 응답 객체
+   */
+  export interface CreateSnapshotResponse extends Pick<Character, 'id' | 'nickname' | 'image' | 'createdAt'> {}
+
+  /**
    * 캐릭터 생성 요청 객체
    */
   export interface CreateRequest {

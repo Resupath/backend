@@ -1,8 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { Member, Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { Character } from 'src/interfaces/characters.interface';
 import { DateTimeUtil } from 'src/util/date-time.util';
+import { ObjectUtil } from 'src/util/object.util';
 import { PaginationUtil } from 'src/util/pagination.util';
 import { ExperiencesService } from './experiences.service';
 import { PositionsService } from './positions.service';
@@ -455,5 +456,70 @@ export class CharactersService {
   /**
    * 캐릭터를 수정한다.
    */
-  async update(memberId: Member['id'], id: Character['id'], body: Character.UpdateRequest) {}
+  async update(memberId: Member['id'], id: Character['id'], newData: Character.UpdateRequest) {
+    const origin = await this.get(id);
+    const date = DateTimeUtil.now();
+
+    if (origin.character.memberId !== memberId) {
+      throw new ForbiddenException('캐릭터 수정 권한이 없습니다. 본인의 캐릭터만 수정할 수 있습니다.');
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      /**
+       * 1. 캐릭터 기본 정보 업데이트
+       * 변경이 있다면 새로운 스냅샷을 생성하고 마지막 스냅샷을 업데이트 한다.
+       */
+      const newSnapshot = this.createNewSnapshot(tx, id, origin.character, newData.character, date);
+    });
+  }
+
+  /**
+   * 캐릭터 기본 정보를 업데이트 한다.
+   * 변경점이 있다면 새로운 스냅샷을 생성하고 마지막 스냅샷을 생성한 스냅샷으로 업데이트 한다.
+   * 변경점이 없다면 그냥 null을 반환한다.
+   *
+   * @param tx 프리즈마 트랜잭션 클라이언트
+   * @param characterId 스냅샷을 생성할 캐릭터의 아이디
+   * @param origin 원래 스냅샷 데이터
+   * @param newData 변경할 스냅샷 데이터
+   * @param date 트랜잭션 발생 시간
+   */
+  private async createNewSnapshot(
+    tx: Prisma.TransactionClient,
+    characterId: Character['id'],
+    origin: Character.CreateSnapshotRequest,
+    newData: Character.CreateSnapshotRequest,
+    createdAt: string,
+  ): Promise<Character.CreateSnapshotResponse | null> {
+    /**
+     * 변경점이 있을때만 스냅샷을 생성한다.
+     */
+    if (ObjectUtil.isChanged(origin, newData)) {
+      const snapshotId = randomUUID();
+      const newSnapshot = await tx.character_Snapshot.create({
+        select: { id: true, nickname: true, image: true, created_at: true },
+        data: {
+          id: snapshotId,
+          nickname: newData.nickname,
+          image: newData.image,
+          created_at: createdAt,
+          character_id: characterId,
+        },
+      });
+
+      const lastSnapshot = await tx.character_Last_Snapshot.update({
+        data: { character_snapshot_id: snapshotId },
+        where: { character_id: characterId },
+      });
+
+      return {
+        id: newSnapshot.id,
+        nickname: newSnapshot.nickname,
+        image: newSnapshot.image,
+        createdAt: newSnapshot.created_at.toISOString(),
+      };
+    }
+
+    return null;
+  }
 }
