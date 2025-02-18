@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { Character } from 'src/interfaces/characters.interface';
 import { Experience } from 'src/interfaces/experiences.interface';
@@ -319,6 +320,49 @@ export class ExperiencesService {
         data: { deleted_at: date },
       });
     });
+  }
+
+  /**
+   * 캐릭터의 경력을 수정한다.
+   * 기존의 데이터와 신규 데이터를 비교해, 새로운 경력은 추가하고 목록에 없는 경력은 삭제한다.
+   *
+   * @param tx 프리즈마 트랜잭션 클라이언트 객체
+   * @param characterId 수정하려는 캐릭터 아이디
+   * @param origin 기존의 경력 데이터들
+   * @param newData 새로운 경력 데이터들
+   * @param createdAt 스냅샷 생성 시점
+   */
+  async updateAndDeleteMany(
+    tx: Prisma.TransactionClient,
+    characterSnapshotId: Character['id'],
+    origin: Array<Pick<Experience, 'id'>>,
+    newData: Array<Pick<Experience, 'id'>>,
+    createdAt: string,
+  ): Promise<void> {
+    // 아이디를 key로
+    const originMap = new Map(origin.map((el) => [el['id'], el]));
+    const newDataMap = new Map(newData.map((el) => [el['id'], el]));
+
+    // 1. 수정 처리
+    for (const [key, newItem] of newDataMap.entries()) {
+      if (!originMap.has(key)) {
+        // 기존 데이터에 해당 id(key)가 없으면, 새로 스냅샷과의 관계를 생성한다.
+        await tx.character_Snapshot_Experience.create({
+          data: { character_snapshot_id: characterSnapshotId, experience_id: newItem.id, created_at: createdAt },
+        });
+      }
+    }
+
+    // 2. 삭제 처리
+    for (const [key, originItem] of originMap.entries()) {
+      if (!newDataMap.has(key)) {
+        // 새로운 데이터 리스트에 없는 key는 삭제 처리
+        await tx.character_Snapshot_Experience.updateMany({
+          where: { character_snapshot_id: characterSnapshotId, experience_id: originItem.id },
+          data: { deleted_at: createdAt },
+        });
+      }
+    }
   }
 
   /**

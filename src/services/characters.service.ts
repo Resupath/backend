@@ -1,7 +1,8 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { Member, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { Character, CharacterSnapshot } from 'src/interfaces/characters.interface';
+import { Member } from 'src/interfaces/member.interface';
 import { DateTimeUtil } from 'src/util/date-time.util';
 import { ObjectUtil } from 'src/util/object.util';
 import { PaginationUtil } from 'src/util/pagination.util';
@@ -487,6 +488,11 @@ export class CharactersService {
        * 앞서 새로 생성되지 않았다면, 가장 최근 스냅샷을 가져온다.
        */
       const snapshotId = newSnapshot?.id ?? (await this.getLastSnapshot(id, tx)).id;
+
+      /**
+       * 3. 경력-캐릭터 스냅샷 관계를 업데이트 한다.
+       */
+      await this.experiencesService.updateAndDeleteMany(tx, snapshotId, origin.experiences, newData.experiences, date);
     });
   }
 
