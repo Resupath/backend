@@ -78,9 +78,9 @@ export class CharactersService {
             },
             character_snapshot_positions: {
               createMany: {
-                data: positions.map((positionId) => {
+                data: positions.map((position) => {
                   return {
-                    position_id: positionId,
+                    position_id: position.id,
                   };
                 }),
               },
@@ -471,6 +471,9 @@ export class CharactersService {
       );
     }
 
+    // 직군(Position), 스킬(Skill) 생성
+    const positions = await this.positionsService.findOrCreateMany(newData.positions);
+
     await this.prisma.$transaction(async (tx) => {
       /**
        * 0. 캐릭터 공개 여부 수정
@@ -500,6 +503,11 @@ export class CharactersService {
        * 4. 경력-캐릭터 스냅샷 관계를 업데이트 한다.
        */
       await this.experiencesService.updateAndDeleteMany(tx, snapshotId, origin.experiences, newData.experiences, date);
+
+      /**
+       * 5. 직종-캐릭터 스냅샷 관계를 업데이트 한다.
+       */
+      await this.positionsService.updateAndDeleteMany(tx, snapshotId, origin.positions, positions);
     });
   }
 

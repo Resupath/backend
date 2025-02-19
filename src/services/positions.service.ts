@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
+import { CharacterSnapshot } from 'src/interfaces/characters.interface';
 import { Position } from 'src/interfaces/positions.interface';
 import { DateTimeUtil } from 'src/util/date-time.util';
 import { PaginationUtil } from 'src/util/pagination.util';
@@ -19,7 +20,7 @@ export class PositionsService {
     });
   }
 
-  async findOrCreateMany(body: Array<Position.CreateRequest>): Promise<Array<Position['id']>> {
+  async findOrCreateMany(body: Array<Position.CreateRequest>): Promise<Array<Pick<Position, 'id'>>> {
     const date = DateTimeUtil.now();
 
     return await Promise.all(
@@ -36,9 +37,9 @@ export class PositionsService {
             },
           });
 
-          return newPosition.id;
+          return { id: newPosition.id };
         }
-        return position.id;
+        return { id: position.id };
       }),
     );
   }
@@ -71,5 +72,45 @@ export class PositionsService {
     ]);
 
     return PaginationUtil.createResponse({ data, count, skip, take });
+  }
+
+  /**
+   * 캐릭터의 직종 정보를 수정한다.
+   * 기존의 데이터와 신규 데이터를 비교해, 새로운 경력은 추가하고 목록에 없는 직종은 삭제한다.
+   *
+   * @param tx 프리즈마 트랜잭션 클라이언트 객체
+   * @param characterSnapshotId 캐릭터 스냅샷 아이디
+   * @param origin 기존의 직종 데이터들
+   * @param newData 새로운 직종 데이터들
+   */
+  async updateAndDeleteMany(
+    tx: Prisma.TransactionClient,
+    characterSnapshotId: CharacterSnapshot['id'],
+    origin: Array<Pick<Position, 'id'>>,
+    newData: Array<Pick<Position, 'id'>>,
+  ) {
+    // 아이디를 key로
+    const originMap = new Map(origin.map((el) => [el['id'], el]));
+    const newDataMap = new Map(newData.map((el) => [el['id'], el]));
+
+    // 1. 수정 처리
+    for (const [key, newItem] of newDataMap.entries()) {
+      if (!originMap.has(key)) {
+        // 기존 데이터에 해당 id(key)가 없으면, 새로 스냅샷과의 관계를 생성한다.
+        await tx.character_Snapshot_Position.create({
+          data: { character_snapshot_id: characterSnapshotId, position_id: newItem.id },
+        });
+      }
+    }
+
+    // 2. 삭제 처리
+    for (const [key, originItem] of originMap.entries()) {
+      if (!newDataMap.has(key)) {
+        // 새로운 데이터 리스트에 없는 key는 삭제 처리
+        await tx.character_Snapshot_Position.deleteMany({
+          where: { character_snapshot_id: characterSnapshotId, position_id: originItem.id },
+        });
+      }
+    }
   }
 }
