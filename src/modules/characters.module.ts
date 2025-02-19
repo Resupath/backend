@@ -5,9 +5,10 @@ import { ExperiencesModule } from './experiences.module';
 import { PersonalitiesModule } from './personalities.module';
 import { PositionsModule } from './positions.module';
 import { SkillsModule } from './skills.module';
+import { SourcesModule } from './sources.module';
 
 @Module({
-  imports: [PersonalitiesModule, ExperiencesModule, PositionsModule, SkillsModule],
+  imports: [PersonalitiesModule, ExperiencesModule, PositionsModule, SkillsModule, SourcesModule],
   controllers: [CharactersController],
   providers: [CharactersService],
   exports: [CharactersService],

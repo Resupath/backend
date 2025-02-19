@@ -11,6 +11,7 @@ import { PersonalitiesService } from './personalities.service';
 import { PositionsService } from './positions.service';
 import { PrismaService } from './prisma.service';
 import { SkillsService } from './skills.service';
+import { SourcesService } from './sources.service';
 
 @Injectable()
 export class CharactersService {
@@ -20,6 +21,7 @@ export class CharactersService {
     private readonly experiencesService: ExperiencesService,
     private readonly positionsService: PositionsService,
     private readonly skillsService: SkillsService,
+    private readonly sourcesService: SourcesService,
   ) {}
 
   /**
@@ -474,6 +476,7 @@ export class CharactersService {
     // 직군(Position), 스킬(Skill) 생성
     const positions = await this.positionsService.findOrCreateMany(newData.positions);
     const skills = await this.skillsService.findOrCreateMany(newData.skills);
+    const sources = await this.sourcesService.findOrCreateMany(id, newData.sources);
 
     await this.prisma.$transaction(async (tx) => {
       /**
@@ -489,29 +492,34 @@ export class CharactersService {
       await this.personalitiesService.updateAndDeleteMany(tx, id, origin.personalities, newData.personalities, date);
 
       /**
-       * 2. 캐릭터 기본 정보 업데이트
+       * 2. 첨부파일-캐릭터 관계를 업데이트 한다.
+       */
+      await this.sourcesService.deleteMany(tx, id, origin.sources, sources, date);
+
+      /**
+       * 3. 캐릭터 기본 정보 업데이트
        * 변경이 있다면 새로운 스냅샷을 생성하고 마지막 스냅샷을 업데이트 한다.
        */
       const newSnapshot = await this.createNewSnapshot(tx, id, origin.character, newData.character, date);
 
       /**
-       * 3. 하위에서 관계를 업데이트 하기위해 스냅샷 아이디를 저장한다.
+       * 4. 하위에서 관계를 업데이트 하기위해 스냅샷 아이디를 저장한다.
        * 앞서 새로 생성되지 않았다면, 가장 최근 스냅샷을 가져온다.
        */
       const snapshotId = newSnapshot?.id ?? (await this.getLastSnapshot(id, tx)).id;
 
       /**
-       * 4. 경력-캐릭터 스냅샷 관계를 업데이트 한다.
+       * 5. 경력-캐릭터 스냅샷 관계를 업데이트 한다.
        */
       await this.experiencesService.updateAndDeleteMany(tx, snapshotId, origin.experiences, newData.experiences, date);
 
       /**
-       * 5. 직종-캐릭터 스냅샷 관계를 업데이트 한다.
+       * 6. 직종-캐릭터 스냅샷 관계를 업데이트 한다.
        */
       await this.positionsService.updateAndDeleteMany(tx, snapshotId, origin.positions, positions);
 
       /**
-       * 6. 기술스택-캐릭터 스냅샷 관계를 업데이트 한다.
+       * 7. 기술스택-캐릭터 스냅샷 관계를 업데이트 한다.
        */
       await this.skillsService.updateAndDeleteMany(tx, snapshotId, origin.skills, skills);
     });
