@@ -220,7 +220,9 @@ export class CharactersService {
 
   /**
    * 캐릭터를 페이지네이션 조회한다.
-   * @param query 페이지네이션 및 정렬조건 요청 쿼리이다.
+   * @param query 페이지네이션/정렬/검색 요청 쿼리이다.
+   * sort : 정렬조건, latest(최신순), roomCount(채팅방순)
+   * nickname : 검색조건, 캐릭터 닉네임
    *
    * @param option 조회시 where 조건에 사용되는 옵셔널 파라미터의 객체이다.
    * isPublic : 공개 여부이다. 공개된 캐릭터만 조회할 경우 true로 설정해야 한다,
@@ -241,7 +243,19 @@ export class CharactersService {
       is_public: option.isPublic,
       member_id: option.memberId,
       deleted_at: option.deletedAt ? undefined : null,
+      last_snapshot: query.nickname
+        ? {
+            snapshot: {
+              nickname: {
+                contains: query.nickname,
+                mode: 'insensitive', // 대소문자 구분 없이 검색
+              },
+            },
+          }
+        : undefined,
     };
+
+    console.log(whereInput);
 
     const orderInput: Prisma.CharacterOrderByWithRelationInput =
       query.sort === 'roomCount' // 누적 대화순

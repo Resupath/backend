@@ -46,7 +46,8 @@ export namespace Character {
   }
 
   export interface GetByPageRequest extends PaginationUtil.Request {
-    sort?: 'latest' | 'roomCount';
+    sort?: ('latest' | 'roomCount') | null;
+    nickname?: Character['nickname'] | null;
   }
 
   export interface GetBypageData
