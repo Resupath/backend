@@ -4,7 +4,6 @@ import { randomUUID } from 'crypto';
 import { Character, CharacterSnapshot } from 'src/interfaces/characters.interface';
 import { Member } from 'src/interfaces/member.interface';
 import { DateTimeUtil } from 'src/util/date-time.util';
-import { ObjectUtil } from 'src/util/object.util';
 import { PaginationUtil } from 'src/util/pagination.util';
 import { ExperiencesService } from './experiences.service';
 import { PersonalitiesService } from './personalities.service';
@@ -44,7 +43,7 @@ export class CharactersService {
       data: {
         id: characterId,
         member_id: memberId,
-        is_public: input.character.isPublic,
+        is_public: input.isPublic,
         created_at: date,
         sources: {
           createMany: {
@@ -62,8 +61,8 @@ export class CharactersService {
         snapshots: {
           create: {
             id: snapshotId,
-            nickname: input.character.nickname,
-            image: input.character.image,
+            nickname: input.nickname,
+            image: input.image,
             created_at: date,
             /**
              * snapshot relations
@@ -186,14 +185,12 @@ export class CharactersService {
      * mapping
      */
     return {
-      character: {
-        id: character.id,
-        memberId: character.member_id,
-        isPublic: character.is_public,
-        createdAt: character.created_at.toISOString(),
-        nickname: snapshot.nickname,
-        image: snapshot.image,
-      },
+      id: character.id,
+      memberId: character.member_id,
+      isPublic: character.is_public,
+      createdAt: character.created_at.toISOString(),
+      nickname: snapshot.nickname,
+      image: snapshot.image,
 
       personalities: character.character_personalites.map((el) => {
         return { id: el.personality.id, keyword: el.personality.keyword };
@@ -398,14 +395,13 @@ export class CharactersService {
       const experienceYears = this.experiencesService.getExperienceYears(experiences);
 
       return {
-        character: {
-          id: el.id,
-          memberId: el.member_id,
-          isPublic: el.is_public,
-          createdAt: el.created_at.toISOString(),
-          nickname: snapshot.nickname,
-          image: snapshot.image,
-        },
+        id: el.id,
+        memberId: el.member_id,
+        isPublic: el.is_public,
+        createdAt: el.created_at.toISOString(),
+        nickname: snapshot.nickname,
+        image: snapshot.image,
+
         personalities: el.character_personalites.map((el) => {
           return { id: el.personality.id, keyword: el.personality.keyword };
         }),
@@ -463,11 +459,11 @@ export class CharactersService {
   /**
    * 캐릭터를 수정한다.
    */
-  async update(memberId: Member['id'], id: Character['id'], newData: Character.UpdateRequest) {
+  async update(memberId: Member['id'], id: Character['id'], newData: Character.UpdateRequest): Promise<void> {
     const origin = await this.get(id);
     const date = DateTimeUtil.now();
 
-    if (origin.character.memberId !== memberId) {
+    if (origin.memberId !== memberId) {
       throw new ForbiddenException(
         '캐릭터 수정 실패. 캐릭터 수정 권한이 없습니다. 본인의 캐릭터만 수정할 수 있습니다.',
       );
@@ -482,8 +478,8 @@ export class CharactersService {
       /**
        * 0. 캐릭터 공개 여부 수정
        */
-      if (origin.character.isPublic !== newData.character.isPublic) {
-        await tx.character.update({ data: { is_public: newData.character.isPublic }, where: { id: id } });
+      if (origin.isPublic !== newData.isPublic) {
+        await tx.character.update({ data: { is_public: newData.isPublic }, where: { id: id } });
       }
 
       /**
@@ -497,31 +493,34 @@ export class CharactersService {
       await this.sourcesService.deleteMany(tx, id, origin.sources, sources, date);
 
       /**
-       * 3. 캐릭터 기본 정보 업데이트
-       * 변경이 있다면 새로운 스냅샷을 생성하고 마지막 스냅샷을 업데이트 한다.
+       * 3. 캐릭터 스냅샷을 업데이트한다.
+       * 변경점이 없다면 마지막 스냅샷 정보를 가져온다.
        */
-      const newSnapshot = await this.createNewSnapshot(tx, id, origin.character, newData.character, date);
+      const isSnapshotChaged = origin.nickname !== newData.nickname || origin.image !== newData.image;
+
+      const snapshot = isSnapshotChaged
+        ? await this.createNewSnapshot(tx, {
+            characterId: id,
+            nickname: newData.nickname,
+            image: newData.image,
+            createdAt: date,
+          })
+        : await this.getLastSnapshot(id, tx);
 
       /**
-       * 4. 하위에서 관계를 업데이트 하기위해 스냅샷 아이디를 저장한다.
-       * 앞서 새로 생성되지 않았다면, 가장 최근 스냅샷을 가져온다.
+       * 4. 경력-캐릭터 스냅샷 관계를 업데이트한다.
        */
-      const snapshotId = newSnapshot?.id ?? (await this.getLastSnapshot(id, tx)).id;
+      await this.experiencesService.updateAndDeleteMany(tx, snapshot.id, origin.experiences, newData.experiences, date);
 
       /**
-       * 5. 경력-캐릭터 스냅샷 관계를 업데이트 한다.
+       * 5. 직종-캐릭터 스냅샷 관계를 업데이트한다.
        */
-      await this.experiencesService.updateAndDeleteMany(tx, snapshotId, origin.experiences, newData.experiences, date);
+      await this.positionsService.updateAndDeleteMany(tx, snapshot.id, origin.positions, positions);
 
       /**
-       * 6. 직종-캐릭터 스냅샷 관계를 업데이트 한다.
+       * 6. 기술스택-캐릭터 스냅샷 관계를 업데이트한다.
        */
-      await this.positionsService.updateAndDeleteMany(tx, snapshotId, origin.positions, positions);
-
-      /**
-       * 7. 기술스택-캐릭터 스냅샷 관계를 업데이트 한다.
-       */
-      await this.skillsService.updateAndDeleteMany(tx, snapshotId, origin.skills, skills);
+      await this.skillsService.updateAndDeleteMany(tx, snapshot.id, origin.skills, skills);
     });
   }
 
@@ -529,7 +528,7 @@ export class CharactersService {
    * 캐릭터의 마지막 스냅샷을 조회한다.
    * @param characterId
    */
-  async getLastSnapshot(
+  private async getLastSnapshot(
     characterId: Character['id'],
     tx?: Prisma.TransactionClient,
   ): Promise<CharacterSnapshot.GetResponse> {
@@ -568,52 +567,35 @@ export class CharactersService {
   }
 
   /**
-   * 캐릭터 기본 정보를 업데이트 한다.
-   * 변경점이 있다면 새로운 스냅샷을 생성하고 마지막 스냅샷을 생성한 스냅샷으로 업데이트 한다.
-   * 변경점이 없다면 그냥 null을 반환한다.
-   *
-   * @param tx 프리즈마 트랜잭션 클라이언트
-   * @param characterId 스냅샷을 생성할 캐릭터의 아이디
-   * @param origin 원래 스냅샷 데이터
-   * @param newData 변경할 스냅샷 데이터
-   * @param date 트랜잭션 발생 시간
+   * 캐릭터 스냅샷 정보를 수정한다.
+   * 새로운 스냅샷을 생성하고 마지막 스냅샷을 생성한 스냅샷으로 업데이트 한다.
    */
   private async createNewSnapshot(
     tx: Prisma.TransactionClient,
-    characterId: Character['id'],
-    origin: CharacterSnapshot.CreateRequest,
-    newData: CharacterSnapshot.CreateRequest,
-    createdAt: string,
-  ): Promise<CharacterSnapshot.GetResponse | null> {
-    /**
-     * 변경점이 있을때만 스냅샷을 생성한다.
-     */
-    if (ObjectUtil.isChanged(origin, newData, ['nickname', 'image'])) {
-      const snapshotId = randomUUID();
-      const newSnapshot = await tx.character_Snapshot.create({
-        select: { id: true, nickname: true, image: true, created_at: true },
-        data: {
-          id: snapshotId,
-          nickname: newData.nickname,
-          image: newData.image,
-          created_at: createdAt,
-          character_id: characterId,
-        },
-      });
+    input: CharacterSnapshot.CreateRequest,
+  ): Promise<CharacterSnapshot.GetResponse> {
+    const snapshotId = randomUUID();
+    const newSnapshot = await tx.character_Snapshot.create({
+      select: { id: true, nickname: true, image: true, created_at: true },
+      data: {
+        id: snapshotId,
+        nickname: input.nickname,
+        image: input.image,
+        created_at: input.createdAt,
+        character_id: input.characterId,
+      },
+    });
 
-      const lastSnapshot = await tx.character_Last_Snapshot.update({
-        data: { character_snapshot_id: snapshotId },
-        where: { character_id: characterId },
-      });
+    const lastSnapshot = await tx.character_Last_Snapshot.update({
+      data: { character_snapshot_id: snapshotId },
+      where: { character_id: input.characterId },
+    });
 
-      return {
-        id: newSnapshot.id,
-        nickname: newSnapshot.nickname,
-        image: newSnapshot.image,
-        createdAt: newSnapshot.created_at.toISOString(),
-      };
-    }
-
-    return null;
+    return {
+      id: newSnapshot.id,
+      nickname: newSnapshot.nickname,
+      image: newSnapshot.image,
+      createdAt: newSnapshot.created_at.toISOString(),
+    };
   }
 }

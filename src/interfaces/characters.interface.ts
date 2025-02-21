@@ -30,8 +30,7 @@ export namespace Character {
   /**
    * 캐릭터 생성 요청 객체
    */
-  export interface CreateRequest {
-    character: CharacterSnapshot.CreateRequest & Pick<Character, 'isPublic'>;
+  export interface CreateRequest extends Pick<Character, 'nickname' | 'isPublic'>, Partial<Pick<Character, 'image'>> {
     personalities: Array<Pick<Personality, 'id'>> & tags.MinItems<1>;
     experiences: Array<Pick<Experience, 'id'>> & tags.MinItems<1>;
     positions: Array<Position.CreateRequest> & tags.MinItems<1>;
@@ -47,8 +46,8 @@ export namespace Character {
   /**
    * 캐릭터 상세 조회 응답 객체
    */
-  export interface GetResponse {
-    character: Pick<Character, 'id' | 'memberId' | 'nickname' | 'image' | 'isPublic' | 'createdAt'>;
+  export interface GetResponse
+    extends Pick<Character, 'id' | 'memberId' | 'nickname' | 'image' | 'isPublic' | 'createdAt'> {
     personalities: Array<Pick<Personality, 'id' | 'keyword'>>;
     positions: Array<Pick<Position, 'id' | 'keyword'>>;
     skills: Array<Pick<Skill, 'id' | 'keyword'>>;
@@ -69,7 +68,17 @@ export namespace Character {
   export interface GetBypageData
     extends Pick<
       GetResponse,
-      'character' | 'personalities' | 'positions' | 'skills' | 'experienceYears' | 'roomCount'
+      | 'id'
+      | 'memberId'
+      | 'nickname'
+      | 'image'
+      | 'isPublic'
+      | 'createdAt'
+      | 'personalities'
+      | 'positions'
+      | 'skills'
+      | 'experienceYears'
+      | 'roomCount'
     > {}
 
   /**
@@ -88,7 +97,7 @@ export namespace CharacterSnapshot {
    * 스냅샷 생성 요청 객체
    */
   export interface CreateRequest
-    extends Pick<CharacterSnapshot, 'nickname'>,
+    extends Pick<CharacterSnapshot, 'characterId' | 'nickname' | 'createdAt'>,
       Partial<Pick<CharacterSnapshot, 'image'>> {}
 
   /**
