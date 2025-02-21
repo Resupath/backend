@@ -4,6 +4,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { Member } from 'src/decorators/member.decorator';
 import { MemberGuard } from 'src/guards/member.guard';
 import { Character } from 'src/interfaces/characters.interface';
+import { Common } from 'src/interfaces/common.interface';
 import { Guard } from 'src/interfaces/guard.interface';
 import { CharactersService } from 'src/services/characters.service';
 import { ExperiencesService } from 'src/services/experiences.service';
@@ -65,7 +66,8 @@ export class CharactersController {
     @Member() member: Guard.MemberResponse,
     @core.TypedParam('id') id: Character['id'],
     @core.TypedBody() body: Character.UpdateRequest,
-  ) {
-    return await this.charactersService.update(member.id, id, body);
+  ): Promise<Common.Response> {
+    await this.charactersService.update(member.id, id, body);
+    return { message: '캐릭터가 수정되었습니다.' };
   }
 }
