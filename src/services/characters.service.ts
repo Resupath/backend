@@ -220,7 +220,12 @@ export class CharactersService {
 
   /**
    * 캐릭터를 페이지네이션 조회한다.
-   * @param query 페이지네이션 요청 쿼리 객체이다.
+   *
+   * @param query 페이지네이션/정렬/검색 요청 쿼리이다.
+   * sort : 정렬조건, latest(최신순), roomCount(채팅방순)
+   * nickname : 검색조건, 캐릭터 닉네임
+   * position : 검색조건, 입력된 직군을 포함해 검색한다.
+   * skill : 검색조건, 입력된 기술명을 포함해 검색한다.
    *
    * @param option 조회시 where 조건에 사용되는 옵셔널 파라미터의 객체이다.
    * isPublic : 공개 여부이다. 공개된 캐릭터만 조회할 경우 true로 설정해야 한다,
@@ -237,11 +242,69 @@ export class CharactersService {
   ): Promise<Character.GetByPageResponse> {
     const { skip, take } = PaginationUtil.getOffset(query);
 
-    const whereInput: Prisma.CharacterWhereInput = {
-      is_public: option.isPublic,
-      member_id: option.memberId,
-      deleted_at: option.deletedAt ? undefined : null,
+    // 검색 조건
+    const getWhereInput = (): Prisma.CharacterWhereInput => {
+      return {
+        is_public: option.isPublic,
+        member_id: option.memberId,
+        deleted_at: option.deletedAt ? undefined : null,
+        ...(query.nickname || query.position || query.skill
+          ? {
+              last_snapshot: {
+                snapshot: {
+                  ...(query.nickname
+                    ? {
+                        nickname: {
+                          contains: query.nickname,
+                          mode: 'insensitive', // 대소문자 구분 없이 검색
+                        },
+                      }
+                    : null),
+                  ...(query.position
+                    ? {
+                        character_snapshot_positions: {
+                          some: {
+                            postion: {
+                              keyword: {
+                                contains: query.position,
+                                mode: 'insensitive',
+                              },
+                            },
+                          },
+                        },
+                      }
+                    : null),
+                  ...(query.skill
+                    ? {
+                        character_snapshot_skills: {
+                          some: {
+                            skill: {
+                              keyword: {
+                                contains: query.skill,
+                                mode: 'insensitive',
+                              },
+                            },
+                          },
+                        },
+                      }
+                    : null),
+                },
+              },
+            }
+          : undefined),
+      };
     };
+
+    const whereInput: Prisma.CharacterWhereInput = getWhereInput();
+
+    const orderInput: Prisma.CharacterOrderByWithRelationInput =
+      query.sort === 'roomCount' // 누적 대화순
+        ? {
+            rooms: {
+              _count: 'desc',
+            },
+          }
+        : { created_at: 'desc' }; // 최신순
 
     const [characters, count] = await this.prisma.$transaction([
       this.prisma.character.findMany({
@@ -295,11 +358,7 @@ export class CharactersService {
             select: { rooms: true },
           },
         },
-        orderBy: {
-          rooms: {
-            _count: 'desc',
-          },
-        },
+        orderBy: orderInput,
         where: whereInput,
         skip,
         take,

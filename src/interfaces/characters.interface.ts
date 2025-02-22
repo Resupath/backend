@@ -45,7 +45,12 @@ export namespace Character {
     roomCount: number & tags.Type<'int64'>;
   }
 
-  export interface GetByPageRequest extends PaginationUtil.Request {}
+  export interface GetByPageRequest extends PaginationUtil.Request {
+    sort?: ('latest' | 'roomCount') | null;
+    nickname?: Character['nickname'] | null;
+    position?: Position['keyword'] | null;
+    skill?: Skill['keyword'] | null;
+  }
 
   export interface GetBypageData
     extends Pick<
