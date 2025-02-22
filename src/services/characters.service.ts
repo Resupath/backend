@@ -223,7 +223,7 @@ export class CharactersService {
    *
    * @param query 페이지네이션/정렬/검색 요청 쿼리이다.
    * sort : 정렬조건, latest(최신순), roomCount(채팅방순)
-   * nickname : 검색조건, 캐릭터 닉네임
+   * search : 검색조건, 캐릭터 닉네임, 직군, 기술명을 포함해 검색하도록 한다.
    * position : 검색조건, 입력된 직군을 포함해 검색한다.
    * skill : 검색조건, 입력된 기술명을 포함해 검색한다.
    *
@@ -248,50 +248,54 @@ export class CharactersService {
         is_public: option.isPublic,
         member_id: option.memberId,
         deleted_at: option.deletedAt ? undefined : null,
-        ...(query.nickname || query.position || query.skill
+        ...(query.search
           ? {
-              last_snapshot: {
-                snapshot: {
-                  ...(query.nickname
-                    ? {
-                        nickname: {
-                          contains: query.nickname,
-                          mode: 'insensitive', // 대소문자 구분 없이 검색
-                        },
-                      }
-                    : null),
-                  ...(query.position
-                    ? {
-                        character_snapshot_positions: {
-                          some: {
-                            postion: {
-                              keyword: {
-                                contains: query.position,
-                                mode: 'insensitive',
-                              },
-                            },
-                          },
-                        },
-                      }
-                    : null),
-                  ...(query.skill
-                    ? {
-                        character_snapshot_skills: {
-                          some: {
-                            skill: {
-                              keyword: {
-                                contains: query.skill,
-                                mode: 'insensitive',
-                              },
-                            },
-                          },
-                        },
-                      }
-                    : null),
+              OR: [
+                {
+                  last_snapshot: {
+                    snapshot: {
+                      nickname: {
+                        contains: query.search,
+                        mode: 'insensitive', // 대소문자 구분 없이 검색
+                      },
+                    },
+                  },
                 },
-              },
+                {
+                  last_snapshot: {
+                    snapshot: {
+                      character_snapshot_positions: {
+                        some: {
+                          postion: {
+                            keyword: {
+                              contains: query.search,
+                              mode: 'insensitive',
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+                {
+                  last_snapshot: {
+                    snapshot: {
+                      character_snapshot_skills: {
+                        some: {
+                          skill: {
+                            keyword: {
+                              contains: query.search,
+                              mode: 'insensitive',
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              ],
             }
-          : undefined),
+          : {}),
       };
     };
 
