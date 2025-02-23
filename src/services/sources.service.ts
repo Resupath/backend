@@ -53,7 +53,7 @@ export class SourcesService {
             url: true,
             created_at: true,
           },
-          where: { character_id: characterId, type: el.type, url: el.url },
+          where: { character_id: characterId, type: el.type, url: el.url, deleted_at: null },
         });
 
         if (!source.length) {
