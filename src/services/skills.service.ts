@@ -81,43 +81,24 @@ export class SkillsService {
   }
 
   /**
-   * 캐릭터의 기술스택을 수정한다.
-   * 기존의 데이터와 신규 데이터를 비교해, 새로운 경력은 추가하고 목록에 없는 기술스택은 삭제한다.
+   * 캐릭터 스냅샷과의 스킬 관계를 추가한다.
    *
    * @param tx 프리즈마 트랜잭션 클라이언트 객체
-   * @param characterSnapshotId 수정하려는 캐릭터 아이디
-   * @param origin 기존의 경력 데이터들
-   * @param newData 새로운 경력 데이터들
-   * @param createdAt 스냅샷 생성 시점
+   * @param characterSnapshotId 캐릭터 스냅샷 아이디
+   * @param body 추가하려는 스킬 아이디
    */
-  async updateAndDeleteMany(
+  async updateSnapshotMany(
     tx: Prisma.TransactionClient,
     characterSnapshotId: CharacterSnapshot['id'],
-    origin: Array<Pick<Skill, 'id'>>,
-    newData: Array<Pick<Skill, 'id'>>,
-  ) {
-    // 아이디를 key로
-    const originMap = new Map(origin.map((el) => [el['id'], el]));
-    const newDataMap = new Map(newData.map((el) => [el['id'], el]));
+    body: Array<Pick<Skill, 'id'>>,
+  ): Promise<void> {
+    const createInput = body.map((el): Prisma.Character_Snapshot_SkillCreateManyInput => {
+      return {
+        character_snapshot_id: characterSnapshotId,
+        skill_id: el.id,
+      };
+    });
 
-    // 1. 수정 처리
-    for (const [key, newItem] of newDataMap.entries()) {
-      if (!originMap.has(key)) {
-        // 기존 데이터에 해당 id(key)가 없으면, 새로 스냅샷과의 관계를 생성한다.
-        await tx.character_Snapshot_Skill.create({
-          data: { character_snapshot_id: characterSnapshotId, skill_id: newItem.id },
-        });
-      }
-    }
-
-    // 2. 삭제 처리
-    for (const [key, originItem] of originMap.entries()) {
-      if (!newDataMap.has(key)) {
-        // 새로운 데이터 리스트에 없는 key는 삭제 처리
-        await tx.character_Snapshot_Skill.deleteMany({
-          where: { character_snapshot_id: characterSnapshotId, skill_id: originItem.id },
-        });
-      }
-    }
+    await tx.character_Snapshot_Skill.createMany({ data: createInput });
   }
 }

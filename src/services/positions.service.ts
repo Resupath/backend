@@ -75,42 +75,24 @@ export class PositionsService {
   }
 
   /**
-   * 캐릭터의 직종 정보를 수정한다.
-   * 기존의 데이터와 신규 데이터를 비교해, 새로운 경력은 추가하고 목록에 없는 직종은 삭제한다.
+   * 캐릭터 스냅샷과의 직군 관계를 추가한다.
    *
    * @param tx 프리즈마 트랜잭션 클라이언트 객체
    * @param characterSnapshotId 캐릭터 스냅샷 아이디
-   * @param origin 기존의 직종 데이터들
-   * @param newData 새로운 직종 데이터들
+   * @param body 추가하려는 직군 아이디
    */
-  async updateAndDeleteMany(
+  async updateSnapshotMany(
     tx: Prisma.TransactionClient,
     characterSnapshotId: CharacterSnapshot['id'],
-    origin: Array<Pick<Position, 'id'>>,
-    newData: Array<Pick<Position, 'id'>>,
-  ) {
-    // 아이디를 key로
-    const originMap = new Map(origin.map((el) => [el['id'], el]));
-    const newDataMap = new Map(newData.map((el) => [el['id'], el]));
+    body: Array<Pick<Position, 'id'>>,
+  ): Promise<void> {
+    const createInput = body.map((el): Prisma.Character_Snapshot_PositionCreateManyInput => {
+      return {
+        character_snapshot_id: characterSnapshotId,
+        position_id: el.id,
+      };
+    });
 
-    // 1. 수정 처리
-    for (const [key, newItem] of newDataMap.entries()) {
-      if (!originMap.has(key)) {
-        // 기존 데이터에 해당 id(key)가 없으면, 새로 스냅샷과의 관계를 생성한다.
-        await tx.character_Snapshot_Position.create({
-          data: { character_snapshot_id: characterSnapshotId, position_id: newItem.id },
-        });
-      }
-    }
-
-    // 2. 삭제 처리
-    for (const [key, originItem] of originMap.entries()) {
-      if (!newDataMap.has(key)) {
-        // 새로운 데이터 리스트에 없는 key는 삭제 처리
-        await tx.character_Snapshot_Position.deleteMany({
-          where: { character_snapshot_id: characterSnapshotId, position_id: originItem.id },
-        });
-      }
-    }
+    await tx.character_Snapshot_Position.createMany({ data: createInput });
   }
 }

@@ -12,8 +12,8 @@ export class ExperiencesService {
   constructor(private readonly prisma: PrismaService) {}
 
   /**
-   * experience에 대한 프리즈마 select where input을 반환합니다.
-   * 반복되는 스냅샷 select 문을 대체 할때 사용합니다.
+   * experience에 대한 프리즈마 select where input을 반환한다.
+   * 반복되는 스냅샷 select 문을 대체 할때 사용.
    */
   createSelectInput() {
     return {
@@ -37,10 +37,7 @@ export class ExperiencesService {
   }
 
   /**
-   * createSelectInput()의 select 결과물을
-   * Experience.GetResponse 으로 조합합니다.
-   *
-   * @param experience
+   * createSelectInput()의 select 결과물을 Experience.GetResponse으로 매핑한다.
    */
   mapping(experience: {
     id: string;
@@ -75,7 +72,7 @@ export class ExperiencesService {
   }
 
   /**
-   * 멤버의 경력 정보를 여러개 생성합니다. (트랜잭션 사용됨)
+   * 멤버의 경력 정보를 여러개 생성합니다. (트랜잭션 사용)
    */
   async createMany(memberId: string, body: Experience.CreateManyRequest): Promise<Array<Experience.GetResponse>> {
     const { experiences } = body;
@@ -285,7 +282,7 @@ export class ExperiencesService {
     if (!isChanged) {
       return null;
     }
-    const newSnapshot = await this.updateSnapshot(id, experience.sequence, body);
+    const newSnapshot = await this.updateLastSnapshot(id, experience.sequence, body);
 
     /**
      * mapping
@@ -323,52 +320,38 @@ export class ExperiencesService {
   }
 
   /**
-   * 캐릭터의 경력을 수정한다.
-   * 기존의 데이터와 신규 데이터를 비교해, 새로운 경력은 추가하고 목록에 없는 경력은 삭제한다.
+   * 캐릭터 스냅샷과의 경력 관계를 추가한다.
    *
    * @param tx 프리즈마 트랜잭션 클라이언트 객체
-   * @param characterId 수정하려는 캐릭터 아이디
-   * @param origin 기존의 경력 데이터들
-   * @param newData 새로운 경력 데이터들
-   * @param createdAt 스냅샷 생성 시점
+   * @param characterSnapshotId 캐릭터 스냅샷 아이디
+   * @param newData 추가하려는 경력 아이디
+   * @param createdAt 트랜잭션 시작 시점
    */
-  async updateAndDeleteMany(
+  async updateSnapshotMany(
     tx: Prisma.TransactionClient,
     characterSnapshotId: Character['id'],
-    origin: Array<Pick<Experience, 'id'>>,
-    newData: Array<Pick<Experience, 'id'>>,
+    body: Array<Pick<Experience, 'id'>>,
     createdAt: string,
-  ): Promise<void> {
-    // 아이디를 key로
-    const originMap = new Map(origin.map((el) => [el['id'], el]));
-    const newDataMap = new Map(newData.map((el) => [el['id'], el]));
+  ) {
+    const createInput = body.map((el): Prisma.Character_Snapshot_ExperienceCreateManyInput => {
+      return {
+        character_snapshot_id: characterSnapshotId,
+        experience_id: el.id,
+        created_at: createdAt,
+      };
+    });
 
-    // 1. 수정 처리
-    for (const [key, newItem] of newDataMap.entries()) {
-      if (!originMap.has(key)) {
-        // 기존 데이터에 해당 id(key)가 없으면, 새로 스냅샷과의 관계를 생성한다.
-        await tx.character_Snapshot_Experience.create({
-          data: { character_snapshot_id: characterSnapshotId, experience_id: newItem.id, created_at: createdAt },
-        });
-      }
-    }
-
-    // 2. 삭제 처리
-    for (const [key, originItem] of originMap.entries()) {
-      if (!newDataMap.has(key)) {
-        // 새로운 데이터 리스트에 없는 key는 삭제 처리
-        await tx.character_Snapshot_Experience.updateMany({
-          where: { character_snapshot_id: characterSnapshotId, experience_id: originItem.id },
-          data: { deleted_at: createdAt },
-        });
-      }
-    }
+    return await tx.character_Snapshot_Experience.createMany({ data: createInput });
   }
 
   /**
    * 특정 경력의 스냅샷을 새로 생성하고, last 스냅샷을 갱신합니다.
    */
-  private async updateSnapshot(id: Experience['id'], sequence: Experience['sequence'], body: Experience.UpdateRequest) {
+  private async updateLastSnapshot(
+    id: Experience['id'],
+    sequence: Experience['sequence'],
+    body: Experience.UpdateRequest,
+  ) {
     const date = DateTimeUtil.now();
 
     return await this.prisma.$transaction(async (tx) => {

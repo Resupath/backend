@@ -89,11 +89,11 @@ export class PersonalitiesService {
    *
    * @param tx 프리즈마 트랜잭션 객체
    * @param characterId 변경할 캐릭터의 아이디
-   * @param origin 기존 성격데이터들
+   * @param origin 기존 성격 데이터들
    * @param newData 새로운 성격 데이터들
    * @param createdAt 트랜잭션 시작 시점
    */
-  async updateAndDeleteMany(
+  async upsertAndDeleteMany(
     tx: Prisma.TransactionClient,
     characterId: Character['id'],
     origin: Array<Pick<Personality, 'id'>>,
@@ -108,8 +108,15 @@ export class PersonalitiesService {
     for (const [key, newItem] of newDataMap.entries()) {
       if (!originMap.has(key)) {
         // 기존 데이터에 해당 id(key)가 없으면, 새로 캐릭터와의 관계를 생성한다.
-        await tx.character_Personality.create({
-          data: { character_id: characterId, personality_id: newItem.id, created_at: createdAt },
+        await tx.character_Personality.upsert({
+          create: { character_id: characterId, personality_id: newItem.id, created_at: createdAt },
+          update: { created_at: createdAt, deleted_at: null },
+          where: {
+            character_id_personality_id: {
+              character_id: characterId,
+              personality_id: newItem.id,
+            },
+          },
         });
       }
     }

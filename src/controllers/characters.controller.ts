@@ -1,5 +1,5 @@
 import core from '@nestia/core';
-import { Body, Controller, UseGuards } from '@nestjs/common';
+import { Controller, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Member } from 'src/decorators/member.decorator';
 import { MemberGuard } from 'src/guards/member.guard';
@@ -67,7 +67,9 @@ export class CharactersController {
     @core.TypedParam('id') id: Character['id'],
     @core.TypedBody() body: Character.UpdateRequest,
   ): Promise<Common.Response> {
-    await this.charactersService.update(member.id, id, body);
-    return { message: '캐릭터가 수정되었습니다.' };
+    const changedInfo = await this.charactersService.update(member.id, id, body);
+    return changedInfo.length
+      ? { message: `캐릭터의 ${changedInfo.join(',')}(이)가 수정되었습니다.` }
+      : { message: `수정 사항이 없습니다.` };
   }
 }
