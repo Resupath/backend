@@ -314,7 +314,10 @@ model Log {
   ttl        Int? /// ms 단위, 해당 요청에 대한 요청부터 응답까지의 시간을 측정한 것이다. 값이 null이면 서버가 응답을 하지 않고 장애가 난 것으로 판단.
   error      Boolean  @default(false) /// 에러 발생 true
   response   String? /// 응답 값. 에러 발생시 에러 내용이 담긴다.
-  created_at DateTime /// 요청이 진입된 시간으로, 응답 시간은 해당 칼럼에 ttL을 더함으로써 알 수 있다.
+  created_at DateTime @db.Timestamptz /// 요청이 진입된 시간으로, 응답 시간은 해당 칼럼에 ttL을 더함으로써 알 수 있다.
 
   user User? @relation(fields: [user_id], references: [id])
+
+  @@index([created_at], map: "created_at")
+  @@index([created_at(sort: Desc)], map: "created_at_desc")
 }
