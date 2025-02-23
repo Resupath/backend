@@ -52,7 +52,7 @@ export class CharactersController {
    */
   @core.TypedRoute.Get(':id')
   async getCharacter(@core.TypedParam('id') id: Character['id']) {
-    return await this.charactersService.get(id);
+    return await this.charactersService.get(id, { isPublic: true });
   }
 
   /**

@@ -110,9 +110,20 @@ export class CharactersService {
   }
 
   /**
-   * 특정 캐릭터를 조회한다.
+   * 특정 캐릭터를 상세조회한다.
+   *
+   * @param id 조회할 캐릭터의 아이디
+   * @param option 조회 옵셔널 파라미터들이다.
+   * -  isPublic: 공개 캐릭터만 조회하고 싶을 경우 true로 설정한다.
    */
-  async get(id: string): Promise<Character.GetResponse> {
+  async get(
+    id: string,
+    option?: {
+      isPublic?: true;
+    },
+  ): Promise<Character.GetResponse> {
+    const whereInput: Prisma.CharacterWhereUniqueInput = { id: id, is_public: option?.isPublic ? true : undefined };
+
     const character = await this.prisma.character.findUnique({
       select: {
         id: true,
@@ -163,13 +174,13 @@ export class CharactersService {
         },
         _count: { select: { rooms: true } },
       },
-      where: { id, is_public: true },
+      where: whereInput,
     });
 
     const snapshot = character?.last_snapshot?.snapshot;
 
     if (!snapshot) {
-      throw new NotFoundException('캐릭터 조회 실패. 캐릭터 스냅샷이 존재하지 않습니다.');
+      throw new NotFoundException('캐릭터 조회 실패. 삭제되었거나 비공개 된 캐릭터 입니다.');
     }
 
     /**
