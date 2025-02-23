@@ -66,10 +66,7 @@ export class CharactersController {
     @Member() member: Guard.MemberResponse,
     @core.TypedParam('id') id: Character['id'],
     @core.TypedBody() body: Character.UpdateRequest,
-  ): Promise<Common.Response> {
-    const changedInfo = await this.charactersService.update(member.id, id, body);
-    return changedInfo.length
-      ? { message: `캐릭터의 ${changedInfo.join(',')}(이)가 수정되었습니다.` }
-      : { message: `수정 사항이 없습니다.` };
+  ): Promise<Character.UpdateResponse> {
+    return await this.charactersService.update(member.id, id, body);
   }
 }

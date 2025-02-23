@@ -90,6 +90,19 @@ export namespace Character {
    * 캐릭터 수정 요청 객체 (현재 생성 객체랑 동일)
    */
   export interface UpdateRequest extends CreateRequest {}
+
+  /**
+   * 캐릭터 수정 응답 객체
+   */
+  export interface UpdateResponse {
+    isPublicChanged: boolean;
+    isPersonalitiesChanged: boolean;
+    isSourceChanged: boolean;
+    isSnapshotChanged: boolean;
+    isExperiencesChanged: boolean;
+    isPositionsChanged: boolean;
+    isSkillsChanged: boolean;
+  }
 }
 
 export namespace CharacterSnapshot {

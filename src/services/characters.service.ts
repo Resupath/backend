@@ -476,9 +476,11 @@ export class CharactersService {
   /**
    * 캐릭터를 수정한다.
    */
-  async update(memberId: Member['id'], id: Character['id'], newData: Character.UpdateRequest): Promise<Array<string>> {
-    const changedInfo: Array<string> = [];
-
+  async update(
+    memberId: Member['id'],
+    id: Character['id'],
+    newData: Character.UpdateRequest,
+  ): Promise<Character.UpdateResponse> {
     const origin = await this.get(id);
     const date = DateTimeUtil.now();
 
@@ -493,20 +495,29 @@ export class CharactersService {
     const skills = await this.skillsService.findOrCreateMany(newData.skills);
     const sources = await this.sourcesService.findOrCreateMany(id, newData.sources);
 
+    /**
+     * 변경 점 여부를 확인한다.
+     */
+    const isPublicChanged = origin.isPublic !== newData.isPublic;
+    const isPersonalitiesChanged = this.prisma.isChanged<Personality>(origin.personalities, newData.personalities);
+    const isSourceChanged = this.prisma.isChanged<Source>(origin.sources, sources);
+
+    const isSnapshotChanged = origin.nickname !== newData.nickname || origin.image !== (newData.image ?? null);
+    const isExperiencesChanged = this.prisma.isChanged<Experience>(origin.experiences, newData.experiences);
+    const isPositionsChanged = this.prisma.isChanged<Position>(origin.positions, positions);
+    const isSkillsChanged = this.prisma.isChanged<Skill>(origin.skills, skills);
+
     await this.prisma.$transaction(async (tx) => {
       /**
        * 0. 캐릭터 공개 여부 수정
        */
-      const isVisible = origin.isPublic !== newData.isPublic;
-      if (isVisible) {
+      if (isPublicChanged) {
         await tx.character.update({ data: { is_public: newData.isPublic }, where: { id: id } });
       }
 
       /**
        * 1. 성격-캐릭터 관계를 업데이트 한다.
        */
-      const isPersonalitiesChanged = this.prisma.isChanged<Personality>(origin.personalities, newData.personalities);
-
       if (isPersonalitiesChanged) {
         await this.personalitiesService.upsertAndDeleteMany(tx, id, origin.personalities, newData.personalities, date);
       }
@@ -514,23 +525,13 @@ export class CharactersService {
       /**
        * 2. 첨부파일-캐릭터 관계를 업데이트 한다.
        */
-      const isSourceChanged = this.prisma.isChanged<Source>(origin.sources, sources);
-
       if (isSourceChanged) {
         await this.sourcesService.deleteMany(tx, id, origin.sources, sources, date);
       }
 
       /**
-       * 3. 캐릭터 스냅샷 변경 점 여부를 조회한다.
-       */
-      const isSnapshotChanged = origin.nickname !== newData.nickname || origin.image !== (newData.image ?? null);
-      const isExperiencesChanged = this.prisma.isChanged<Experience>(origin.experiences, newData.experiences);
-      const isPositionsChanged = this.prisma.isChanged<Position>(origin.positions, positions);
-      const isSkillsChanged = this.prisma.isChanged<Skill>(origin.skills, skills);
-
-      /**
        * 4. 변경점이 있다면 새로운 스냅샷을 생성하고 모든 관계를 새로운 스냅샷으로 갱신한다.
-       * (변경점 : 스냅샷, 경력, 직군, 스킬명, 첨부파일이 수정되었을 ㄴ때)
+       * 스냅샷, 경력, 직군, 스킬명, 첨부파일이 수정되었을 때 스냅샷을 새롭게 생성한다.
        */
       const isChanged =
         isSnapshotChanged || isExperiencesChanged || isPositionsChanged || isSkillsChanged || isSourceChanged;
@@ -552,17 +553,17 @@ export class CharactersService {
         // 기술 스택-캐릭터 스냅샷 관계를 업데이트한다.
         await this.skillsService.updateSnapshotMany(tx, newSnapshot.id, skills);
       }
-
-      isVisible ? changedInfo.push('공개 여부') : null;
-      isPersonalitiesChanged ? changedInfo.push('캐릭터 성격') : null;
-      isSourceChanged ? changedInfo.push('첨부파일') : null;
-      isSnapshotChanged ? changedInfo.push('캐릭터 정보') : null;
-      isExperiencesChanged ? changedInfo.push('경력') : null;
-      isPositionsChanged ? changedInfo.push('직종') : null;
-      isSkillsChanged ? changedInfo.push('스킬') : null;
     });
 
-    return changedInfo;
+    return {
+      isPublicChanged,
+      isPersonalitiesChanged,
+      isSourceChanged,
+      isSnapshotChanged,
+      isExperiencesChanged,
+      isPositionsChanged,
+      isSkillsChanged,
+    };
   }
 
   /**
