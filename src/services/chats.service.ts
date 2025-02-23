@@ -139,7 +139,7 @@ export class ChatsService {
   }
 
   private async createSystemPrompt(userId: string, characterId: string, roomId: string): Promise<Chat.GetResponse> {
-    const character = await this.charactersService.get(characterId);
+    const character = await this.charactersService.get(characterId, { isPublic: true });
     const prompt = await this.promptsService.prompt(userId, character);
 
     const chat = await this.createSystemChat(roomId, { message: prompt });

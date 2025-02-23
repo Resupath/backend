@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
+import { Character } from 'src/interfaces/characters.interface';
 import { Member } from 'src/interfaces/member.interface';
 import { Source } from 'src/interfaces/source.interface';
 import { DateTimeUtil } from 'src/util/date-time.util';
@@ -30,6 +31,49 @@ export class SourcesService {
     });
 
     return this.mapping(source);
+  }
+
+  /**
+   * 캐릭터의 소스를 조회 및 생성한다.
+   * type, url 정보가 같은 소스가 있는지 조회하고 없다면 새로 생성, 있다면 id를 반환한다.
+   */
+  async findOrCreateMany(
+    characterId: Character['id'],
+    body: Array<Source.CreateRequest>,
+  ): Promise<Array<Pick<Source, 'id'>>> {
+    const date = DateTimeUtil.now();
+
+    return await Promise.all(
+      body.map(async (el) => {
+        const source = await this.prisma.source.findMany({
+          select: {
+            id: true,
+            type: true,
+            subtype: true,
+            url: true,
+            created_at: true,
+          },
+          where: { character_id: characterId, type: el.type, url: el.url, deleted_at: null },
+        });
+
+        if (!source.length) {
+          const newSource = await this.prisma.source.create({
+            select: { id: true },
+            data: {
+              id: randomUUID(),
+              character_id: characterId,
+              type: el.type,
+              subtype: el.subtype,
+              url: el.url,
+              created_at: date,
+            },
+          });
+
+          return { id: newSource.id };
+        }
+        return { id: source.at(0)?.id as string };
+      }),
+    );
   }
 
   /**
@@ -109,7 +153,7 @@ export class SourcesService {
     body: Source.UpdateRequest,
   ): Promise<Source.GetResponse | null> {
     const source = await this.get(characterId, id, { memberId: memberId });
-    const isChanged = ObjectUtil.isChanged(source, body);
+    const isChanged = ObjectUtil.isChanged(source, body, ['type', 'subtype', 'url']);
 
     if (!isChanged) {
       return null;
@@ -154,6 +198,38 @@ export class SourcesService {
         deleted_at: date,
       },
     });
+  }
+
+  /**
+   * 캐릭터의 첨부파일을 삭제한다.
+   * 기존의 데이터와 신규 데이터를 비교해, 사라진 첨부파일을 삭제한다.
+   *
+   * @param tx 프리즈마 트랜잭션 클라이언트 객체
+   * @param characterId 수정하려는 캐릭터 아이디
+   * @param origin 기존의 첨부파일 데이터들
+   * @param newData 새로운 첨부파일 데이터들
+   * @param createdAt 트래잭션 시작 시점
+   */
+  async deleteMany(
+    tx: Prisma.TransactionClient,
+    characterId: Character['id'],
+    origin: Array<Pick<Source, 'id'>>,
+    newData: Array<Pick<Source, 'id'>>,
+    createdAt: string,
+  ) {
+    // 아이디를 key로 map 생성
+    const originMap = new Map(origin.map((el) => [el['id'], el]));
+    const newDataMap = new Map(newData.map((el) => [el['id'], el]));
+
+    // 삭제 처리
+    for (const [key, originItem] of originMap.entries()) {
+      if (!newDataMap.has(key)) {
+        await tx.source.updateMany({
+          where: { character_id: characterId, id: originItem.id },
+          data: { deleted_at: createdAt },
+        });
+      }
+    }
   }
 
   /**

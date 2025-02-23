@@ -6,6 +6,6 @@ import { SourcesService } from '../services/sources.service';
 @Module({
   controllers: [SourcesController],
   providers: [SourcesService, NotionService],
-  exports: [NotionService],
+  exports: [SourcesService, NotionService],
 })
 export class SourcesModule {}

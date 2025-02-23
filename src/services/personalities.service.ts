@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
+import { Character } from 'src/interfaces/characters.interface';
 import { Personality } from 'src/interfaces/personalities.interface';
 import { DateTimeUtil } from 'src/util/date-time.util';
 import { PaginationUtil } from 'src/util/pagination.util';
@@ -80,5 +81,55 @@ export class PersonalitiesService {
       skip,
       take,
     });
+  }
+
+  /**
+   * 캐릭터의 성격 정보를 수정한다.
+   * 기존 데이터와 신규 데이터를 비교해 새로운 성격은 추가, 신규데이터에 없는 성격을 soft-del 처리한다.
+   *
+   * @param tx 프리즈마 트랜잭션 객체
+   * @param characterId 변경할 캐릭터의 아이디
+   * @param origin 기존 성격 데이터들
+   * @param newData 새로운 성격 데이터들
+   * @param createdAt 트랜잭션 시작 시점
+   */
+  async upsertAndDeleteMany(
+    tx: Prisma.TransactionClient,
+    characterId: Character['id'],
+    origin: Array<Pick<Personality, 'id'>>,
+    newData: Array<Pick<Personality, 'id'>>,
+    createdAt: string,
+  ): Promise<void> {
+    // 아이디를 key로 map을 생성한다.
+    const originMap = new Map(origin.map((el) => [el['id'], el]));
+    const newDataMap = new Map(newData.map((el) => [el['id'], el]));
+
+    // 1. 수정 처리
+    for (const [key, newItem] of newDataMap.entries()) {
+      if (!originMap.has(key)) {
+        // 기존 데이터에 해당 id(key)가 없으면, 새로 캐릭터와의 관계를 생성한다.
+        await tx.character_Personality.upsert({
+          create: { character_id: characterId, personality_id: newItem.id, created_at: createdAt },
+          update: { created_at: createdAt, deleted_at: null },
+          where: {
+            character_id_personality_id: {
+              character_id: characterId,
+              personality_id: newItem.id,
+            },
+          },
+        });
+      }
+    }
+
+    // 2. 삭제 처리
+    for (const [key, originItem] of originMap.entries()) {
+      if (!newDataMap.has(key)) {
+        // 새로운 데이터 리스트에 없는 key는 삭제 처리한다.
+        await tx.character_Personality.updateMany({
+          where: { character_id: characterId, personality_id: originItem.id },
+          data: { deleted_at: createdAt },
+        });
+      }
+    }
   }
 }
