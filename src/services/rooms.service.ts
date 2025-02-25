@@ -142,7 +142,7 @@ export class RoomsService {
       select: {
         user_id: true,
       },
-      where: { id },
+      where: { id: id, deleted_at: null },
     });
 
     if (!room || !userIds.includes(room.user_id)) {
