@@ -3,6 +3,7 @@ import { Controller, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { User } from 'src/decorators/user.decorator';
 import { UserGuard } from 'src/guards/user.guard';
+import { Common } from 'src/interfaces/common.interface';
 import { Guard } from 'src/interfaces/guard.interface';
 import { Room } from 'src/interfaces/rooms.interface';
 import { RoomsService } from 'src/services/rooms.service';
@@ -46,5 +47,20 @@ export class RoomsController {
   @core.TypedRoute.Get(':id')
   async getRoom(@User() user: Guard.UserResponse, @core.TypedParam('id') id: Room['id']): Promise<Room.GetResponse> {
     return this.roomsService.get(user.id, id);
+  }
+
+  /**
+   * 채팅방을 삭제한다.
+   *
+   * @security x-user bearer
+   */
+  @UseGuards(UserGuard)
+  @core.TypedRoute.Delete(':id')
+  async deleteRoom(@User() user: Guard.UserResponse, @core.TypedParam('id') id: Room['id']): Promise<Common.Response> {
+    await this.roomsService.delete(user.id, id);
+
+    return {
+      message: `채팅방이 삭제되었습니다.`,
+    };
   }
 }
