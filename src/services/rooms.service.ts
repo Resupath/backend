@@ -7,6 +7,7 @@ import { DateTimeUtil } from 'src/util/date-time.util';
 import { PaginationUtil } from 'src/util/pagination.util';
 import { AuthService } from './auth.service';
 import { PrismaService } from './prisma.service';
+import { User } from 'src/interfaces/user.interface';
 
 @Injectable()
 export class RoomsService {
@@ -166,5 +167,30 @@ export class RoomsService {
         image: room.character.last_snapshot.snapshot.image,
       },
     };
+  }
+
+  /**
+   * 채팅방을 삭제한다.
+   */
+  async delete(userId: User['id'], id: Room['id']): Promise<void> {
+    const userIds = await this.authService.findUserIds(userId);
+
+    const room = await this.prisma.room.findUnique({
+      select: {
+        user_id: true,
+      },
+      where: { id },
+    });
+
+    if (!room || !userIds.includes(room.user_id)) {
+      throw new NotFoundException('채팅방 삭제 실패. 이미 삭제된 채팅방이거나 권한이 없습니다.');
+    }
+
+    const date = DateTimeUtil.now();
+
+    await this.prisma.room.update({
+      data: { deleted_at: date },
+      where: { id: id },
+    });
   }
 }
