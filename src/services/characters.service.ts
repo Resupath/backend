@@ -567,6 +567,38 @@ export class CharactersService {
   }
 
   /**
+   * 캐릭터를 삭제한다.
+   *
+   * @param memberId
+   * @param id
+   */
+  async delete(memberId: Member['id'], id: Character['id']): Promise<void> {
+    const character = await this.prisma.character.findUnique({
+      select: {
+        member_id: true,
+      },
+      where: {
+        id: id,
+      },
+    });
+
+    if (!character || character.member_id !== memberId) {
+      throw new NotFoundException(`캐릭터 삭제 실패. 이미 삭제된 캐릭터이거나 권한이 없습니다.`);
+    }
+
+    const date = DateTimeUtil.now();
+
+    await this.prisma.character.update({
+      data: {
+        deleted_at: date,
+      },
+      where: {
+        id: id,
+      },
+    });
+  }
+
+  /**
    * 캐릭터의 마지막 스냅샷을 조회한다.
    * @param characterId
    */
