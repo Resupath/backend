@@ -8,6 +8,7 @@ import { PaginationUtil } from 'src/util/pagination.util';
 import { AuthService } from './auth.service';
 import { PrismaService } from './prisma.service';
 import { User } from 'src/interfaces/user.interface';
+import { CharactersService } from './characters.service';
 
 @Injectable()
 export class RoomsService {
@@ -16,6 +17,9 @@ export class RoomsService {
     private readonly authService: AuthService,
   ) {}
 
+  /**
+   * 채팅방을 생성한다.
+   */
   async create(userId: string, body: Room.CreateRequest): Promise<Room.CreateResponse> {
     const date = DateTimeUtil.now();
 
@@ -32,6 +36,9 @@ export class RoomsService {
     return room;
   }
 
+  /**
+   * user의 채팅방 전체 목록을 가져온다.
+   */
   async getAll(userId: string): Promise<Array<Room.GetResponse>> {
     const userIds = await this.authService.findUserIds(userId);
 
@@ -60,7 +67,7 @@ export class RoomsService {
      */
     return rooms.map((el) => {
       if (!el || !el.character.last_snapshot) {
-        throw new NotFoundException();
+        throw new NotFoundException(`채팅방 전체 조회 실패.`);
       }
 
       return {
@@ -81,14 +88,12 @@ export class RoomsService {
 
   /**
    * 채팅방을 페이지네이션으로 조회한다.
-   * 
-   * @param query 페이지네이션 요청 객체이다.
-   * 
-   * @param option 조회 옵션에 관련된 옵셔널 파라미터들이 들어있다.
    *
-   * {characterId?: Character['id']} : 특정캐릭터의 데이터만을 조회하고 싶다면 id를 입력한다.
-
-   * {deletedAt?: true} : 삭제된 데이터를 포함해서 보고 싶다면 true로 설정한다.
+   * @param query 페이지네이션 요청 객체.
+   *
+   * @param option 조회 옵셔널 파라미터.
+   * - characterId: 특정캐릭터의 데이터만을 조회하고 싶다면 id를 입력한다.
+   * - deletedAt: 삭제된 데이터를 포함해서 보고 싶다면 true로 설정한다.
    */
   async getByPage(
     query: Room.GetByPageRequest,
@@ -127,6 +132,9 @@ export class RoomsService {
     });
   }
 
+  /**
+   * 채팅방을 상세 조회한다. 어떠한 캐릭터와 유저가 채팅방에 속해있는지 확인한다.
+   */
   async get(userId: string, id: string): Promise<Room.GetResponse> {
     const userIds = await this.authService.findUserIds(userId);
 
@@ -151,7 +159,7 @@ export class RoomsService {
     });
 
     if (!room || !room.character.last_snapshot) {
-      throw new NotFoundException();
+      throw new NotFoundException('채팅방 상세 조회 실패. 이미 삭제된 방이거나 데이터가 존재하지 않습니다.');
     }
 
     return {
