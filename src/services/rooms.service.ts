@@ -8,7 +8,6 @@ import { PaginationUtil } from 'src/util/pagination.util';
 import { AuthService } from './auth.service';
 import { PrismaService } from './prisma.service';
 import { User } from 'src/interfaces/user.interface';
-import { CharactersService } from './characters.service';
 
 @Injectable()
 export class RoomsService {
@@ -43,18 +42,7 @@ export class RoomsService {
     const userIds = await this.authService.findUserIds(userId);
 
     const rooms = await this.prisma.room.findMany({
-      select: {
-        id: true,
-        created_at: true,
-        user: { select: { id: true } },
-        character: {
-          select: {
-            id: true,
-            created_at: true,
-            last_snapshot: { select: { snapshot: { select: { nickname: true, image: true } } } },
-          },
-        },
-      },
+      select: this.createSelectInput(),
       where: {
         deleted_at: null,
         user_id: { in: userIds },
@@ -69,20 +57,7 @@ export class RoomsService {
       if (!el || !el.character.last_snapshot) {
         throw new NotFoundException(`채팅방 전체 조회 실패.`);
       }
-
-      return {
-        id: el.id,
-        createdAt: el.created_at.toISOString(),
-        user: {
-          id: el.user.id,
-        },
-        character: {
-          id: el.character.id,
-          createdAt: el.character.created_at.toISOString(),
-          nickname: el.character.last_snapshot.snapshot.nickname,
-          image: el.character.last_snapshot.snapshot.image,
-        },
-      };
+      return this.mapping(el);
     });
   }
 
@@ -107,7 +82,7 @@ export class RoomsService {
 
     const [rooms, count] = await this.prisma.$transaction([
       this.prisma.room.findMany({
-        select: { id: true, user_id: true, character_id: true, created_at: true },
+        select: this.createSelectInput(),
         where: whereInput,
         orderBy: { created_at: 'desc' },
         skip,
@@ -120,8 +95,11 @@ export class RoomsService {
     /**
      * mapping
      */
-    const data = rooms.map((el): Room.GetByPageData => {
-      return { id: el.id, userId: el.user_id, characterId: el.character_id, createdAt: el.created_at.toISOString() };
+    const data = rooms.map((el): Room.GetResponse => {
+      if (!el || !el.character.last_snapshot) {
+        throw new NotFoundException('채팅방 전체 조회 실패.');
+      }
+      return this.mapping(el);
     });
 
     return PaginationUtil.createResponse({
@@ -139,18 +117,7 @@ export class RoomsService {
     const userIds = await this.authService.findUserIds(userId);
 
     const room = await this.prisma.room.findUnique({
-      select: {
-        id: true,
-        created_at: true,
-        user: { select: { id: true } },
-        character: {
-          select: {
-            id: true,
-            created_at: true,
-            last_snapshot: { select: { snapshot: { select: { nickname: true, image: true } } } },
-          },
-        },
-      },
+      select: this.createSelectInput(),
       where: {
         id,
         deleted_at: null,
@@ -162,19 +129,7 @@ export class RoomsService {
       throw new NotFoundException('채팅방 상세 조회 실패. 이미 삭제된 방이거나 데이터가 존재하지 않습니다.');
     }
 
-    return {
-      id: room.id,
-      createdAt: room.created_at.toISOString(),
-      user: {
-        id: room.user.id,
-      },
-      character: {
-        id: room.character.id,
-        createdAt: room.character.created_at.toISOString(),
-        nickname: room.character.last_snapshot.snapshot.nickname,
-        image: room.character.last_snapshot.snapshot.image,
-      },
-    };
+    return this.mapping(room);
   }
 
   /**
@@ -200,5 +155,108 @@ export class RoomsService {
       data: { deleted_at: date },
       where: { id: id },
     });
+  }
+
+  /**
+   * room 대한 프리즈마 select input을 반환한다.
+   * 반복되는 select 문을 대체하기 위해 사용.
+   */
+  private createSelectInput() {
+    return {
+      id: true,
+      created_at: true,
+      user: { select: { id: true } },
+      character: {
+        select: {
+          id: true,
+          is_public: true,
+          created_at: true,
+          deleted_at: true,
+          last_snapshot: { select: { snapshot: { select: { nickname: true, image: true, created_at: true } } } },
+        },
+      },
+    } as const;
+  }
+
+  /**
+   * Room.GetResponse 매핑 로직
+   */
+  private mapping(room: {
+    id: string;
+    created_at: Date;
+    user: {
+      id: string;
+    };
+    character: {
+      id: string;
+      created_at: Date;
+      deleted_at: Date | null;
+      is_public: boolean;
+      last_snapshot: {
+        snapshot: {
+          nickname: string;
+          image: string | null;
+          created_at: Date;
+        };
+      } | null;
+    };
+  }): Room.GetResponse {
+    if (!room.character.last_snapshot) {
+      throw new NotFoundException(
+        `채팅방 데이터 매핑 실패. 채팅방 스냅샷 데이터를 찾을 수 없습니다. roomId:${room.id}`,
+      );
+    }
+
+    /**
+     *  상태값 세팅
+     */
+    const status = this.getStatus(
+      { createdAt: room.created_at },
+      {
+        isPublic: room.character.is_public,
+        deletedAt: room.character.deleted_at,
+        lastSnapshotCreatedAt: room.character.last_snapshot?.snapshot.created_at,
+      },
+    );
+
+    return {
+      id: room.id,
+      createdAt: room.created_at.toISOString(),
+      user: {
+        id: room.user.id,
+      },
+      character: {
+        id: room.character.id,
+        createdAt: room.character.created_at.toISOString(),
+        nickname: room.character.last_snapshot.snapshot.nickname,
+        image: room.character.last_snapshot.snapshot.image,
+      },
+      status: status,
+    };
+  }
+
+  /**
+   * 채팅방의 상태값을 반환한다.
+   *
+   * normal: 정상
+   * deleted : 캐릭터가 삭제됨
+   * changed: 캐릭터가 수정됨
+   * private: 캐릭터가 비공개됨
+   */
+  private getStatus(
+    room: { createdAt: Date },
+    character: {
+      deletedAt: Date | null;
+      isPublic: boolean;
+      lastSnapshotCreatedAt: Date;
+    },
+  ): Room.GetResponse['status'] {
+    return character.deletedAt !== null
+      ? 'deleted'
+      : character.isPublic === false
+        ? 'private'
+        : character.lastSnapshotCreatedAt > room.createdAt
+          ? 'changed'
+          : 'normal';
   }
 }
