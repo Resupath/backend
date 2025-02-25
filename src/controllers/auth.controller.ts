@@ -88,4 +88,12 @@ export class AuthController {
   async getNotionAuthorizationUrl(@core.TypedQuery() query: Auth.GetUrlRequest): Promise<string> {
     return this.authService.getNotionLoginUrl(query.redirectUri);
   }
+
+  /**
+   * 깃허브 Authorization url을 반환한다.
+   */
+  @core.TypedRoute.Get('github')
+  async getGithubAuthorizationUrl(@core.TypedQuery() query: Auth.GetUrlRequest): Promise<string> {
+    return this.authService.getGithubLoginUrl(query.redirectUri);
+  }
 }

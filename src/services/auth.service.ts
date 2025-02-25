@@ -132,6 +132,16 @@ export class AuthService {
     return provider;
   }
 
+  /**
+   * 깃허브 로그인 url을 반환한다.
+   */
+  async getGithubLoginUrl(redirectUri?: string) {
+    const github = this.getGithubClient();
+    return `https://github.com/login/oauth/authorize?client_id=${github.clientId}&redirect_uri=${redirectUri ?? github.redirectUri}&scope=user&prompt=select_account`;
+  }
+
+
+
   async createProvider(memberId: string, authorization: Auth.CommonAuthorizationResponse): Promise<void> {
     const date = DateTimeUtil.now();
     await this.prisma.provider.create({
@@ -362,6 +372,14 @@ export class AuthService {
       clientId: this.configService.get<string>('NOTION_CLIENT_ID'),
       clientSecret: this.configService.get<string>('NOTION_CLIENT_SECRET'),
       redirectUri: this.configService.get<string>('NOTION_REDIRECT_URI'),
+    };
+  }
+
+  private getGithubClient() {
+    return {
+      clientId: this.configService.get<string>('GITHUB_CLIENT_ID'),
+      clientSecret: this.configService.get<string>('GITHUB_CLIENT_SECRET'),
+      redirectUri: this.configService.get<string>('GITHUB_REDIRECT_URI'),
     };
   }
 }
