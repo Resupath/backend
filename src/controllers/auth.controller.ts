@@ -30,14 +30,6 @@ export class AuthController {
   }
 
   /**
-   * 클라이언트 요청에 따라 구글 로그인 url을 반환한다.
-   */
-  @core.TypedRoute.Get('google')
-  async getGoogleLoginUrl(@core.TypedQuery() query: Auth.GetUrlRequest): Promise<string> {
-    return await this.authService.getGoogleLoginUrl(query.redirectUri);
-  }
-
-  /**
    * 클라이언트에서 받은 코드를 이용해 구글 로그인 유저를 검증하고 jwt를 발급한다.
    *
    * @security x-user bearer
@@ -52,11 +44,11 @@ export class AuthController {
   }
 
   /**
-   * 노션 Authorization url을 반환한다.
+   * 클라이언트 요청에 따라 구글 로그인 url을 반환한다.
    */
-  @core.TypedRoute.Get('notion')
-  async getNotionAuthorizationUrl(@core.TypedQuery() query: Auth.GetUrlRequest): Promise<string> {
-    return this.authService.getNotionLoginUrl(query.redirectUri);
+  @core.TypedRoute.Get('google')
+  async getGoogleLoginUrl(@core.TypedQuery() query: Auth.GetUrlRequest): Promise<string> {
+    return await this.authService.getGoogleLoginUrl(query.redirectUri);
   }
 
   /**
@@ -87,5 +79,13 @@ export class AuthController {
     } catch (err) {
       return false;
     }
+  }
+
+  /**
+   * 노션 Authorization url을 반환한다.
+   */
+  @core.TypedRoute.Get('notion')
+  async getNotionAuthorizationUrl(@core.TypedQuery() query: Auth.GetUrlRequest): Promise<string> {
+    return this.authService.getNotionLoginUrl(query.redirectUri);
   }
 }
