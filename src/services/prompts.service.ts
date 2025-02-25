@@ -13,7 +13,7 @@ export class PromptsService {
    * @param userId 사용자 아이디 특정 Source의 권한(OAuth 연동 등)여부를 확인하기 위해 사용됩니다.
    * @param input 캐릭터에 입력된 정보, 캐릭터 상세 조회와 인터페이스 동일
    */
-  async prompt(userId: string, input: Character.GetResponse): Promise<string> {
+  async prompt(input: Character.GetResponse): Promise<string> {
     const prompt = [
       `# 1. 반드시 지켜야 할 사항:`,
       this.addPolicy(),
@@ -32,7 +32,7 @@ export class PromptsService {
       this.addExperiences(input.experiences),
       ``,
       `## 첨부 자료`,
-      await this.addSources(userId, input.sources),
+      await this.addSources(input.memberId, input.sources),
       ``,
       `# 3. 이제 면접관(유저)이 질문을 시작할 것이다:`,
       this.addOutro(),
@@ -103,21 +103,21 @@ export class PromptsService {
 
   /**
    * 소스들을 읽어 문자열로 반환합니다.
-   * @param userId 노션과 같은 리소스 접근에 토큰이 필요한 경우, 토큰을 받아오기 위해 사용됩니다.
+   * @param memberId 캐릭터를 생성한 멤버의 아이디. 노션과 같은 페이지를 읽어올 때 인증 정보를 조회하기 위해 사용한다.
    * @param input 소스들의 데이터
    */
-  private async addSources(userId: string, input: Character.GetResponse['sources']): Promise<string> {
-    const sources = await Promise.all(input.map((el) => this.formatSource(userId, el)));
+  private async addSources(memberId: string, input: Character.GetResponse['sources']): Promise<string> {
+    const sources = await Promise.all(input.map((el) => this.formatSource(memberId, el)));
     return sources.join(`\n\n`);
   }
 
   /**
    * 소스 한 개를 읽어 마크다운 문자열로 반환합니다.
-   * @param userId 노션과 같은 리소스 접근에 토큰이 필요한 경우, 토큰을 받아오기 위해 사용됩니다.
+   * @param memberId 캐릭터를 생성한 멤버의 아이디. 노션과 같은 페이지를 읽어올 때 인증 정보를 조회하기 위해 사용한다.
    * @param input 소스 한개의 데이터
    */
-  private async formatSource(userId: string, input: Character.GetResponse['sources'][number]): Promise<string> {
-    const content = await this.handleSource(userId, input.type, input.url);
+  private async formatSource(memberId: string, input: Character.GetResponse['sources'][number]): Promise<string> {
+    const content = await this.handleSource(memberId, input.type, input.url);
     return [`### ${input.subtype}`, '```md', `${content}`, '```'].join('\n');
   }
 
@@ -125,9 +125,9 @@ export class PromptsService {
    * 소스의 type과 url에 따라 콘텐츠를 읽어올 수 있도록 핸들링 합니다.
    * @todo 노션외 다른 타입도 검증할 수 있도록 고도화
    */
-  private async handleSource(userId: string, type: Source['type'], url: Source['url']): Promise<string> {
+  private async handleSource(memberId: string, type: Source['type'], url: Source['url']): Promise<string> {
     return type === 'link' && url.includes('notion')
-      ? await this.notionService.notionToMarkdownByUserId(userId, url)
+      ? await this.notionService.notionToMarkdownByMemberId(memberId, url)
       : url;
   }
 }

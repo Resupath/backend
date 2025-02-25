@@ -58,7 +58,7 @@ export class ChatsService {
 
     // 1-1. 채팅 기록이 없다면 프롬프트 삽입
     if (!chats.length) {
-      const prompt = await this.createSystemPrompt(user.id, character.id, id);
+      const prompt = await this.createSystemPrompt(character.id, id);
       chats.push(prompt);
     }
 
@@ -138,9 +138,9 @@ export class ChatsService {
     });
   }
 
-  private async createSystemPrompt(userId: string, characterId: string, roomId: string): Promise<Chat.GetResponse> {
+  private async createSystemPrompt(characterId: string, roomId: string): Promise<Chat.GetResponse> {
     const character = await this.charactersService.get(characterId, { isPublic: true });
-    const prompt = await this.promptsService.prompt(userId, character);
+    const prompt = await this.promptsService.prompt(character);
 
     const chat = await this.createSystemChat(roomId, { message: prompt });
     return chat;

@@ -37,18 +37,6 @@ export class NotionService {
   }
 
   /**
-   * 유저 아이디를 바탕으로 노션 연동정보를 확인하고 페이지 콘텐츠를 마크다운으로 변환한다.
-   * @param userId
-   * @param url 노션 연동 확인을 위한
-   */
-  async notionToMarkdownByUserId(memberId: string, url: Source['url']): Promise<string> {
-    const id = this.verifyNotionUrl(url);
-    const { password: accessToken } = await this.authService.getNotionAccessTokenByUserId(memberId);
-
-    return await this.getNotionToMd(accessToken, id);
-  }
-
-  /**
    * 노션 private url에서 페이지의 id를 추출한다.
    *
    * private url 형식이 아니거나 id가 추출되지 않으면 null을 반환한다.
