@@ -4,14 +4,18 @@ import { ApiTags } from '@nestjs/swagger';
 import { Member } from 'src/decorators/member.decorator';
 import { MemberGuard } from 'src/guards/member.guard';
 import { Character } from 'src/interfaces/characters.interface';
+import { Common } from 'src/interfaces/common.interface';
 import { Guard } from 'src/interfaces/guard.interface';
 import { CharactersService } from 'src/services/characters.service';
-import { tags } from 'typia';
+import { ExperiencesService } from 'src/services/experiences.service';
 
 @ApiTags('Character')
 @Controller('characters')
 export class CharactersController {
-  constructor(private readonly charactersService: CharactersService) {}
+  constructor(
+    private readonly charactersService: CharactersService,
+    private readonly experiencesService: ExperiencesService,
+  ) {}
 
   /**
    * 캐릭터를 생성한다.
@@ -36,10 +40,33 @@ export class CharactersController {
   }
 
   /**
+   * 캐릭터의 경력들을 조회한다.
+   */
+  @core.TypedRoute.Get(':id/experiences')
+  async getCharacterExperiences(@core.TypedParam('id') id: Character['id']) {
+    return await this.experiencesService.getAllByCharacterId(id);
+  }
+
+  /**
    * 아이디로 캐릭터를 조회한다.
    */
   @core.TypedRoute.Get(':id')
-  async getCharacter(@core.TypedParam('id') id: string & tags.Format<'uuid'>) {
-    return await this.charactersService.get(id);
+  async getCharacter(@core.TypedParam('id') id: Character['id']) {
+    return await this.charactersService.get(id, { isPublic: true });
+  }
+
+  /**
+   * 캐릭터를 수정한다.
+   *
+   * @security x-member bearer
+   */
+  @UseGuards(MemberGuard)
+  @core.TypedRoute.Patch(':id')
+  async updateCharacter(
+    @Member() member: Guard.MemberResponse,
+    @core.TypedParam('id') id: Character['id'],
+    @core.TypedBody() body: Character.UpdateRequest,
+  ): Promise<Character.UpdateResponse> {
+    return await this.charactersService.update(member.id, id, body);
   }
 }

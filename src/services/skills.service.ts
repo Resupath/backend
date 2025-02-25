@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
+import { CharacterSnapshot } from 'src/interfaces/characters.interface';
 import { Skill } from 'src/interfaces/skills.interface';
 import { DateTimeUtil } from 'src/util/date-time.util';
 import { PaginationUtil } from 'src/util/pagination.util';
@@ -19,7 +20,7 @@ export class SkillsService {
     });
   }
 
-  async findOrCreateMany(body: Array<Skill.CreateRequest>): Promise<Array<Skill['id']>> {
+  async findOrCreateMany(body: Array<Skill.CreateRequest>): Promise<Array<Pick<Skill, 'id'>>> {
     const date = DateTimeUtil.now();
 
     return await Promise.all(
@@ -36,9 +37,9 @@ export class SkillsService {
             },
           });
 
-          return newSkill.id;
+          return { id: newSkill.id };
         }
-        return skill.id;
+        return { id: skill.id };
       }),
     );
   }
@@ -77,5 +78,27 @@ export class SkillsService {
       skip,
       take,
     });
+  }
+
+  /**
+   * 캐릭터 스냅샷과의 스킬 관계를 추가한다.
+   *
+   * @param tx 프리즈마 트랜잭션 클라이언트 객체
+   * @param characterSnapshotId 캐릭터 스냅샷 아이디
+   * @param body 추가하려는 스킬 아이디
+   */
+  async updateSnapshotMany(
+    tx: Prisma.TransactionClient,
+    characterSnapshotId: CharacterSnapshot['id'],
+    body: Array<Pick<Skill, 'id'>>,
+  ): Promise<void> {
+    const createInput = body.map((el): Prisma.Character_Snapshot_SkillCreateManyInput => {
+      return {
+        character_snapshot_id: characterSnapshotId,
+        skill_id: el.id,
+      };
+    });
+
+    await tx.character_Snapshot_Skill.createMany({ data: createInput });
   }
 }

@@ -19,34 +19,6 @@ export class SourcesController {
   ) {}
 
   /**
-   * 소스를 저장한다. 소스는 link, file 타입으로 나뉘며 자기소개서나, 이력서를 받을때 사용한다.
-   *
-   * @security x-member bearer
-   */
-  @UseGuards(MemberGuard)
-  @core.TypedRoute.Post('/:characterId')
-  async createSource(
-    @core.TypedParam('characterId') characterId: Source['characterId'],
-    @core.TypedBody() body: Source.CreateRequest,
-  ): Promise<Source.GetResponse> {
-    return await this.sourcesService.create(characterId, body);
-  }
-
-  /**
-   * 소스 여러개를 저장한다.
-   *
-   * @security x-member bearer
-   */
-  @UseGuards(MemberGuard)
-  @core.TypedRoute.Post('/bulk/:characterId')
-  async createSources(
-    @core.TypedParam('characterId') characterId: Source['characterId'],
-    @core.TypedBody() body: Array<Source.CreateRequest>,
-  ): Promise<Source.GetAllResponse> {
-    return await this.sourcesService.createMany(characterId, body);
-  }
-
-  /**
    * 캐릭터의 특정 소스를 조회한다.
    */
   @core.TypedRoute.Get('/:characterId/:id')
@@ -60,6 +32,7 @@ export class SourcesController {
   /**
    * 캐릭터의 특정 소스를 수정한다. 변경된 내용이 있을때만 수정한다.
    *
+   * @deprecated
    * @security x-member bearer
    */
   @UseGuards(MemberGuard)
@@ -77,6 +50,7 @@ export class SourcesController {
   /**
    * 캐릭터의 특정 소스를 삭제한다. (soft-del)
    *
+   * @deprecated
    * @security x-member bearer
    */
   @UseGuards(MemberGuard)
@@ -91,6 +65,35 @@ export class SourcesController {
   }
 
   /**
+   * 소스 여러개를 저장한다.
+   * @deprecated
+   * @security x-member bearer
+   */
+  @UseGuards(MemberGuard)
+  @core.TypedRoute.Post('/bulk/:characterId')
+  async createSources(
+    @core.TypedParam('characterId') characterId: Source['characterId'],
+    @core.TypedBody() body: Array<Source.CreateRequest>,
+  ): Promise<Source.GetAllResponse> {
+    return await this.sourcesService.createMany(characterId, body);
+  }
+
+  /**
+   * 소스를 저장한다. 소스는 link, file 타입으로 나뉘며 자기소개서나, 이력서를 받을때 사용한다.
+   *
+   * @deprecated
+   * @security x-member bearer
+   */
+  @UseGuards(MemberGuard)
+  @core.TypedRoute.Post('/:characterId')
+  async createSource(
+    @core.TypedParam('characterId') characterId: Source['characterId'],
+    @core.TypedBody() body: Source.CreateRequest,
+  ): Promise<Source.GetResponse> {
+    return await this.sourcesService.create(characterId, body);
+  }
+
+  /**
    * 캐릭터에 저장된 소스들을 조회한다.
    */
   @core.TypedRoute.Get('/:characterId')
@@ -99,7 +102,7 @@ export class SourcesController {
   }
 
   /**
-   * 프로젝트에서 id 추출을 지원하는 노션 링크인지 검증한다. 지원하는 url 아니라면 exception -> false 값을 반환한다.
+   * 지원하는 노션 링크인지 검증한다.
    */
   @core.TypedRoute.Post('/notion/verify')
   async verifyNotionUrl(@core.TypedBody() body: Pick<Source, 'url'>): Promise<boolean> {
@@ -111,7 +114,7 @@ export class SourcesController {
   }
 
   /**
-   * 노션 링크를 받아 콘텐츠를 읽어 마크다운 문자열로 변환한다.
+   * 노션 콘텐츠를 마크다운 문자열로 변환한다.
    *
    * @security x-member bearer
    */

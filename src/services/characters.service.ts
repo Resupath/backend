@@ -1,23 +1,36 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { Member, Prisma } from '@prisma/client';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
-import { Character } from 'src/interfaces/characters.interface';
+import { Character, CharacterSnapshot } from 'src/interfaces/characters.interface';
+import { Experience } from 'src/interfaces/experiences.interface';
+import { Member } from 'src/interfaces/member.interface';
+import { Personality } from 'src/interfaces/personalities.interface';
+import { Position } from 'src/interfaces/positions.interface';
+import { Skill } from 'src/interfaces/skills.interface';
+import { Source } from 'src/interfaces/source.interface';
 import { DateTimeUtil } from 'src/util/date-time.util';
 import { PaginationUtil } from 'src/util/pagination.util';
 import { ExperiencesService } from './experiences.service';
+import { PersonalitiesService } from './personalities.service';
 import { PositionsService } from './positions.service';
 import { PrismaService } from './prisma.service';
 import { SkillsService } from './skills.service';
+import { SourcesService } from './sources.service';
 
 @Injectable()
 export class CharactersService {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly personalitiesService: PersonalitiesService,
     private readonly experiencesService: ExperiencesService,
     private readonly positionsService: PositionsService,
     private readonly skillsService: SkillsService,
+    private readonly sourcesService: SourcesService,
   ) {}
 
+  /**
+   * 캐릭터를 생성한다.
+   */
   async create(memberId: string, input: Character.CreateRequest) {
     const characterId = randomUUID();
     const snapshotId = randomUUID();
@@ -71,17 +84,17 @@ export class CharactersService {
             },
             character_snapshot_positions: {
               createMany: {
-                data: positions.map((positionId) => {
+                data: positions.map((position) => {
                   return {
-                    position_id: positionId,
+                    position_id: position.id,
                   };
                 }),
               },
             },
             character_snapshot_skills: {
               createMany: {
-                data: skills.map((skillId) => {
-                  return { skill_id: skillId };
+                data: skills.map((skill) => {
+                  return { skill_id: skill.id };
                 }),
               },
             },
@@ -101,7 +114,21 @@ export class CharactersService {
     return character;
   }
 
-  async get(id: string): Promise<Character.GetResponse> {
+  /**
+   * 특정 캐릭터를 상세조회한다.
+   *
+   * @param id 조회할 캐릭터의 아이디
+   * @param option 조회 옵셔널 파라미터들이다.
+   * -  isPublic: 공개 캐릭터만 조회하고 싶을 경우 true로 설정한다.
+   */
+  async get(
+    id: string,
+    option?: {
+      isPublic?: true;
+    },
+  ): Promise<Character.GetResponse> {
+    const whereInput: Prisma.CharacterWhereUniqueInput = { id: id, is_public: option?.isPublic ? true : undefined };
+
     const character = await this.prisma.character.findUnique({
       select: {
         id: true,
@@ -149,23 +176,24 @@ export class CharactersService {
               select: { id: true, keyword: true },
             },
           },
+          where: { deleted_at: null },
         },
         _count: { select: { rooms: true } },
       },
-      where: { id, is_public: true },
+      where: whereInput,
     });
 
     const snapshot = character?.last_snapshot?.snapshot;
 
     if (!snapshot) {
-      throw new NotFoundException();
+      throw new NotFoundException('캐릭터 조회 실패. 삭제되었거나 비공개 된 캐릭터 입니다.');
     }
 
     /**
      * mapping experinece
      */
     const experiences = snapshot.character_snapshot_experiences.map((el) =>
-      this.experiencesService.mappingOutput(el.experience),
+      this.experiencesService.mapping(el.experience),
     );
 
     const experienceYears = this.experiencesService.getExperienceYears(experiences);
@@ -178,6 +206,9 @@ export class CharactersService {
       memberId: character.member_id,
       isPublic: character.is_public,
       createdAt: character.created_at.toISOString(),
+      nickname: snapshot.nickname,
+      image: snapshot.image,
+
       personalities: character.character_personalites.map((el) => {
         return { id: el.personality.id, keyword: el.personality.keyword };
       }),
@@ -194,8 +225,6 @@ export class CharactersService {
       /**
        * snapshot relation
        */
-      nickname: snapshot.nickname,
-      image: snapshot.image,
       positions: snapshot.character_snapshot_positions.map((el) => {
         return {
           id: el.postion.id,
@@ -221,16 +250,11 @@ export class CharactersService {
   /**
    * 캐릭터를 페이지네이션 조회한다.
    *
-   * @param query 페이지네이션/정렬/검색 요청 쿼리이다.
-   * sort : 정렬조건, latest(최신순), roomCount(채팅방순)
-   * search : 검색조건, 캐릭터 닉네임, 직군, 기술명을 포함해 검색하도록 한다.
-   * position : 검색조건, 입력된 직군을 포함해 검색한다.
-   * skill : 검색조건, 입력된 기술명을 포함해 검색한다.
-   *
+   * @param query 페이지네이션 요청 쿼리 객체.
    * @param option 조회시 where 조건에 사용되는 옵셔널 파라미터의 객체이다.
-   * isPublic : 공개 여부이다. 공개된 캐릭터만 조회할 경우 true로 설정해야 한다,
-   * memberId : 특정 멤버의 캐릭터만 조회하고 싶다면, 이 파라미터에 아이디를 넣어주어야 한다.
-   * deletedAt : 삭제 여부이다. 삭제된 캐릭터도 조회하고 싶다면 true로 설정한다.
+   *    - isPublic : 공개 여부이다. 공개된 캐릭터만 조회할 경우 true로 설정해야 한다,
+   *    - memberId : 특정 멤버의 캐릭터만 조회하고 싶다면, 이 파라미터에 아이디를 넣어주어야 한다.
+   *    - deletedAt : 삭제 여부이다. 삭제된 캐릭터도 조회하고 싶다면 true로 설정한다.
    */
   async getBypage(
     query: Character.GetByPageRequest,
@@ -377,11 +401,13 @@ export class CharactersService {
       const snapshot = el?.last_snapshot?.snapshot;
 
       if (!snapshot) {
-        throw new NotFoundException();
+        throw new NotFoundException(
+          `캐릭터 목록 조회 실패. 캐릭터 스냅샷 데이터가 존재하지않습니다. characterId: ${el.id}`,
+        );
       }
 
       const experiences = snapshot.character_snapshot_experiences.map((el) =>
-        this.experiencesService.mappingOutput(el.experience),
+        this.experiencesService.mapping(el.experience),
       );
       const experienceYears = this.experiencesService.getExperienceYears(experiences);
 
@@ -390,6 +416,9 @@ export class CharactersService {
         memberId: el.member_id,
         isPublic: el.is_public,
         createdAt: el.created_at.toISOString(),
+        nickname: snapshot.nickname,
+        image: snapshot.image,
+
         personalities: el.character_personalites.map((el) => {
           return { id: el.personality.id, keyword: el.personality.keyword };
         }),
@@ -397,8 +426,6 @@ export class CharactersService {
         /**
          * snapshot relation
          */
-        nickname: snapshot.nickname,
-        image: snapshot.image,
         positions: snapshot.character_snapshot_positions.map((el) => {
           return {
             id: el.postion.id,
@@ -444,5 +471,173 @@ export class CharactersService {
     await this.prisma.character_Personality.createMany({
       data: characterPersonalities,
     });
+  }
+
+  /**
+   * 캐릭터를 수정한다.
+   */
+  async update(
+    memberId: Member['id'],
+    id: Character['id'],
+    newData: Character.UpdateRequest,
+  ): Promise<Character.UpdateResponse> {
+    const origin = await this.get(id);
+    const date = DateTimeUtil.now();
+
+    if (origin.memberId !== memberId) {
+      throw new ForbiddenException(
+        '캐릭터 수정 실패. 캐릭터 수정 권한이 없습니다. 본인의 캐릭터만 수정할 수 있습니다.',
+      );
+    }
+
+    // 직군(Position), 스킬(Skill) 생성
+    const positions = await this.positionsService.findOrCreateMany(newData.positions);
+    const skills = await this.skillsService.findOrCreateMany(newData.skills);
+    const sources = await this.sourcesService.findOrCreateMany(id, newData.sources);
+
+    /**
+     * 변경 점 여부를 확인한다.
+     */
+    const isPublicChanged = origin.isPublic !== newData.isPublic;
+    const isPersonalitiesChanged = this.prisma.isChanged<Personality>(origin.personalities, newData.personalities);
+    const isSourceChanged = this.prisma.isChanged<Source>(origin.sources, sources);
+
+    const isSnapshotChanged = origin.nickname !== newData.nickname || origin.image !== (newData.image ?? null);
+    const isExperiencesChanged = this.prisma.isChanged<Experience>(origin.experiences, newData.experiences);
+    const isPositionsChanged = this.prisma.isChanged<Position>(origin.positions, positions);
+    const isSkillsChanged = this.prisma.isChanged<Skill>(origin.skills, skills);
+
+    await this.prisma.$transaction(async (tx) => {
+      /**
+       * 0. 캐릭터 공개 여부 수정
+       */
+      if (isPublicChanged) {
+        await tx.character.update({ data: { is_public: newData.isPublic }, where: { id: id } });
+      }
+
+      /**
+       * 1. 성격-캐릭터 관계를 업데이트 한다.
+       */
+      if (isPersonalitiesChanged) {
+        await this.personalitiesService.upsertAndDeleteMany(tx, id, origin.personalities, newData.personalities, date);
+      }
+
+      /**
+       * 2. 첨부파일-캐릭터 관계를 업데이트 한다.
+       */
+      if (isSourceChanged) {
+        await this.sourcesService.deleteMany(tx, id, origin.sources, sources, date);
+      }
+
+      /**
+       * 4. 변경점이 있다면 새로운 스냅샷을 생성하고 모든 관계를 새로운 스냅샷으로 갱신한다.
+       * 스냅샷, 경력, 직군, 스킬명, 첨부파일이 수정되었을 때 스냅샷을 새롭게 생성한다.
+       */
+      const isChanged =
+        isSnapshotChanged || isExperiencesChanged || isPositionsChanged || isSkillsChanged || isSourceChanged;
+
+      if (isChanged) {
+        const newSnapshot = await this.createNewSnapshot(tx, {
+          characterId: id,
+          nickname: newData.nickname,
+          image: newData.image,
+          createdAt: date,
+        });
+
+        // 직종-캐릭터 스냅샷 관계를 업데이트한다.
+        await this.experiencesService.updateSnapshotMany(tx, newSnapshot.id, newData.experiences, date);
+
+        // 성격-캐릭터 스냅샷 관계를 업데이트한다.
+        await this.positionsService.updateSnapshotMany(tx, newSnapshot.id, positions);
+
+        // 기술 스택-캐릭터 스냅샷 관계를 업데이트한다.
+        await this.skillsService.updateSnapshotMany(tx, newSnapshot.id, skills);
+      }
+    });
+
+    return {
+      isPublicChanged,
+      isPersonalitiesChanged,
+      isSourceChanged,
+      isSnapshotChanged,
+      isExperiencesChanged,
+      isPositionsChanged,
+      isSkillsChanged,
+    };
+  }
+
+  /**
+   * 캐릭터의 마지막 스냅샷을 조회한다.
+   * @param characterId
+   */
+  private async getLastSnapshot(
+    characterId: Character['id'],
+    tx?: Prisma.TransactionClient,
+  ): Promise<CharacterSnapshot.GetResponse> {
+    const lastSnapshot = await (tx ?? this.prisma).character.findUnique({
+      select: {
+        last_snapshot: {
+          select: {
+            snapshot: {
+              select: {
+                id: true,
+                nickname: true,
+                image: true,
+                created_at: true,
+              },
+            },
+          },
+        },
+      },
+      where: {
+        id: characterId,
+      },
+    });
+
+    const snapshot = lastSnapshot?.last_snapshot?.snapshot;
+
+    if (!snapshot) {
+      throw new NotFoundException('캐릭터 마지막 스냅샷 조회 실패. 스냅샷 데이터가 존재하지 않습니다.');
+    }
+
+    return {
+      id: snapshot.id,
+      nickname: snapshot.nickname,
+      image: snapshot.image,
+      createdAt: snapshot.created_at.toDateString(),
+    };
+  }
+
+  /**
+   * 캐릭터 스냅샷 정보를 수정한다.
+   * 새로운 스냅샷을 생성하고 마지막 스냅샷을 생성한 스냅샷으로 업데이트 한다.
+   */
+  private async createNewSnapshot(
+    tx: Prisma.TransactionClient,
+    input: CharacterSnapshot.CreateRequest,
+  ): Promise<CharacterSnapshot.GetResponse> {
+    const snapshotId = randomUUID();
+    const newSnapshot = await tx.character_Snapshot.create({
+      select: { id: true, nickname: true, image: true, created_at: true },
+      data: {
+        id: snapshotId,
+        nickname: input.nickname,
+        image: input.image,
+        created_at: input.createdAt,
+        character_id: input.characterId,
+      },
+    });
+
+    const lastSnapshot = await tx.character_Last_Snapshot.update({
+      data: { character_snapshot_id: snapshotId },
+      where: { character_id: input.characterId },
+    });
+
+    return {
+      id: newSnapshot.id,
+      nickname: newSnapshot.nickname,
+      image: newSnapshot.image,
+      createdAt: newSnapshot.created_at.toISOString(),
+    };
   }
 }

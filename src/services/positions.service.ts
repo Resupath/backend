@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
+import { CharacterSnapshot } from 'src/interfaces/characters.interface';
 import { Position } from 'src/interfaces/positions.interface';
 import { DateTimeUtil } from 'src/util/date-time.util';
 import { PaginationUtil } from 'src/util/pagination.util';
@@ -19,7 +20,7 @@ export class PositionsService {
     });
   }
 
-  async findOrCreateMany(body: Array<Position.CreateRequest>): Promise<Array<Position['id']>> {
+  async findOrCreateMany(body: Array<Position.CreateRequest>): Promise<Array<Pick<Position, 'id'>>> {
     const date = DateTimeUtil.now();
 
     return await Promise.all(
@@ -36,9 +37,9 @@ export class PositionsService {
             },
           });
 
-          return newPosition.id;
+          return { id: newPosition.id };
         }
-        return position.id;
+        return { id: position.id };
       }),
     );
   }
@@ -71,5 +72,27 @@ export class PositionsService {
     ]);
 
     return PaginationUtil.createResponse({ data, count, skip, take });
+  }
+
+  /**
+   * 캐릭터 스냅샷과의 직군 관계를 추가한다.
+   *
+   * @param tx 프리즈마 트랜잭션 클라이언트 객체
+   * @param characterSnapshotId 캐릭터 스냅샷 아이디
+   * @param body 추가하려는 직군 아이디
+   */
+  async updateSnapshotMany(
+    tx: Prisma.TransactionClient,
+    characterSnapshotId: CharacterSnapshot['id'],
+    body: Array<Pick<Position, 'id'>>,
+  ): Promise<void> {
+    const createInput = body.map((el): Prisma.Character_Snapshot_PositionCreateManyInput => {
+      return {
+        character_snapshot_id: characterSnapshotId,
+        position_id: el.id,
+      };
+    });
+
+    await tx.character_Snapshot_Position.createMany({ data: createInput });
   }
 }
