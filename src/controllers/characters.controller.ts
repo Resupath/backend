@@ -69,4 +69,21 @@ export class CharactersController {
   ): Promise<Character.UpdateResponse> {
     return await this.charactersService.update(member.id, id, body);
   }
+
+  /**
+   * 캐릭터를 삭제한다.
+   *
+   * @security x-member bearer
+   */
+  @UseGuards(MemberGuard)
+  @core.TypedRoute.Delete(':id')
+  async deleteCharacter(
+    @Member() member: Guard.MemberResponse,
+    @core.TypedParam('id') id: Character['id'],
+  ): Promise<Common.Response> {
+    await this.charactersService.delete(member.id, id);
+    return {
+      message: `캐릭터가 삭제되었습니다.`,
+    };
+  }
 }
