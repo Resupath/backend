@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import axios from 'axios';
@@ -130,6 +130,43 @@ export class AuthService {
     }
 
     return provider;
+  }
+
+  /**
+   * 허가된 노션 페이지를 조회한다.
+   */
+  async getNotionAccessPages(accessToken: string): Promise<Array<NotionUtil.VerifyPageResponse>> {
+    const { apiVersion } = this.getNotionClient();
+
+    try {
+      const response = await axios.post(
+        `https://api.notion.com/v1/search`,
+        {
+          filter: {
+            value: 'page',
+            property: 'object',
+          },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Notion-Version': apiVersion,
+          },
+        },
+      );
+
+      const page = response.data.results;
+
+      return page.map(
+        (el): NotionUtil.VerifyPageResponse => ({
+          id: el.id,
+          title: el.properties.title.title[0].plain_text,
+          url: el.url,
+        }),
+      );
+    } catch (error) {
+      throw new InternalServerErrorException(`노션 페이지 정보 읽어오기 실패.`);
+    }
   }
 
   /**
@@ -532,6 +569,7 @@ export class AuthService {
       clientId: this.configService.get<string>('NOTION_CLIENT_ID'),
       clientSecret: this.configService.get<string>('NOTION_CLIENT_SECRET'),
       redirectUri: this.configService.get<string>('NOTION_REDIRECT_URI'),
+      apiVersion: this.configService.get<string>('NOTION_API_VERSION'),
     };
   }
 
