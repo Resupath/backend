@@ -30,6 +30,14 @@ export namespace NotionUtil {
   }
 
   /**
+   * 노션 연동 페이지 목록 응답값
+   */
+  export interface VerifyPageResponse {
+    id: string;
+    title: string;
+    url: string;
+  }
+  /**
    * 노션 프라이빗 페이지 아이디 추출 정규식
    */
   export const privateNotionIdRegex = /https?:\/\/(www\.)?notion\.so\/(?:[^/]+\/)?[^\s/]*?([a-f0-9]{32})(?:\?[^\s]*)?$/;

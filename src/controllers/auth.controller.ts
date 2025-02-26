@@ -6,6 +6,7 @@ import { UserGuard } from 'src/guards/user.guard';
 import { Auth } from 'src/interfaces/auth.interface';
 import { Guard } from 'src/interfaces/guard.interface';
 import { AuthService } from 'src/services/auth.service';
+import { NotionUtil } from 'src/util/notion.util';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -66,18 +67,18 @@ export class AuthController {
   }
 
   /**
-   * 노션 API 연동 여부를 확인한다.
+   * 노션 API 연동 여부를 확인 후 연동 페이지 정보를 반환한다. 연동되지 않았거나, 연동된 페이지가 없다면 null을 반환.
    *
    * @security x-user bearer
    */
   @UseGuards(UserGuard)
   @core.TypedRoute.Get('notion/verify')
-  async notionVerify(@User() user: Guard.UserResponse): Promise<boolean> {
+  async notionVerify(@User() user: Guard.UserResponse): Promise<Array<NotionUtil.VerifyPageResponse> | null> {
     try {
-      await this.authService.getNotionAccessTokenByUserId(user.id);
-      return true;
+      const { password } = await this.authService.getNotionAccessTokenByUserId(user.id);
+      return await this.authService.getNotionAccessPages(password);
     } catch (err) {
-      return false;
+      return null;
     }
   }
 
