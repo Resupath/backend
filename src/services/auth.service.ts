@@ -171,6 +171,9 @@ export class AuthService {
     }
   }
 
+  /**
+   * 프로바이더(OAuth 연동) 정보를 저장한다.
+   */
   async createProvider(memberId: string, authorization: Auth.CommonAuthorizationResponse): Promise<void> {
     const date = DateTimeUtil.now();
     await this.prisma.provider.create({
@@ -185,6 +188,13 @@ export class AuthService {
     });
   }
 
+  /**
+   * Oauth 인증정보를 바탕으로 프로바이더(OAuth 연동) 정보를 조회해 있다면 프로바이더 정보를 갱신해 반환
+   * 없다면 새롭게 멤버-프로바이더 정보를 저장한다.
+   *
+   * @param userId
+   * @param authorization
+   */
   async findOrCreateMember(userId: string, authorization: Auth.CommonAuthorizationResponse) {
     const provider = await this.findProviderMember(authorization);
 
@@ -193,6 +203,9 @@ export class AuthService {
       : await this.createMember(userId, authorization);
   }
 
+  /**
+   * Oauth 인증정보를 바탕으로 프로바이더(OAuth 연동) 정보를 조회한다.
+   */
   async findProviderMember(authorization: Auth.CommonAuthorizationResponse) {
     const provider = await this.prisma.provider.findFirst({
       select: { id: true, member: { select: { id: true, name: true } } },
@@ -204,6 +217,9 @@ export class AuthService {
     return provider;
   }
 
+  /**
+   * 연관된 user 아이디를 찾아 반환한다. (동일한 멤버로 묶인 user들의 집합을 찾는데에 사용한다.)
+   */
   async findUserIds(userId: User['id']): Promise<Array<User['id']>> {
     const users = await this.prisma.user.findMany({
       select: {
@@ -217,6 +233,9 @@ export class AuthService {
     return users.map((user) => user.id);
   }
 
+  /**
+   * 프로바이더(OAuth 연동) 정보를 갱신한다.
+   */
   async updateProviderPassword(userId: User['id'], providerId: Provider['id'], refreshToken: string) {
     const member = await this.prisma.$transaction(async (prisma) => {
       const { member } = await prisma.provider.update({
@@ -235,6 +254,9 @@ export class AuthService {
     return member;
   }
 
+  /**
+   * 멤버-프로바이더 정보를 저장한다.
+   */
   async createMember(userId: string, authorization: Auth.CommonAuthorizationResponse) {
     const memberId = randomUUID();
     const date = DateTimeUtil.now();
@@ -266,6 +288,9 @@ export class AuthService {
     return member;
   }
 
+  /**
+   * user 토큰을 발급한다.
+   */
   createUserToken(user: Pick<User, 'id'>): Auth.UserToken {
     const accessToken = this.jwtService.sign(user, {
       secret: this.configService.get('JWT_SECRET_USER'),
@@ -274,6 +299,9 @@ export class AuthService {
     return { accessToken };
   }
 
+  /**
+   * user와 연관된 member 정보를 반환한다.
+   */
   private async getMember(userId: string): Promise<{ memberId: string }> {
     const member = await this.prisma.user.findUnique({
       select: { member_id: true },
@@ -283,12 +311,17 @@ export class AuthService {
     });
 
     if (!member || !member.member_id) {
-      throw new NotFoundException('멤버 정보가 존재하지 않습니다.');
+      throw new NotFoundException(
+        `유저 아이디를 이용한 멤버 정보 조회 실패, 회원가입된 유저가 아닙니다. userId: ${userId}`,
+      );
     }
 
     return { memberId: member.member_id };
   }
 
+  /**
+   * 리프레쉬 토큰을 검증한다.
+   */
   private async verifyRefreshToken(refreshToken: string): Promise<{ id: string; name: string }> {
     try {
       const payload = this.jwtService.verify(refreshToken, {
@@ -297,10 +330,13 @@ export class AuthService {
       return payload as { id: string; name: string };
     } catch (error) {
       console.error(error);
-      throw new UnauthorizedException('잘못된 토큰입니다.');
+      throw new UnauthorizedException('리프레쉬 토큰 검증 실패. 만료되었거나 잘못된 토큰입니다.');
     }
   }
 
+  /**
+   * 로그인. 멤버 정보를 바탕으로 JWT를 발급한다.
+   */
   private login(member: { id: string; name: string }) {
     const payload: { id: string; name: string } = {
       id: member.id,
@@ -320,6 +356,11 @@ export class AuthService {
     return { ...member, accessToken, refreshToken };
   }
 
+  /**
+   * google
+   *
+   * code를 구글 OAuth 토큰으로 교환한다. 유저 정보를 받아오는데에 사용한다.
+   */
   private async getGoogleAccessToken(input: Auth.LoginRequest) {
     const { clientId, clientSecret, redirectUri } = this.getGoogleClient();
 
@@ -343,6 +384,11 @@ export class AuthService {
     };
   }
 
+  /**
+   * google
+   *
+   * access token을 사용해 구글 유저 정보를 조회한다.
+   */
   private async getGoogleUserInfo(accessToken: string) {
     const response = await axios.get<{
       id: string;
@@ -365,6 +411,11 @@ export class AuthService {
     };
   }
 
+  /**
+   * notion
+   *
+   * code를 이용해 인증후 노션 사용자 정보를 받아온다.
+   */
   private async getNotionAccessTokenAndUserinfo(input: Auth.LoginRequest) {
     const { clientId, clientSecret, redirectUri } = this.getNotionClient();
 
@@ -389,7 +440,9 @@ export class AuthService {
   }
 
   /**
-   * 깃허브 Access Token을 가져온다.
+   * github
+   *
+   * code를 이용해 깃허브 Access Token을 가져온다.
    */
   private async getGithubAccessToken(input: Auth.LoginRequest) {
     const { clientId, clientSecret, redirectUri } = this.getGithubClient();
@@ -417,6 +470,8 @@ export class AuthService {
   }
 
   /**
+   * github
+   *
    * 깃허브 유저 데이터를 가져온다.
    */
   private async getGithubUserInfo(accessToken: string) {
