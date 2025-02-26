@@ -140,7 +140,36 @@ export class AuthService {
     return `https://github.com/login/oauth/authorize?client_id=${github.clientId}&redirect_uri=${redirectUri ?? github.redirectUri}&scope=user&prompt=select_account`;
   }
 
+  /**
+   * 깃허브 인증 결과를 검증하고 jwt를 발급한다.
+   * @param code 클라이언트의 로그인 성공 시 얻을수 있는 코드값.
+   */
+  async getGithubAuthorization(userId: string, input: Auth.LoginRequest) {
+    try {
+      const { accessToken } = await this.getGithubAccessToken(input);
+      const { uid, email, name } = await this.getGithubUserInfo(accessToken);
 
+      if (!email) {
+        throw new NotFoundException(
+          `깃허브 로그인 실패. 이메일을 읽어오는데에 실패했습니다. public 이메일이 설정되어있지 않습니다.`,
+        );
+      }
+
+      const member = await this.findOrCreateMember(userId, {
+        uid,
+        email,
+        name,
+        accessToken,
+        refreshToken: accessToken, // 깃허브 Oauth는 refresh token을 제공하지 않아 accessToken으로 저장한다.
+        type: 'github',
+      });
+
+      return this.login(member);
+    } catch (error) {
+      console.error(error);
+      throw new UnauthorizedException('깃허브 연동에 실패했습니다.');
+    }
+  }
 
   async createProvider(memberId: string, authorization: Auth.CommonAuthorizationResponse): Promise<void> {
     const date = DateTimeUtil.now();
@@ -357,6 +386,82 @@ export class AuthService {
     );
 
     return response.data;
+  }
+
+  /**
+   * 깃허브 Access Token을 가져온다.
+   */
+  private async getGithubAccessToken(input: Auth.LoginRequest) {
+    const { clientId, clientSecret, redirectUri } = this.getGithubClient();
+
+    const response = await axios.post<{
+      access_token: string;
+      scope: string;
+      token_type: 'bearer';
+    }>(
+      `https://github.com/login/oauth/access_token`,
+      {
+        client_id: clientId,
+        client_secret: clientSecret,
+        code: input.code,
+        redirect_uri: input.redirectUri ?? redirectUri,
+      },
+      {
+        headers: {
+          Accept: 'application/json',
+        },
+      },
+    );
+
+    return { accessToken: response.data.access_token };
+  }
+
+  /**
+   * 깃허브 유저 데이터를 가져온다.
+   */
+  private async getGithubUserInfo(accessToken: string) {
+    const response = await axios.get<{
+      login: string;
+      id: number;
+      node_id: string;
+      avatar_url: string;
+      gravatar_id: string;
+      url: string;
+      html_url: string;
+      followers_url: string;
+      following_url: string;
+      gists_url: string;
+      starred_url: string;
+      subscriptions_url: string;
+      organizations_url: string;
+      repos_url: string;
+      events_url: string;
+      received_events_url: string;
+      type: string;
+      user_view_type: string;
+      site_admin: boolean;
+      name: string;
+      company: string | null;
+      blog: string;
+      location: string | null;
+      email: string | null;
+      hireable: boolean | null;
+      bio: string | null;
+      twitter_username: string | null;
+      notification_email: string | null;
+      public_repos: number;
+      public_gists: number;
+      followers: number;
+      following: number;
+      created_at: string;
+      updated_at: string;
+    }>('https://api.github.com/user', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    return { uid: `${response.data.id}`, email: response.data.email, name: response.data.name };
   }
 
   private getGoogleClient() {
