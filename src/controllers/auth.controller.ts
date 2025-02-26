@@ -96,7 +96,10 @@ export class AuthController {
    */
   @UseGuards(UserGuard)
   @core.TypedRoute.Get('github/callback')
-  async getGithubAuthorization(@User() user: Guard.UserResponse, @core.TypedQuery() query: Auth.LoginRequest) {
+  async getGithubAuthorization(
+    @User() user: Guard.UserResponse,
+    @core.TypedQuery() query: Auth.LoginRequest,
+  ): Promise<Auth.LoginResponse> {
     return this.authService.getGithubAuthorization(user.id, query);
   }
 
