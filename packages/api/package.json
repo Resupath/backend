@@ -1,6 +1,6 @@
 {
   "name": "@rimo030/resupath-backend",
-  "version": "0.3.41",
+  "version": "0.3.42",
   "description": "Resupath Backend Apis",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
