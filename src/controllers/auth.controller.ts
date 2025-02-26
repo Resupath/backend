@@ -4,6 +4,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { User } from 'src/decorators/user.decorator';
 import { UserGuard } from 'src/guards/user.guard';
 import { Auth } from 'src/interfaces/auth.interface';
+import { Common } from 'src/interfaces/common.interface';
 import { Guard } from 'src/interfaces/guard.interface';
 import { AuthService } from 'src/services/auth.service';
 import { NotionUtil } from 'src/util/notion.util';
@@ -62,8 +63,11 @@ export class AuthController {
   async getNotionAuthorization(
     @User() user: Guard.UserResponse,
     @core.TypedQuery() query: Auth.LoginRequest,
-  ): Promise<void> {
-    return this.authService.getNotionAuthorization(user.id, query);
+  ): Promise<Common.Response> {
+    await this.authService.getNotionAuthorization(user.id, query);
+    return {
+      message: `노션 연동이 완료되었습니다.`,
+    };
   }
 
   /**
