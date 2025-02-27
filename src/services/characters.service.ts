@@ -74,12 +74,13 @@ export class CharactersService {
              */
             character_snapshot_experiences: {
               createMany: {
-                data: input.experiences.map((experince) => {
-                  return {
-                    experience_id: experince.id,
-                    created_at: date,
-                  };
-                }),
+                data:
+                  input.experiences?.map((experince) => {
+                    return {
+                      experience_id: experince.id,
+                      created_at: date,
+                    };
+                  }) ?? [],
               },
             },
             character_snapshot_positions: {
@@ -511,7 +512,7 @@ export class CharactersService {
       origin.phone !== (newData.phone ?? null) ||
       origin.image !== (newData.image ?? null);
 
-    const isExperiencesChanged = this.prisma.isChanged<Experience>(origin.experiences, newData.experiences);
+    const isExperiencesChanged = this.prisma.isChanged<Experience>(origin.experiences, newData.experiences ?? []);
     const isPositionsChanged = this.prisma.isChanged<Position>(origin.positions, positions);
     const isSkillsChanged = this.prisma.isChanged<Skill>(origin.skills, skills);
 
@@ -555,7 +556,7 @@ export class CharactersService {
         });
 
         // 직종-캐릭터 스냅샷 관계를 업데이트한다.
-        await this.experiencesService.updateSnapshotMany(tx, newSnapshot.id, newData.experiences, date);
+        await this.experiencesService.updateSnapshotMany(tx, newSnapshot.id, newData.experiences ?? [], date);
 
         // 성격-캐릭터 스냅샷 관계를 업데이트한다.
         await this.positionsService.updateSnapshotMany(tx, newSnapshot.id, positions);

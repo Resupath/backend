@@ -38,7 +38,7 @@ export namespace Character {
     extends Pick<Character, 'nickname' | 'isPublic'>,
       Partial<Pick<Character, 'phone' | 'email' | 'image'>> {
     personalities: Array<Pick<Personality, 'id'>> & tags.MinItems<1>;
-    experiences: Array<Pick<Experience, 'id'>> & tags.MinItems<1>;
+    experiences?: Array<Pick<Experience, 'id'>> | null;
     positions: Array<Position.CreateRequest> & tags.MinItems<1>;
     skills: Array<Skill.CreateRequest> & tags.MinItems<1>;
     sources: Array<Source.CreateRequest> & tags.MinItems<1>;
