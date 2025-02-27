@@ -29,7 +29,6 @@ export namespace Auth {
   export interface CommonAuthorizationResponse {
     uid: Provider['uid'];
     name: Member['name'];
-    email: string & tags.Format<'email'>;
     accessToken: string & tags.MinLength<1>;
     refreshToken: Provider['password'];
     type: Provider['type'];
