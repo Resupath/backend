@@ -140,6 +140,8 @@ export class CharactersService {
             snapshot: {
               select: {
                 nickname: true,
+                email: true,
+                phone: true,
                 image: true,
                 character_snapshot_positions: {
                   select: {
@@ -207,8 +209,9 @@ export class CharactersService {
       isPublic: character.is_public,
       createdAt: character.created_at.toISOString(),
       nickname: snapshot.nickname,
+      email: snapshot.email,
+      phone: snapshot.phone,
       image: snapshot.image,
-
       personalities: character.character_personalites.map((el) => {
         return { id: el.personality.id, keyword: el.personality.keyword };
       }),
@@ -502,7 +505,12 @@ export class CharactersService {
     const isPersonalitiesChanged = this.prisma.isChanged<Personality>(origin.personalities, newData.personalities);
     const isSourceChanged = this.prisma.isChanged<Source>(origin.sources, sources);
 
-    const isSnapshotChanged = origin.nickname !== newData.nickname || origin.image !== (newData.image ?? null);
+    const isSnapshotChanged =
+      origin.nickname !== newData.nickname ||
+      origin.email !== (newData.email ?? null) ||
+      origin.phone !== (newData.phone ?? null) ||
+      origin.image !== (newData.image ?? null);
+
     const isExperiencesChanged = this.prisma.isChanged<Experience>(origin.experiences, newData.experiences);
     const isPositionsChanged = this.prisma.isChanged<Position>(origin.positions, positions);
     const isSkillsChanged = this.prisma.isChanged<Skill>(origin.skills, skills);
@@ -540,6 +548,8 @@ export class CharactersService {
         const newSnapshot = await this.createNewSnapshot(tx, {
           characterId: id,
           nickname: newData.nickname,
+          email: newData.email,
+          phone: newData.phone,
           image: newData.image,
           createdAt: date,
         });
@@ -614,6 +624,8 @@ export class CharactersService {
               select: {
                 id: true,
                 nickname: true,
+                email: true,
+                phone: true,
                 image: true,
                 created_at: true,
               },
@@ -635,6 +647,8 @@ export class CharactersService {
     return {
       id: snapshot.id,
       nickname: snapshot.nickname,
+      email: snapshot.email,
+      phone: snapshot.phone,
       image: snapshot.image,
       createdAt: snapshot.created_at.toDateString(),
     };
@@ -650,10 +664,12 @@ export class CharactersService {
   ): Promise<CharacterSnapshot.GetResponse> {
     const snapshotId = randomUUID();
     const newSnapshot = await tx.character_Snapshot.create({
-      select: { id: true, nickname: true, image: true, created_at: true },
+      select: { id: true, nickname: true, email: true, phone: true, image: true, created_at: true },
       data: {
         id: snapshotId,
         nickname: input.nickname,
+        email: input.email,
+        phone: input.phone,
         image: input.image,
         created_at: input.createdAt,
         character_id: input.characterId,
@@ -668,6 +684,8 @@ export class CharactersService {
     return {
       id: newSnapshot.id,
       nickname: newSnapshot.nickname,
+      email: newSnapshot.email,
+      phone: newSnapshot.phone,
       image: newSnapshot.image,
       createdAt: newSnapshot.created_at.toISOString(),
     };

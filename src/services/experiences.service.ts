@@ -133,6 +133,8 @@ export class ExperiencesService {
             snapshot: {
               select: {
                 nickname: true,
+                email: true,
+                phone: true,
                 image: true,
               },
             },
@@ -166,6 +168,8 @@ export class ExperiencesService {
       return {
         id: el.id,
         nickname: snapshot.nickname,
+        email: snapshot.email,
+        phone: snapshot.phone,
         image: snapshot.image,
         isPublic: el.is_public,
         createdAt: el.created_at.toISOString(),

@@ -11,6 +11,8 @@ export interface Character {
   id: string & tags.Format<'uuid'>;
   memberId: Member['id'];
   nickname: CharacterSnapshot['nickname'];
+  email: CharacterSnapshot['email'];
+  phone: CharacterSnapshot['phone'];
   image: CharacterSnapshot['image'];
   isPublic: boolean;
   createdAt: string & tags.Format<'date-time'>;
@@ -21,6 +23,8 @@ export interface CharacterSnapshot {
   id: string & tags.Format<'uuid'>;
   characterId: Character['id'];
   nickname: string & tags.MinLength<1>;
+  email: (string & tags.Format<'email'>) | null;
+  phone: (string & tags.MinLength<1>) | null;
   image: (string & tags.MinLength<1>) | null;
   createdAt: string & tags.Format<'date-time'>;
   deletedAt: string & tags.Format<'date-time'>;
@@ -30,7 +34,9 @@ export namespace Character {
   /**
    * 캐릭터 생성 요청 객체
    */
-  export interface CreateRequest extends Pick<Character, 'nickname' | 'isPublic'>, Partial<Pick<Character, 'image'>> {
+  export interface CreateRequest
+    extends Pick<Character, 'nickname' | 'isPublic'>,
+      Partial<Pick<Character, 'phone' | 'email' | 'image'>> {
     personalities: Array<Pick<Personality, 'id'>> & tags.MinItems<1>;
     experiences: Array<Pick<Experience, 'id'>> & tags.MinItems<1>;
     positions: Array<Position.CreateRequest> & tags.MinItems<1>;
@@ -47,7 +53,7 @@ export namespace Character {
    * 캐릭터 상세 조회 응답 객체
    */
   export interface GetResponse
-    extends Pick<Character, 'id' | 'memberId' | 'nickname' | 'image' | 'isPublic' | 'createdAt'> {
+    extends Pick<Character, 'id' | 'memberId' | 'nickname' | 'email' | 'phone' | 'image' | 'isPublic' | 'createdAt'> {
     personalities: Array<Pick<Personality, 'id' | 'keyword'>>;
     positions: Array<Pick<Position, 'id' | 'keyword'>>;
     skills: Array<Pick<Skill, 'id' | 'keyword'>>;
@@ -111,10 +117,11 @@ export namespace CharacterSnapshot {
    */
   export interface CreateRequest
     extends Pick<CharacterSnapshot, 'characterId' | 'nickname' | 'createdAt'>,
-      Partial<Pick<CharacterSnapshot, 'image'>> {}
+      Partial<Pick<CharacterSnapshot, 'email' | 'phone' | 'image'>> {}
 
   /**
    * 스냅샷 응답 객체
    */
-  export interface GetResponse extends Pick<CharacterSnapshot, 'id' | 'nickname' | 'image' | 'createdAt'> {}
+  export interface GetResponse
+    extends Pick<CharacterSnapshot, 'id' | 'nickname' | 'email' | 'phone' | 'image' | 'createdAt'> {}
 }
