@@ -54,7 +54,7 @@ export class AuthController {
   }
 
   /**
-   * 노션 AccessToken을 발급 받아 저장한다.
+   * 노션 AccessToken을 발급 받아 저장한다. 이후 노션 페이지 콘텐츠를 읽어오는데 사용한다.
    *
    * @security x-user bearer
    */
@@ -95,7 +95,7 @@ export class AuthController {
   }
 
   /**
-   * 깃허브 AccessToken을 발급 받아 저장한다.
+   * 클라이언트에서 받은 코드를 이용해 깃허브 로그인 유저를 검증하고 jwt를 발급한다.
    *
    * @security x-user bearer
    */
@@ -117,7 +117,7 @@ export class AuthController {
   }
 
   /**
-   * 링크드인 AccessToken을 발급 받아 저장한다.
+   *  클라이언트에서 받은 코드를 이용해 링크드인 로그인 유저를 검증하고 jwt를 발급한다.
    *
    * @security x-user bearer
    */

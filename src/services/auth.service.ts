@@ -98,7 +98,7 @@ export class AuthService {
       });
     } catch (error) {
       console.error(error);
-      throw new UnauthorizedException('노션 연동에 실패했습니다.');
+      throw new UnauthorizedException('노션 로그인에 실패했습니다.');
     }
   }
 
@@ -195,7 +195,7 @@ export class AuthService {
       return this.login(member);
     } catch (error) {
       console.error(error);
-      throw new UnauthorizedException('깃허브 연동에 실패했습니다.');
+      throw new UnauthorizedException('깃허브 로그인에 실패했습니다.');
     }
   }
 
@@ -227,7 +227,7 @@ export class AuthService {
       return this.login(member);
     } catch (error) {
       console.error(error);
-      throw new UnauthorizedException('링크드인 연동에 실패했습니다.');
+      throw new UnauthorizedException('링크드인 로그인에 실패했습니다.');
     }
   }
 
