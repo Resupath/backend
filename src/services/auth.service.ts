@@ -204,7 +204,31 @@ export class AuthService {
    */
   async getLinkedinLoginUrl(redirectUri?: string) {
     const linkedin = this.getLinkedinClient();
-    return `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${linkedin.clientId}&redirect_uri=${redirectUri ?? linkedin.redirectUri}&scope=w_member_social`;
+    return `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${linkedin.clientId}&redirect_uri=${redirectUri ?? linkedin.redirectUri}&scope=openid%20profile%20email`;
+  }
+
+  /**
+   * 링크드인 인증 결과를 검증하고 jwt를 발급한다.
+   * @param code 클라이언트의 로그인 성공 시 얻을수 있는 코드값.
+   */
+  async getLinkedinAuthorization(userId: string, input: Auth.LoginRequest) {
+    try {
+      const { accessToken } = await this.getLinkedinAccessToken(input);
+      const { uid, name } = await this.getLinkedinUserInfo(accessToken);
+
+      const member = await this.findOrCreateMember(userId, {
+        uid,
+        name,
+        accessToken,
+        refreshToken: accessToken, // 링크드인 Oauth는 refresh token을 제공하지 않아 accessToken으로 저장한다.
+        type: 'linkedin',
+      });
+
+      return this.login(member);
+    } catch (error) {
+      console.error(error);
+      throw new UnauthorizedException('링크드인 연동에 실패했습니다.');
+    }
   }
 
   /**
@@ -552,6 +576,51 @@ export class AuthService {
     });
 
     return { uid: `${response.data.id}`, name: response.data.name };
+  }
+
+  /**
+   * Linked-In
+   *
+   * code를 링크드인 OAuth 토큰으로 교환한다. 유저 정보를 받아오는데에 사용한다.
+   */
+  private async getLinkedinAccessToken(input: Auth.LoginRequest) {
+    const { clientId, clientSecret, redirectUri } = this.getLinkedinClient();
+
+    const response = await axios.post<{ access_token: string; expires_in: number; scope: string }>(
+      `https://www.linkedin.com/oauth/v2/accessToken`,
+      {
+        grant_type: 'authorization_code',
+        code: input.code,
+        client_id: clientId,
+        client_secret: clientSecret,
+        redirect_uri: input.redirectUri ?? redirectUri,
+      },
+      { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } },
+    );
+
+    return { accessToken: response.data.access_token };
+  }
+
+  /**
+   * Linked-In
+   *
+   * access token을 사용해 링크드인 유저 정보를 조회한다.
+   */
+  private async getLinkedinUserInfo(accessToken: string) {
+    const response = await axios.get<{
+      sub: string;
+      email_verified: boolean;
+      name: string;
+      locale: object;
+      given_name: string;
+      family_name: string;
+      email: string;
+    }>('https://api.linkedin.com/v2/userinfo', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    return { uid: response.data.sub, name: response.data.name };
   }
 
   private getGoogleClient() {

@@ -116,6 +116,19 @@ export class AuthController {
     return this.authService.getGithubLoginUrl(query.redirectUri);
   }
 
+  /**
+   * 링크드인 AccessToken을 발급 받아 저장한다.
+   *
+   * @security x-user bearer
+   */
+  @UseGuards(UserGuard)
+  @core.TypedRoute.Get('linkedin/callback')
+  async getLinkedinAuthorization(
+    @User() user: Guard.UserResponse,
+    @core.TypedQuery() query: Auth.LoginRequest,
+  ): Promise<Auth.LoginResponse> {
+    return await this.authService.getLinkedinAuthorization(user.id, query);
+  }
 
   /**
    * 링크드인 Authorization url을 반환한다.
