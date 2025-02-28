@@ -200,6 +200,14 @@ export class AuthService {
   }
 
   /**
+   * 링크드인 로그인 url을 반환한다.
+   */
+  async getLinkedinLoginUrl(redirectUri?: string) {
+    const linkedin = this.getLinkedinClient();
+    return `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${linkedin.clientId}&redirect_uri=${redirectUri ?? linkedin.redirectUri}&scope=w_member_social`;
+  }
+
+  /**
    * 프로바이더(OAuth 연동) 정보를 저장한다.
    */
   async createProvider(memberId: string, authorization: Auth.CommonAuthorizationResponse): Promise<void> {
@@ -568,6 +576,14 @@ export class AuthService {
       clientId: this.configService.get<string>('GITHUB_CLIENT_ID'),
       clientSecret: this.configService.get<string>('GITHUB_CLIENT_SECRET'),
       redirectUri: this.configService.get<string>('GITHUB_REDIRECT_URI'),
+    };
+  }
+
+  private getLinkedinClient() {
+    return {
+      clientId: this.configService.get<string>('LINKEDIN_CLIENT_ID'),
+      clientSecret: this.configService.get<string>('LINKEDIN_CLIENT_SECRET'),
+      redirectUri: this.configService.get<string>('LINKEDIN_REDIRECT_URI'),
     };
   }
 }

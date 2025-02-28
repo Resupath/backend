@@ -115,4 +115,13 @@ export class AuthController {
   async getGithubAuthorizationUrl(@core.TypedQuery() query: Auth.GetUrlRequest): Promise<string> {
     return this.authService.getGithubLoginUrl(query.redirectUri);
   }
+
+
+  /**
+   * 링크드인 Authorization url을 반환한다.
+   */
+  @core.TypedRoute.Get('linkedin')
+  async getLinkedinAuthorizationUrl(@core.TypedQuery() query: Auth.GetUrlRequest): Promise<string> {
+    return this.authService.getLinkedinLoginUrl(query.redirectUri);
+  }
 }
