@@ -55,11 +55,10 @@ export class AuthService {
   async getGoogleAuthorization(userId: string, input: Auth.LoginRequest) {
     try {
       const { accessToken, refreshToken } = await this.getGoogleAccessToken(input);
-      const { uid, email, name } = await this.getGoogleUserInfo(accessToken);
+      const { uid, name } = await this.getGoogleUserInfo(accessToken);
 
       const member = await this.findOrCreateMember(userId, {
         uid,
-        email,
         name,
         accessToken,
         refreshToken,
@@ -92,7 +91,6 @@ export class AuthService {
 
       await this.createProvider(memberId, {
         uid: notion.owner.user.id,
-        email: notion.owner.user.person.email,
         name: notion.owner.user.name,
         accessToken: notion.access_token,
         refreshToken: notion.access_token, // 노션의 경우 access 토큰의 만료가 없음으로 access 토큰을 저장한다.
@@ -184,17 +182,10 @@ export class AuthService {
   async getGithubAuthorization(userId: string, input: Auth.LoginRequest) {
     try {
       const { accessToken } = await this.getGithubAccessToken(input);
-      const { uid, email, name } = await this.getGithubUserInfo(accessToken);
-
-      if (!email) {
-        throw new NotFoundException(
-          `깃허브 로그인 실패. 이메일을 읽어오는데에 실패했습니다. public 이메일이 설정되어있지 않습니다.`,
-        );
-      }
+      const { uid, name } = await this.getGithubUserInfo(accessToken);
 
       const member = await this.findOrCreateMember(userId, {
         uid,
-        email,
         name,
         accessToken,
         refreshToken: accessToken, // 깃허브 Oauth는 refresh token을 제공하지 않아 accessToken으로 저장한다.
@@ -443,7 +434,6 @@ export class AuthService {
 
     return {
       uid: response.data.id,
-      email: response.data.email,
       name: response.data.name,
     };
   }
@@ -553,7 +543,7 @@ export class AuthService {
       },
     });
 
-    return { uid: `${response.data.id}`, email: response.data.email, name: response.data.name };
+    return { uid: `${response.data.id}`, name: response.data.name };
   }
 
   private getGoogleClient() {
