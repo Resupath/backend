@@ -54,7 +54,7 @@ export class AuthController {
   }
 
   /**
-   * 노션 AccessToken을 발급 받아 저장한다.
+   * 노션 AccessToken을 발급 받아 저장한다. 이후 노션 페이지 콘텐츠를 읽어오는데 사용한다.
    *
    * @security x-user bearer
    */
@@ -95,7 +95,7 @@ export class AuthController {
   }
 
   /**
-   * 깃허브 AccessToken을 발급 받아 저장한다.
+   * 클라이언트에서 받은 코드를 이용해 깃허브 로그인 유저를 검증하고 jwt를 발급한다.
    *
    * @security x-user bearer
    */
@@ -114,5 +114,27 @@ export class AuthController {
   @core.TypedRoute.Get('github')
   async getGithubAuthorizationUrl(@core.TypedQuery() query: Auth.GetUrlRequest): Promise<string> {
     return this.authService.getGithubLoginUrl(query.redirectUri);
+  }
+
+  /**
+   *  클라이언트에서 받은 코드를 이용해 링크드인 로그인 유저를 검증하고 jwt를 발급한다.
+   *
+   * @security x-user bearer
+   */
+  @UseGuards(UserGuard)
+  @core.TypedRoute.Get('linkedin/callback')
+  async getLinkedinAuthorization(
+    @User() user: Guard.UserResponse,
+    @core.TypedQuery() query: Auth.LoginRequest,
+  ): Promise<Auth.LoginResponse> {
+    return await this.authService.getLinkedinAuthorization(user.id, query);
+  }
+
+  /**
+   * 링크드인 Authorization url을 반환한다.
+   */
+  @core.TypedRoute.Get('linkedin')
+  async getLinkedinAuthorizationUrl(@core.TypedQuery() query: Auth.GetUrlRequest): Promise<string> {
+    return this.authService.getLinkedinLoginUrl(query.redirectUri);
   }
 }
