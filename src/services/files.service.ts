@@ -1,6 +1,6 @@
 import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
 import { Files } from 'src/interfaces/files.interface';
@@ -25,6 +25,11 @@ export class S3Service {
    */
   async uploadFile(memberId: string, body: Files.CreateRequest): Promise<string> {
     const { file } = body;
+    const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+
+    if (file.size > MAX_SIZE) {
+      throw new BadRequestException('파일 크기가 10MB를 초과했습니다.');
+    }
 
     const bucketName = this.getBucket();
     const regionName = this.getRegion();
