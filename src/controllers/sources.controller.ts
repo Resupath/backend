@@ -106,11 +106,8 @@ export class SourcesController {
    */
   @core.TypedRoute.Post('/notion/verify')
   async verifyNotionUrl(@core.TypedBody() body: Pick<Source, 'url'>): Promise<boolean> {
-    try {
-      this.notionService.verifyNotionUrl(body.url);
-      return true;
-    } catch (err) {}
-    return false;
+    const notionPageId = this.notionService.getPrivateNotionId(body.url);
+    return notionPageId ? true : false;
   }
 
   /**

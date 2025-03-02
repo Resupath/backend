@@ -126,8 +126,31 @@ export class PromptsService {
    * @todo 노션외 다른 타입도 검증할 수 있도록 고도화
    */
   private async handleSource(memberId: string, type: Source['type'], url: Source['url']): Promise<string> {
-    return type === 'link' && url.includes('notion')
-      ? await this.notionService.notionToMarkdownByMemberId(memberId, url)
-      : url;
+    if (type === 'link') {
+      return this.handleLink(memberId, url);
+    } else if (type === 'file') {
+      return this.handleFile(url);
+    }
+    return '';
+  }
+
+  /**
+   * link 타입의 첨부파일을 파싱한다.
+   */
+  private async handleLink(memberId: string, url: Source['url']): Promise<string> {
+    const notionPageId = this.notionService.getPrivateNotionId(url);
+
+    if (notionPageId) {
+      return await this.notionService.notionToMarkdownByMemberId(memberId, notionPageId);
+    }
+
+    return url;
+  }
+
+  /**
+   * file 타입의 첨부파일을 파싱한다.
+   */
+  private async handleFile(url: Source['url']): Promise<string> {
+    return url;
   }
 }

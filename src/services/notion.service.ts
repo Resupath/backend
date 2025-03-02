@@ -1,7 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Client } from '@notionhq/client';
 import { NotionToMarkdown } from 'notion-to-md';
-import { Source } from 'src/interfaces/source.interface';
 import { NotionUtil } from 'src/util/notion.util';
 import { AuthService } from './auth.service';
 
@@ -10,18 +9,12 @@ export class NotionService {
   constructor(private readonly authService: AuthService) {}
 
   /**
-   * 프라이빗 노션 링크인지 검증한다.
-   * id가 정규식에 의해 추출된다면 반환하고, 아니라면 Exception이 발생한다.
-   *
-   * @param url 검증할 url
+   * 노션 private url에서 페이지의 id를 추출한다.
+   * private url 형식이 아니거나 id가 추출되지 않으면 null을 반환한다.
    */
-  verifyNotionUrl(url: Source['url']): string {
-    const id = this.getPrivateNotionId(url);
-
-    if (!id) {
-      throw new NotFoundException('지원하는 노션 url 형식이 아닙니다.');
-    }
-    return id;
+  getPrivateNotionId(url: string): string | null {
+    const match = url.match(NotionUtil.privateNotionIdRegex);
+    return match ? match[2] : null;
   }
 
   /**
@@ -29,21 +22,10 @@ export class NotionService {
    * @param memberId
    * @param url 노션 연동 확인을 위한
    */
-  async notionToMarkdownByMemberId(memberId: string, url: Source['url']): Promise<string> {
-    const id = this.verifyNotionUrl(url);
+  async notionToMarkdownByMemberId(memberId: string, notionPageId: string): Promise<string> {
     const { password: accessToken } = await this.authService.getNotionAccessTokenByMemberId(memberId);
 
-    return await this.getNotionToMd(accessToken, id);
-  }
-
-  /**
-   * 노션 private url에서 페이지의 id를 추출한다.
-   *
-   * private url 형식이 아니거나 id가 추출되지 않으면 null을 반환한다.
-   */
-  private getPrivateNotionId(url: string): string | null {
-    const match = url.match(NotionUtil.privateNotionIdRegex);
-    return match ? match[2] : null;
+    return await this.getNotionToMd(accessToken, notionPageId);
   }
 
   /**
