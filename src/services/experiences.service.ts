@@ -122,7 +122,9 @@ export class ExperiencesService {
    *
    * @param id 조회할 경력의 아이디 입니다.
    */
-  async getCharacters(id: Experience['id']): Promise<Array<Omit<Character, 'deletedAt' | 'memberId'>>> {
+  async getCharacters(
+    id: Experience['id'],
+  ): Promise<Array<Pick<Character, 'id' | 'nickname' | 'image' | 'isPublic' | 'createdAt'>>> {
     const characters = await this.prisma.character.findMany({
       select: {
         id: true,
@@ -168,8 +170,6 @@ export class ExperiencesService {
       return {
         id: el.id,
         nickname: snapshot.nickname,
-        email: snapshot.email,
-        phone: snapshot.phone,
         image: snapshot.image,
         isPublic: el.is_public,
         createdAt: el.created_at.toISOString(),

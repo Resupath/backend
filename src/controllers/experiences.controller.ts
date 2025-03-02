@@ -48,7 +48,7 @@ export class ExperiencesController {
   @core.TypedRoute.Get('/:id/characters')
   async getCharacters(
     @core.TypedParam('id') id: Experience['id'],
-  ): Promise<Array<Omit<Character, 'deletedAt' | 'memberId'>>> {
+  ): Promise<Array<Pick<Character, 'id' | 'nickname' | 'image' | 'isPublic' | 'createdAt'>>> {
     return await this.experiencesService.getCharacters(id);
   }
 
