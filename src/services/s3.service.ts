@@ -1,8 +1,10 @@
 import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import axios from 'axios';
 import { randomUUID } from 'crypto';
+import pdfParse from 'pdf-parse';
 import { Files } from 'src/interfaces/files.interface';
 import { Member } from 'src/interfaces/member.interface';
 
@@ -74,6 +76,21 @@ export class S3Service {
 
     const url = await getSignedUrl(this.s3, command, { expiresIn: 3600 });
     return { url };
+  }
+
+  /**
+   * pdf를 text로 변환한다.
+   */
+  async pdfToText(pdfUrl: string) {
+    try {
+      const response = await axios.get(pdfUrl, { responseType: 'arraybuffer' });
+      const data = await pdfParse(response.data);
+
+      return data.text;
+    } catch (error) {
+      console.error(error);
+      throw new InternalServerErrorException(`pdf 텍스트 변환 실패.`);
+    }
   }
 
   private async fileToBuffer(file: File): Promise<Buffer<ArrayBufferLike>> {
