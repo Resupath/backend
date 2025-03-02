@@ -79,6 +79,35 @@ export class S3Service {
   }
 
   /**
+   * 특정 리소스의 content-type을 읽어온다.
+   */
+  async getContentType(url: string) {
+    try {
+      const response = await axios.head(url);
+      const contentType:
+        | 'application/pdf'
+        | 'image/jpeg'
+        | 'image/png'
+        | 'image/gif'
+        | 'image/svg+xml'
+        | 'image/webp'
+        | 'video/mp4'
+        | 'audio/mpeg'
+        | 'audio/wav'
+        | 'text/plain'
+        | 'application/json'
+        | 'text/csv'
+        | 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' // XLSX
+        | 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' // DOCX
+        | 'application/zip' = response.headers['content-type'];
+
+      return contentType ?? null;
+    } catch (error) {
+      throw new NotFoundException('content-type 확인 실패. url:', url);
+    }
+  }
+
+  /**
    * pdf를 text로 변환한다.
    */
   async pdfToText(pdfUrl: string) {
