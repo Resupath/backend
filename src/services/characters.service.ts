@@ -67,6 +67,8 @@ export class CharactersService {
           create: {
             id: snapshotId,
             nickname: input.nickname,
+            email: input.email,
+            phone: input.phone,
             image: input.image,
             created_at: date,
             /**
