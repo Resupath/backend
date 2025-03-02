@@ -1,8 +1,10 @@
 import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import axios from 'axios';
 import { randomUUID } from 'crypto';
+import pdfParse from 'pdf-parse';
 import { Files } from 'src/interfaces/files.interface';
 import { Member } from 'src/interfaces/member.interface';
 
@@ -74,6 +76,50 @@ export class S3Service {
 
     const url = await getSignedUrl(this.s3, command, { expiresIn: 3600 });
     return { url };
+  }
+
+  /**
+   * 특정 리소스의 content-type을 읽어온다.
+   */
+  async getContentType(url: string) {
+    try {
+      const response = await axios.head(url);
+      const contentType:
+        | 'application/pdf'
+        | 'image/jpeg'
+        | 'image/png'
+        | 'image/gif'
+        | 'image/svg+xml'
+        | 'image/webp'
+        | 'video/mp4'
+        | 'audio/mpeg'
+        | 'audio/wav'
+        | 'text/plain'
+        | 'application/json'
+        | 'text/csv'
+        | 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' // XLSX
+        | 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' // DOCX
+        | 'application/zip' = response.headers['content-type'];
+
+      return contentType ?? null;
+    } catch (error) {
+      throw new NotFoundException('content-type 확인 실패. url:', url);
+    }
+  }
+
+  /**
+   * pdf를 text로 변환한다.
+   */
+  async pdfToText(pdfUrl: string) {
+    try {
+      const response = await axios.get(pdfUrl, { responseType: 'arraybuffer' });
+      const data = await pdfParse(response.data);
+
+      return data.text;
+    } catch (error) {
+      console.error(error);
+      throw new InternalServerErrorException(`pdf 텍스트 변환 실패.`);
+    }
   }
 
   private async fileToBuffer(file: File): Promise<Buffer<ArrayBufferLike>> {

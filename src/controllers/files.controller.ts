@@ -6,7 +6,7 @@ import { Member } from 'src/decorators/member.decorator';
 import { MemberGuard } from 'src/guards/member.guard';
 import { Files } from 'src/interfaces/files.interface';
 import { Guard } from 'src/interfaces/guard.interface';
-import { S3Service } from 'src/services/files.service';
+import { S3Service } from 'src/services/s3.service';
 
 @ApiTags('File')
 @Controller('files')

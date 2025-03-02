@@ -2,10 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { Character } from 'src/interfaces/characters.interface';
 import { Source } from 'src/interfaces/source.interface';
 import { NotionService } from './notion.service';
+import { S3Service } from './s3.service';
 
 @Injectable()
 export class PromptsService {
-  constructor(private readonly notionService: NotionService) {}
+  constructor(
+    private readonly s3Service: S3Service,
+    private readonly notionService: NotionService,
+  ) {}
 
   /**
    * 채팅에 앞서 캐릭터에 입력된 정보에 따라 시스템 프롬프트를 생성합니다.
@@ -126,8 +130,37 @@ export class PromptsService {
    * @todo 노션외 다른 타입도 검증할 수 있도록 고도화
    */
   private async handleSource(memberId: string, type: Source['type'], url: Source['url']): Promise<string> {
-    return type === 'link' && url.includes('notion')
-      ? await this.notionService.notionToMarkdownByMemberId(memberId, url)
-      : url;
+    if (type === 'link') {
+      return this.handleLink(memberId, url);
+    } else if (type === 'file') {
+      return this.handleFile(url);
+    }
+    return '';
+  }
+
+  /**
+   * link 타입의 첨부파일을 파싱한다.
+   */
+  private async handleLink(memberId: string, url: Source['url']): Promise<string> {
+    const notionPageId = this.notionService.getPrivateNotionId(url);
+
+    if (notionPageId) {
+      return await this.notionService.notionToMarkdownByMemberId(memberId, notionPageId);
+    }
+
+    return url;
+  }
+
+  /**
+   * file 타입의 첨부파일을 파싱한다.
+   */
+  private async handleFile(url: Source['url']): Promise<string> {
+    const contentType = await this.s3Service.getContentType(url);
+
+    if (contentType === 'application/pdf') {
+      return await this.s3Service.pdfToText(url);
+    }
+
+    return url;
   }
 }
