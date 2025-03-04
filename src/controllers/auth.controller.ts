@@ -42,6 +42,22 @@ export class AuthController {
    * @security x-user bearer
    */
   @UseGuards(UserGuard)
+  @core.TypedRoute.Get('/:provider/link')
+  async getAuthorizationLink(
+    @User() user: Guard.UserResponse,
+    @core.TypedParam('provider') provider: Provider['type'],
+    @core.TypedQuery() query: Auth.LoginRequest,
+  ): Promise<Common.Response> {
+    await this.authService.getAuthorizationLink(provider, user.id, query);
+    return { message: `${provider} 연동이 완료되었습니다.` };
+  }
+
+  /**
+   * 클라이언트에서 받은 코드를 이용해 구글 로그인 유저를 검증하고 jwt를 발급한다.
+   *
+   * @security x-user bearer
+   */
+  @UseGuards(UserGuard)
   @core.TypedRoute.Get('/:provider/callback')
   async getGoogleAuthorization(
     @User() user: Guard.UserResponse,

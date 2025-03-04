@@ -81,6 +81,32 @@ export class AuthService {
   }
 
   /**
+   * OAuth 로그인 연동을 처리한다.
+   * 다른 OAuth 인증으로 같은 member로 로그인하는 것이 가능하도록 한다.
+   */
+  async getAuthorizationLink(provider: Provider['type'], userId: string, input: Auth.LoginRequest) {
+    let userInfo: Auth.CommonAuthorizationResponse;
+    try {
+      if (provider === 'google') {
+        userInfo = await this.oAuthService.getGoogleAuthorization(input);
+      } else if (provider === 'notion') {
+        userInfo = await this.oAuthService.getNotionAuthorization(input);
+      } else if (provider === 'github') {
+        userInfo = await this.oAuthService.getGithubAuthorization(input);
+      } else if (provider === 'linkedin') {
+        userInfo = await this.oAuthService.getLinkedinAuthorization(input);
+      } else {
+        throw new BadRequestException(`지원하는 로그인이 아닙니다.`);
+      }
+      const { memberId } = await this.getMember(userId);
+      await this.createProvider(memberId, userInfo);
+    } catch (error) {
+      console.error(error);
+      throw new UnauthorizedException(`${provider} 연동에 실패했습니다. ${error.message}`);
+    }
+  }
+
+  /**
    * 해당 유저와 연관된 멤버에게 notion provider 조회결과가 있는지 확인한다.
    * @param userId
    */
