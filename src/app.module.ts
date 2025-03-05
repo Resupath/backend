@@ -17,6 +17,7 @@ import { RoomsModule } from './modules/rooms.module';
 import { SkillsModule } from './modules/skills.module';
 import { SourcesModule } from './modules/sources.module';
 import { AdminModule } from './modules/admin.module';
+import { DashboardModule } from './modules/dashboard.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { AdminModule } from './modules/admin.module';
     FileModule,
     MembersModule,
     AdminModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],
