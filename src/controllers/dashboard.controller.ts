@@ -2,7 +2,9 @@ import core from '@nestia/core';
 import { Controller } from '@nestjs/common';
 import { DashboardService } from '../services/dashboard.service';
 import { Dashboard } from 'src/interfaces/dashboard.interface';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Dashboard')
 @Controller('dashboard')
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
