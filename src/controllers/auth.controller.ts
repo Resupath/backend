@@ -6,13 +6,18 @@ import { UserGuard } from 'src/guards/user.guard';
 import { Auth } from 'src/interfaces/auth.interface';
 import { Common } from 'src/interfaces/common.interface';
 import { Guard } from 'src/interfaces/guard.interface';
+import { Provider } from 'src/interfaces/provider.interface';
 import { AuthService } from 'src/services/auth.service';
+import { OAuthService } from 'src/services/oauth.service';
 import { NotionUtil } from 'src/util/notion.util';
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly oauthService: OAuthService,
+  ) {}
 
   /**
    * user를 생성하고 토큰을 발급한다.
@@ -37,37 +42,40 @@ export class AuthController {
    * @security x-user bearer
    */
   @UseGuards(UserGuard)
-  @core.TypedRoute.Get('google/callback')
+  @core.TypedRoute.Get('/:provider/link')
+  async getAuthorizationLink(
+    @User() user: Guard.UserResponse,
+    @core.TypedParam('provider') provider: Provider['type'],
+    @core.TypedQuery() query: Auth.LoginRequest,
+  ): Promise<Common.Response> {
+    await this.authService.getAuthorizationLink(provider, user.id, query);
+    return { message: `${provider} 연동이 완료되었습니다.` };
+  }
+
+  /**
+   * 클라이언트에서 받은 코드를 이용해 구글 로그인 유저를 검증하고 jwt를 발급한다.
+   *
+   * @security x-user bearer
+   */
+  @UseGuards(UserGuard)
+  @core.TypedRoute.Get('/:provider/callback')
   async getGoogleAuthorization(
     @User() user: Guard.UserResponse,
+    @core.TypedParam('provider') provider: Provider['type'],
     @core.TypedQuery() query: Auth.LoginRequest,
   ): Promise<Auth.LoginResponse> {
-    return this.authService.getGoogleAuthorization(user.id, query);
+    return this.authService.getAuthorization(provider, user.id, query);
   }
 
   /**
    * 클라이언트 요청에 따라 구글 로그인 url을 반환한다.
    */
-  @core.TypedRoute.Get('google')
-  async getGoogleLoginUrl(@core.TypedQuery() query: Auth.GetUrlRequest): Promise<string> {
-    return await this.authService.getGoogleLoginUrl(query.redirectUri);
-  }
-
-  /**
-   * 노션 AccessToken을 발급 받아 저장한다. 이후 노션 페이지 콘텐츠를 읽어오는데 사용한다.
-   *
-   * @security x-user bearer
-   */
-  @UseGuards(UserGuard)
-  @core.TypedRoute.Get('notion/callback')
-  async getNotionAuthorization(
-    @User() user: Guard.UserResponse,
-    @core.TypedQuery() query: Auth.LoginRequest,
-  ): Promise<Common.Response> {
-    await this.authService.getNotionAuthorization(user.id, query);
-    return {
-      message: `노션 연동이 완료되었습니다.`,
-    };
+  @core.TypedRoute.Get('/:provider')
+  async getGoogleLoginUrl(
+    @core.TypedParam('provider') provider: Provider['type'],
+    @core.TypedQuery() query: Auth.GetUrlRequest,
+  ): Promise<string> {
+    return await this.authService.getLoginUrl(provider, query.redirectUri);
   }
 
   /**
@@ -80,61 +88,9 @@ export class AuthController {
   async notionVerify(@User() user: Guard.UserResponse): Promise<Array<NotionUtil.VerifyPageResponse> | null> {
     try {
       const { password } = await this.authService.getNotionAccessTokenByUserId(user.id);
-      return await this.authService.getNotionAccessPages(password);
+      return await this.oauthService.getNotionAccessPages(password);
     } catch (err) {
       return null;
     }
-  }
-
-  /**
-   * 노션 Authorization url을 반환한다.
-   */
-  @core.TypedRoute.Get('notion')
-  async getNotionAuthorizationUrl(@core.TypedQuery() query: Auth.GetUrlRequest): Promise<string> {
-    return this.authService.getNotionLoginUrl(query.redirectUri);
-  }
-
-  /**
-   * 클라이언트에서 받은 코드를 이용해 깃허브 로그인 유저를 검증하고 jwt를 발급한다.
-   *
-   * @security x-user bearer
-   */
-  @UseGuards(UserGuard)
-  @core.TypedRoute.Get('github/callback')
-  async getGithubAuthorization(
-    @User() user: Guard.UserResponse,
-    @core.TypedQuery() query: Auth.LoginRequest,
-  ): Promise<Auth.LoginResponse> {
-    return this.authService.getGithubAuthorization(user.id, query);
-  }
-
-  /**
-   * 깃허브 Authorization url을 반환한다.
-   */
-  @core.TypedRoute.Get('github')
-  async getGithubAuthorizationUrl(@core.TypedQuery() query: Auth.GetUrlRequest): Promise<string> {
-    return this.authService.getGithubLoginUrl(query.redirectUri);
-  }
-
-  /**
-   *  클라이언트에서 받은 코드를 이용해 링크드인 로그인 유저를 검증하고 jwt를 발급한다.
-   *
-   * @security x-user bearer
-   */
-  @UseGuards(UserGuard)
-  @core.TypedRoute.Get('linkedin/callback')
-  async getLinkedinAuthorization(
-    @User() user: Guard.UserResponse,
-    @core.TypedQuery() query: Auth.LoginRequest,
-  ): Promise<Auth.LoginResponse> {
-    return await this.authService.getLinkedinAuthorization(user.id, query);
-  }
-
-  /**
-   * 링크드인 Authorization url을 반환한다.
-   */
-  @core.TypedRoute.Get('linkedin')
-  async getLinkedinAuthorizationUrl(@core.TypedQuery() query: Auth.GetUrlRequest): Promise<string> {
-    return this.authService.getLinkedinLoginUrl(query.redirectUri);
   }
 }
