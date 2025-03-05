@@ -134,6 +134,7 @@ $ npm run start:dev
 
 ## ⚙️ Swagger 문서화
 - [배포된 스웨거 문서 확인하러 가기](http://resupath.click/api/swagger#/)
+
 nestia를 이용한 스웨거 문서 생성을 지원합니다.
 
 ```sh
@@ -155,4 +156,22 @@ npm i @rimo030/resupath-backend
 <br>
 
 
+## 📚 기록들...
+개발을 진행하며 작성했던 문서입니다.
+
+
+### 개발 문서
+- [📄 Tech Stack](https://rimo030.notion.site/Tech-Stack-15abba1355f380bb8c0fd26cc7f0d258?pvs=4)
+- [📄 Commit Convention](https://rimo030.notion.site/Commit-Convention-173bba1355f38012a1e1e731105a644c?pvs=4)
+- [📄 Nestia swagger / e2e testing](https://rimo030.notion.site/Nestia-Typia-Setup-195bba1355f3807b8488cfaadee086fb?pvs=4)
+- [📄 Snapshot structure (스냅샷 구조)](https://rimo030.notion.site/Snapshot-structure-15abba1355f38026bef4d9fd651bf8ba?pvs=4)
+- [📄 Google OAuth](https://rimo030.notion.site/Google-OAuth-15dbba1355f380a69966f94ecd7539ca?pvs=4)
+- [📄 Pagination](https://rimo030.notion.site/Pagination-173bba1355f3808aad1cde324f2bdff8?pvs=4)
+- [📄 npm publish](https://rimo030.notion.site/npm-publish-173bba1355f3804e91f4c4a17fa4c336?pvs=4)
+- [📄 Pre-signed URL](https://rimo030.notion.site/Pre-signed-URL-173bba1355f380e49e17d484ec38d33f?pvs=4)
+
+
+### 이슈
+- [Prisma init Error (node v23)](https://rimo030.notion.site/Prisma-init-Error-node-v23-15abba1355f3808c8112dbe5f7b935e5?pvs=4)
+ 
 
