@@ -37,7 +37,8 @@ export class AuthController {
   }
 
   /**
-   * 클라이언트에서 받은 코드를 이용해 구글 로그인 유저를 검증하고 jwt를 발급한다.
+   * 클라이언트에서 받은 코드를 이용해 OAuth 인증, 멤버 정보와 연동한다.
+   * 연동후 jwt를 반환한다.
    *
    * @security x-user bearer
    */
@@ -53,7 +54,8 @@ export class AuthController {
   }
 
   /**
-   * 클라이언트에서 받은 코드를 이용해 구글 로그인 유저를 검증하고 jwt를 발급한다.
+   * 클라이언트에서 받은 코드를 이용해 OAuth 로그인 정보를 검증, 멤버를 생성한다.
+   * 멤버 생성후 jwt를 발급한다.
    *
    * @security x-user bearer
    */
@@ -68,7 +70,7 @@ export class AuthController {
   }
 
   /**
-   * 클라이언트 요청에 따라 구글 로그인 url을 반환한다.
+   * 클라이언트 요청에 따라 OAuth 로그인 url을 반환한다.
    */
   @core.TypedRoute.Get('/:provider')
   async getGoogleLoginUrl(
