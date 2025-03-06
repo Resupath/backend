@@ -157,7 +157,7 @@ npm i @rimo030/resupath-backend
 
 
 ## 📚 기록들...
-개발을 진행하며 작성했던 문서입니다.
+프로젝트를 진행하며 작성했던 문서입니다. 
 
 
 ### 개발 문서
@@ -169,9 +169,18 @@ npm i @rimo030/resupath-backend
 - [📄 Pagination](https://rimo030.notion.site/Pagination-173bba1355f3808aad1cde324f2bdff8?pvs=4)
 - [📄 npm publish](https://rimo030.notion.site/npm-publish-173bba1355f3804e91f4c4a17fa4c336?pvs=4)
 - [📄 Pre-signed URL](https://rimo030.notion.site/Pre-signed-URL-173bba1355f380e49e17d484ec38d33f?pvs=4)
+- [📄 Notion OAuth](https://rimo030.notion.site/Notion-OAuth-175bba1355f38064a5d1d94d51e13337?pvs=4)
+- [📄 Logging](https://rimo030.notion.site/Logging-176bba1355f3801fb51dc51fb963636d?pvs=4)
+- [📄 ECS CICD](https://rimo030.notion.site/ECS-CICD-180bba1355f3807cb544da93ceb23c35?pvs=4)
+- [📄 EC2 + PM2 CICD](https://rimo030.notion.site/EC2-PM2-CICD-187bba1355f380968cebe60eea96418c?pvs=4)
+- [📄 RDS](https://rimo030.notion.site/RDS-18dbba1355f3809ab8c4da0bed1f7d37?pvs=4)
+- [📄 S3 Public Access](https://rimo030.notion.site/S3-Public-Access-1a5bba1355f3806193c8ea83e08f3385?pvs=4)
+- [📄 Github OAuth](https://rimo030.notion.site/GitHub-OAuth-1a5bba1355f3808dab04c6b676d21215?pvs=4)
+- [📄 LinkedIn OAuth](https://rimo030.notion.site/LinkedIn-OAuth-1a7bba1355f380a49efcf7310107fd85?pvs=4)
 
 
 ### 이슈
-- [Prisma init Error (node v23)](https://rimo030.notion.site/Prisma-init-Error-node-v23-15abba1355f3808c8112dbe5f7b935e5?pvs=4)
+- [🚨 Prisma init Error (node v23)](https://rimo030.notion.site/Prisma-init-Error-node-v23-15abba1355f3808c8112dbe5f7b935e5?pvs=4)
+- [🚨 rimraf: not found (npm run build fail)](https://rimo030.notion.site/rimraf-not-found-npm-run-build-fail-172bba1355f380c4a11ae87427f5bf32?pvs=4)
  
 
