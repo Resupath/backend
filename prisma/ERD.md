@@ -155,6 +155,17 @@ erDiagram
   DateTime created_at
   DateTime deleted_at "nullable"
 }
+"Contact" {
+  String id PK
+  String member_id FK
+  String character_id FK
+  String purpose
+  String message
+  String status
+  DateTime created_at
+  DateTime completed_at "nullable"
+  DateTime deleted_at "nullable"
+}
 "Room" {
   String id PK
   String user_id FK
@@ -192,6 +203,7 @@ erDiagram
 "Character_Snapshot_Position" }o--|| "Position" : postion
 "Character_Snapshot_Skill" }o--|| "Character_Snapshot" : character_snapshot
 "Character_Snapshot_Skill" }o--|| "Skill" : skill
+"Contact" }o--|| "Character" : character
 "Room" }o--|| "User" : user
 "Room" }o--|| "Character" : character
 "Chat" }o--|| "Room" : room
@@ -205,7 +217,7 @@ erDiagram
 **Properties**
   - `id`: PK
   - `member_id`: 가입된 사용자가 경력을 입력할 수 있다.
-  - `created_at`: 경력을 최초 입력후 저장한 시간.
+  - `created_at`: 경력을 최초 입���후 저장한 시간.
   - `deleted_at`: 경력을 삭제한 경우.
 
 ### `Experience_Snapshot`
@@ -342,6 +354,21 @@ React, NestJS 기술 스택(스킬)의 정보를 저장한다.
   - `keyword`: 스킬의 이름
   - `created_at`: 스킬이 등록된 시점
   - `deleted_at`: 스킬이 삭제된 시점
+
+### `Contact`
+연락
+연락하기 기능으로 요청된 메시지들을 저장한다.
+
+**Properties**
+  - `id`: PK
+  - `member_id`: 연락을 보낸 멤버의 아이디
+  - `character_id`: 연락을 받은 캐릭터의 아이디
+  - `purpose`: 어떤 목적으로 연락하는지 ( 커피챗, 면접 제안 등 유저 기입 )
+  - `message`: 연락 내용
+  - `status`: 처리 상태 (pending: 검토중/발송전, completed: 발송됨, rejected: 발송 거부됨)
+  - `created_at`: 연락하기 요청 시점
+  - `completed_at`: 발송 시점
+  - `deleted_at`: 삭제 시점
 
 ### `Room`
 채팅방.
