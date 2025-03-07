@@ -156,6 +156,7 @@ model Character {
   chats                  Chat[] /// 캐릭터와 대화한 기록
   sources                Source[] /// 캐릭터 생성에 사용된 소스
   character_personalites Character_Personality[] /// 캐릭터 생성에 사용된 성격
+  contacts               Contact[] /// 해당 캐릭터에게 요청된 연락들
 
   /// 스냅샷들
   snapshots     Character_Snapshot[]
@@ -269,6 +270,20 @@ model Skill {
   deleted_at DateTime? @db.Timestamptz /// 스킬이 삭제된 시점
 
   character_snapshot_skills Character_Snapshot_Skill[]
+}
+
+/// 연락
+/// 연락하기 기능으로 요청된 메시지들을 저장한다.
+/// @namespace Character
+model Contact {
+  id           String   @id @db.Uuid /// PK
+  character_id String   @db.Uuid /// Charactor FK
+  purpose      String ///  어떤 목적으로 연락하는지 ( 커피챗, 면접 제안 등 유저 기입 )
+  message      String /// 연락 내용
+  status       String /// 처리 상태 (pending: 검토중/발송전, completed: 발송됨, rejected: 발송 거부됨)
+  created_at   DateTime @db.Timestamptz /// 요청 시점
+
+  character Character @relation(fields: [character_id], references: [id])
 }
 
 /// 채팅방.
