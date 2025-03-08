@@ -465,24 +465,6 @@ export class CharactersService {
     });
   }
 
-  private async createCharacterPersonalities(
-    characterId: string,
-    personalities: Character.CreateRequest['personalities'],
-    date: string,
-  ) {
-    const characterPersonalities = personalities.map(
-      (personality): Prisma.Character_PersonalityCreateManyInput => ({
-        character_id: characterId,
-        personality_id: personality.id,
-        created_at: date,
-      }),
-    );
-
-    await this.prisma.character_Personality.createMany({
-      data: characterPersonalities,
-    });
-  }
-
   /**
    * 캐릭터를 수정한다.
    */

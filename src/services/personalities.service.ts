@@ -33,6 +33,31 @@ export class PersonalitiesService {
   }
 
   /**
+   * 캐릭터 - 성격 관계 데이터를 추가합니다.
+   * @param characterId 추가하고자 하는 캐릭터 아이디
+   * @param personalities 성격 데이터
+   * @param createdAt 트랜잭션 시작 시점
+   */
+  async createCharacterPersonalities(
+    tx: Prisma.TransactionClient,
+    characterId: string,
+    personalities: Character.CreateRequest['personalities'],
+    createdAt: string,
+  ): Promise<void> {
+    const characterPersonalities = personalities.map(
+      (personality): Prisma.Character_PersonalityCreateManyInput => ({
+        character_id: characterId,
+        personality_id: personality.id,
+        created_at: createdAt,
+      }),
+    );
+
+    await tx.character_Personality.createMany({
+      data: characterPersonalities,
+    });
+  }
+
+  /**
    * 성격을 전체 조회합니다.
    */
   async getAll(): Promise<Array<Personality.GetResponse>> {
