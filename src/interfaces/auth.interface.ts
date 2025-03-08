@@ -17,6 +17,7 @@ export namespace Auth {
 
   export interface LoginRequest extends GetUrlRequest {
     code: string & tags.MinLength<1>;
+    state?: string;
   }
 
   export interface LoginResponse {

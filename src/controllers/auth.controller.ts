@@ -50,7 +50,7 @@ export class AuthController {
     @core.TypedQuery() query: Auth.LoginRequest,
   ): Promise<Common.Response> {
     await this.authService.getAuthorizationLink(provider, user.id, query);
-    return { message: `${provider} 연동이 완료되었습니다.` };
+    return { message: `${provider} 연동이 완료되었습니다.`, state: query.state };
   }
 
   /**

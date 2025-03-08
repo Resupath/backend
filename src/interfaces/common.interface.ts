@@ -3,5 +3,6 @@ export namespace Common {
     status?: string;
     message?: string;
     timestamp?: string;
+    state?: string;
   }
 }
