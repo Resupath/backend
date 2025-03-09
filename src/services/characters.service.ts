@@ -43,82 +43,84 @@ export class CharactersService {
     const positions = await this.positionsService.findOrCreateMany(input.positions);
     const skills = await this.skillsService.findOrCreateMany(input.skills);
 
-    // 1. 캐릭터 생성
-    const character = await this.prisma.character.create({
-      select: {
-        id: true,
-      },
-      data: {
-        id: characterId,
-        member_id: memberId,
-        is_public: input.isPublic,
-        created_at: date,
-        sources: {
-          createMany: {
-            data: input.sources.map((source) => {
-              return {
-                id: randomUUID(),
-                type: source.type,
-                subtype: source.subtype,
-                url: source.url,
-                created_at: date,
-              };
-            }),
-          },
+    return await this.prisma.$transaction(async (tx) => {
+      // 1. 캐릭터 생성
+      const character = await tx.character.create({
+        select: {
+          id: true,
         },
-        snapshots: {
-          create: {
-            id: snapshotId,
-            nickname: input.nickname,
-            email: input.email,
-            phone: input.phone,
-            image: input.image,
-            description: input.description,
-            created_at: date,
-            /**
-             * snapshot relations
-             */
-            character_snapshot_experiences: {
-              createMany: {
-                data:
-                  input.experiences?.map((experince) => {
+        data: {
+          id: characterId,
+          member_id: memberId,
+          is_public: input.isPublic,
+          created_at: date,
+          sources: {
+            createMany: {
+              data: input.sources.map((source) => {
+                return {
+                  id: randomUUID(),
+                  type: source.type,
+                  subtype: source.subtype,
+                  url: source.url,
+                  created_at: date,
+                };
+              }),
+            },
+          },
+          snapshots: {
+            create: {
+              id: snapshotId,
+              nickname: input.nickname,
+              email: input.email,
+              phone: input.phone,
+              image: input.image,
+              description: input.description,
+              created_at: date,
+              /**
+               * snapshot relations
+               */
+              character_snapshot_experiences: {
+                createMany: {
+                  data:
+                    input.experiences?.map((experince) => {
+                      return {
+                        experience_id: experince.id,
+                        created_at: date,
+                      };
+                    }) ?? [],
+                },
+              },
+              character_snapshot_positions: {
+                createMany: {
+                  data: positions.map((position) => {
                     return {
-                      experience_id: experince.id,
-                      created_at: date,
+                      position_id: position.id,
                     };
-                  }) ?? [],
+                  }),
+                },
               },
-            },
-            character_snapshot_positions: {
-              createMany: {
-                data: positions.map((position) => {
-                  return {
-                    position_id: position.id,
-                  };
-                }),
-              },
-            },
-            character_snapshot_skills: {
-              createMany: {
-                data: skills.map((skill) => {
-                  return { skill_id: skill.id };
-                }),
+              character_snapshot_skills: {
+                createMany: {
+                  data: skills.map((skill) => {
+                    return { skill_id: skill.id };
+                  }),
+                },
               },
             },
           },
-        },
-        last_snapshot: {
-          create: {
-            character_snapshot_id: snapshotId,
+          last_snapshot: {
+            create: {
+              character_snapshot_id: snapshotId,
+            },
           },
         },
-      },
+      });
+
+      // 2. 캐릭터 ㅡ 성격 관계 지정
+      await this.personalitiesService.createCharacterPersonalities(tx, characterId, input.personalities, date);
+
+      return character;
     });
-
-    // 2. 캐릭터 ㅡ 성격 관계 지정
-    await this.personalitiesService.createCharacterPersonalities(characterId, input.personalities, date);
-
-    return character;
   }
 
   /**
