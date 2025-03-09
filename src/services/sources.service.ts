@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { Character } from 'src/interfaces/characters.interface';
@@ -14,6 +14,8 @@ export class SourcesService {
 
   /**
    * 캐릭터의 소스를 생성한다.
+   *
+   * @deprecated
    */
   async create(characterId: Source['characterId'], body: Source.CreateRequest): Promise<Source.GetResponse> {
     const date = DateTimeUtil.now();
@@ -46,40 +48,41 @@ export class SourcesService {
 
     for (const el of body) {
       const source = await this.prisma.source.findFirst({
-          select: {
-            id: true,
-            type: true,
-            subtype: true,
-            url: true,
-            created_at: true,
-          },
-          where: { character_id: characterId, type: el.type, url: el.url, deleted_at: null },
-        });
+        select: {
+          id: true,
+          type: true,
+          subtype: true,
+          url: true,
+          created_at: true,
+        },
+        where: { character_id: characterId, type: el.type, url: el.url, deleted_at: null },
+      });
 
       if (!source) {
-          const newSource = await this.prisma.source.create({
-            select: { id: true },
-            data: {
-              id: randomUUID(),
-              character_id: characterId,
-              type: el.type,
-              subtype: el.subtype,
-              url: el.url,
-              created_at: date,
-            },
-          });
+        const newSource = await this.prisma.source.create({
+          select: { id: true },
+          data: {
+            id: randomUUID(),
+            character_id: characterId,
+            type: el.type,
+            subtype: el.subtype,
+            url: el.url,
+            created_at: date,
+          },
+        });
 
         sources.push({ id: newSource.id });
       } else {
         sources.push({ id: source.id });
       }
-        }
+    }
 
     return sources;
   }
 
   /**
    * 캐릭터의 소스를 여러개 생성한다.
+   *  @deprecated
    */
   async createMany(characterId: string, body: Array<Source.CreateRequest>): Promise<Source.GetAllResponse> {
     const date = DateTimeUtil.now();
@@ -147,6 +150,7 @@ export class SourcesService {
 
   /**
    * 소스를 수정한다. 변경된 내용이 있을때만 수정한다.
+   *  @deprecated
    */
   async update(
     memberId: Member['id'],
@@ -182,6 +186,7 @@ export class SourcesService {
 
   /**
    * 소스를 삭제한다.
+   *  @deprecated
    */
   async delete(memberId: Member['id'], characterId: Source['characterId'], id: Source['id']): Promise<void> {
     const date = DateTimeUtil.now();
@@ -236,7 +241,6 @@ export class SourcesService {
 
   /**
    * 캐릭터에 저장된 소스들을 전체 반환한다.
-   * @param characterId
    */
   async getAll(characterId: string): Promise<Source.GetAllResponse> {
     const data = await this.prisma.source.findMany({
