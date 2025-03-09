@@ -22,26 +22,28 @@ export class SkillsService {
 
   async findOrCreateMany(body: Array<Skill.CreateRequest>): Promise<Array<Pick<Skill, 'id'>>> {
     const date = DateTimeUtil.now();
+    const result: Array<Pick<Skill, 'id'>> = [];
 
-    return await Promise.all(
-      body.map(async (el) => {
-        const skill = await this.get(el.keyword);
+    for (const el of body) {
+      const skill = await this.get(el.keyword);
 
-        if (!skill) {
-          const newSkill = await this.prisma.skill.create({
-            select: { id: true },
-            data: {
-              id: randomUUID(),
-              keyword: el.keyword,
-              created_at: date,
-            },
-          });
+      if (!skill) {
+        const newSkill = await this.prisma.skill.create({
+          select: { id: true },
+          data: {
+            id: randomUUID(),
+            keyword: el.keyword,
+            created_at: date,
+          },
+        });
 
-          return { id: newSkill.id };
-        }
-        return { id: skill.id };
-      }),
-    );
+        result.push({ id: newSkill.id });
+      } else {
+        result.push({ id: skill.id });
+      }
+    }
+
+    return result;
   }
 
   async get(keyword: Skill['keyword']): Promise<Skill.GetResponse | null> {

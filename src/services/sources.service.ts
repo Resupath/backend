@@ -42,10 +42,10 @@ export class SourcesService {
     body: Array<Source.CreateRequest>,
   ): Promise<Array<Pick<Source, 'id'>>> {
     const date = DateTimeUtil.now();
+    const sources: Array<Pick<Source, 'id'>> = [];
 
-    return await Promise.all(
-      body.map(async (el) => {
-        const source = await this.prisma.source.findMany({
+    for (const el of body) {
+      const source = await this.prisma.source.findFirst({
           select: {
             id: true,
             type: true,
@@ -56,7 +56,7 @@ export class SourcesService {
           where: { character_id: characterId, type: el.type, url: el.url, deleted_at: null },
         });
 
-        if (!source.length) {
+      if (!source) {
           const newSource = await this.prisma.source.create({
             select: { id: true },
             data: {
@@ -69,11 +69,13 @@ export class SourcesService {
             },
           });
 
-          return { id: newSource.id };
+        sources.push({ id: newSource.id });
+      } else {
+        sources.push({ id: source.id });
+      }
         }
-        return { id: source.at(0)?.id as string };
-      }),
-    );
+
+    return sources;
   }
 
   /**
