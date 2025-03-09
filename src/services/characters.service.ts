@@ -32,6 +32,9 @@ export class CharactersService {
    * 캐릭터를 생성한다.
    */
   async create(memberId: string, input: Character.CreateRequest) {
+    // 소스 데이터 검증
+    await this.sourcesService.verifyMany(input.sources);
+
     const characterId = randomUUID();
     const snapshotId = randomUUID();
     const date = DateTimeUtil.now();
@@ -113,7 +116,7 @@ export class CharactersService {
     });
 
     // 2. 캐릭터 ㅡ 성격 관계 지정
-    await this.createCharacterPersonalities(characterId, input.personalities, date);
+    await this.personalitiesService.createCharacterPersonalities(characterId, input.personalities, date);
 
     return character;
   }
@@ -473,6 +476,9 @@ export class CharactersService {
     id: Character['id'],
     newData: Character.UpdateRequest,
   ): Promise<Character.UpdateResponse> {
+    // 소스 데이터 검증
+    await this.sourcesService.verifyMany(newData.sources);
+
     const origin = await this.get(id);
     const date = DateTimeUtil.now();
 
