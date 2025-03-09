@@ -258,6 +258,18 @@ export class SourcesService {
   }
 
   /**
+   * 겹치는 소스 데이터가 있는지 확인한다.
+   * type, subtype, url이 같다면 동일한 데이터로 판단한다.
+   */
+  async verifyMany(input: Array<Source.CreateRequest>): Promise<void> {
+    const uniqueSet = new Set(input.map(({ type, subtype, url }) => `${type}-${subtype}-${url}`));
+
+    if (uniqueSet.size !== input.length) {
+      throw new BadRequestException(`동일한 소스는 저장할 수 없습니다.`);
+    }
+  }
+
+  /**
    * 프리즈마 객체를 인터페이스 타입으로 매핑한다.
    * @param input source 프리즈마 내부 타입 그대로의 객체이다.
    */
