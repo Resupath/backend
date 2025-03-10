@@ -126,14 +126,17 @@ export class OAuthService {
 
       const page = response.data.results;
 
-      return page.map(
-        (el): NotionUtil.VerifyPageResponse => ({
+      return page.map((el): NotionUtil.VerifyPageResponse => {
+        const title = el.properties.title?.title[0].plain_text ?? NotionUtil.getDatabaseTitle(el);
+
+        return {
           id: el.id,
-          title: el.properties.title.title[0].plain_text,
+          title: title,
           url: el.url,
-        }),
-      );
+        };
+      });
     } catch (error) {
+      console.error(error);
       throw new InternalServerErrorException(`노션 페이지 정보 읽어오기 실패.`);
     }
   }
