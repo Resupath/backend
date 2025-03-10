@@ -56,6 +56,9 @@ export namespace NotionUtil {
       return false;
     });
 
-    return titleProperty ? (titleProperty?.[1] as { type: string; title: object }).title[0].plain_text : '제목 없음';
+    if (typia.is<[string, { type: string; title: { plain_text: string }[] }]>(titleProperty)) {
+      return titleProperty[1].title[0].plain_text;
+    }
+    return '제목 없음';
   }
 }
