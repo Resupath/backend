@@ -48,7 +48,7 @@ export namespace NotionUtil {
   /**
    * 노션 데이터베이스 페이지 제목을 가져옵니다.
    */
-  export function getDatabaseTitle(el: any): string {
+  export function getDatabaseTitle(el: Record<'properties', object>): string {
     const titleProperty = Object.entries(el.properties).find(([key, value]) => {
       if (typia.is<{ type: string }>(value)) {
         return value.type === 'title';
