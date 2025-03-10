@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { randomUUID } from 'crypto';
 import { Auth } from 'src/interfaces/auth.interface';
+import { Member } from 'src/interfaces/member.interface';
 import { Provider } from 'src/interfaces/provider.interface';
 import { User } from 'src/interfaces/user.interface';
 import { DateTimeUtil } from 'src/util/date-time.util';
@@ -84,25 +85,30 @@ export class AuthService {
    * OAuth 로그인 연동을 처리한다.
    * 다른 OAuth 인증으로 같은 member로 로그인하는 것이 가능하도록 한다.
    */
-  async getAuthorizationLink(provider: Provider['type'], userId: string, input: Auth.LoginRequest) {
+  async getAuthorizationLink(type: Provider['type'], userId: string, input: Auth.LoginRequest) {
     let userInfo: Auth.CommonAuthorizationResponse;
     try {
-      if (provider === 'google') {
+      if (type === 'google') {
         userInfo = await this.oAuthService.getGoogleAuthorization(input);
-      } else if (provider === 'notion') {
+      } else if (type === 'notion') {
         userInfo = await this.oAuthService.getNotionAuthorization(input);
-      } else if (provider === 'github') {
+      } else if (type === 'github') {
         userInfo = await this.oAuthService.getGithubAuthorization(input);
-      } else if (provider === 'linkedin') {
+      } else if (type === 'linkedin') {
         userInfo = await this.oAuthService.getLinkedinAuthorization(input);
       } else {
         throw new BadRequestException(`지원하는 로그인이 아닙니다.`);
       }
+
       const { memberId } = await this.getMember(userId);
-      await this.createProvider(memberId, userInfo);
+      const provider = await this.findProvider(memberId, type);
+
+      provider
+        ? await this.updateProviderPasswordByMemberId(provider.id, memberId, userInfo.refreshToken)
+        : await this.createProvider(memberId, userInfo);
     } catch (error) {
       console.error(error);
-      throw new UnauthorizedException(`${provider} 연동에 실패했습니다. ${error.message}`);
+      throw new UnauthorizedException(`${type} 연동에 실패했습니다. ${error.message}`);
     }
   }
 
@@ -162,8 +168,30 @@ export class AuthService {
     const provider = await this.findProviderMember(authorization);
 
     return provider
-      ? await this.updateProviderPassword(userId, provider.id, authorization.refreshToken)
+      ? await this.updateProviderPasswordByUserId(provider.id, userId, authorization.refreshToken)
       : await this.createMember(userId, authorization);
+  }
+
+  /**
+   * 노션을 포함한 Oauth 인증정보가 있는지 확인한다.
+   */
+  async findProvider(memberId: Provider['memberId'], type: Provider['type']) {
+    const provider = await this.prisma.provider.findFirst({
+      select: { id: true, password: true },
+      where: {
+        member_id: memberId,
+        type: type,
+      },
+    });
+
+    if (!provider) {
+      return null;
+    }
+
+    return {
+      id: provider.id,
+      password: provider.password,
+    };
   }
 
   /**
@@ -197,9 +225,9 @@ export class AuthService {
   }
 
   /**
-   * 프로바이더(OAuth 연동) 정보를 갱신한다.
+   * userId를 이용해 프로바이더(OAuth 연동) 정보를 갱신한다.
    */
-  async updateProviderPassword(userId: User['id'], providerId: Provider['id'], refreshToken: string) {
+  async updateProviderPasswordByUserId(providerId: Provider['id'], userId: User['id'], refreshToken: string) {
     const member = await this.prisma.$transaction(async (prisma) => {
       const { member } = await prisma.provider.update({
         select: { member: { select: { id: true, name: true } } },
@@ -215,6 +243,16 @@ export class AuthService {
     });
 
     return member;
+  }
+
+  /**
+   * memberId를 이용해 프로바이더(OAuth 연동) 정보를 갱신한다.
+   */
+  async updateProviderPasswordByMemberId(providerId: Provider['id'], memberId: Member['id'], refreshToken: string) {
+    await this.prisma.provider.update({
+      where: { id: providerId, member_id: memberId },
+      data: { password: refreshToken },
+    });
   }
 
   /**
