@@ -45,6 +45,7 @@ export class NotionService {
 
       return mdString?.parent ?? '';
     } catch (err) {
+      console.error(err);
       throw new NotFoundException('노션 콘텐츠 마크다운 변환에 실패했습니다.');
     }
   }

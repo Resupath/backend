@@ -92,6 +92,7 @@ export class AuthController {
       const { password } = await this.authService.getNotionAccessTokenByUserId(user.id);
       return await this.oauthService.getNotionAccessPages(password);
     } catch (err) {
+      console.error(err);
       return null;
     }
   }

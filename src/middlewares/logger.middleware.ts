@@ -85,6 +85,7 @@ export class LoggerMiddleware implements NestMiddleware {
         const userId = decoded.id;
         return userId;
       } catch (error) {
+        console.error(error);
         return null;
       }
     }

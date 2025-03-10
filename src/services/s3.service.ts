@@ -103,6 +103,7 @@ export class S3Service {
 
       return contentType ?? null;
     } catch (error) {
+      console.error(error);
       throw new NotFoundException('content-type 확인 실패. url:', url);
     }
   }
