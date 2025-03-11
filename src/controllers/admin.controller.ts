@@ -4,10 +4,12 @@ import { ApiTags } from '@nestjs/swagger';
 import { AdminGuard } from 'src/guards/admin.guard';
 import { Character } from 'src/interfaces/characters.interface';
 import { Chat } from 'src/interfaces/chats.interface';
+import { Contacts } from 'src/interfaces/contacts.interface';
 import { Personality } from 'src/interfaces/personalities.interface';
 import { Room } from 'src/interfaces/rooms.interface';
 import { CharactersService } from 'src/services/characters.service';
 import { ChatsService } from 'src/services/chats.service';
+import { ContactsService } from 'src/services/contacts.service';
 import { PersonalitiesService } from 'src/services/personalities.service';
 import { RoomsService } from 'src/services/rooms.service';
 
@@ -20,6 +22,7 @@ export class AdminController {
     private readonly charactersService: CharactersService,
     private readonly roomsService: RoomsService,
     private readonly chatsService: ChatsService,
+    private readonly contactsService: ContactsService,
   ) {}
 
   /**
@@ -63,5 +66,13 @@ export class AdminController {
   @core.TypedRoute.Get('characters')
   async getCharacters(@core.TypedQuery() query: Character.GetByPageRequest): Promise<Character.GetByPageResponse> {
     return await this.charactersService.getBypage(query, { deletedAt: true });
+  }
+
+  /**
+   * 연락하기로 요청된 메시지를 조회한다.
+   */
+  @core.TypedRoute.Get('contacts')
+  async getContactsByPage(@core.TypedQuery() query: Contacts.GetByPageRequest): Promise<Contacts.GetByPageResponse> {
+    return await this.contactsService.getByPage(query);
   }
 }
