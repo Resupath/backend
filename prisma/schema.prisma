@@ -284,7 +284,6 @@ model Contact {
   message      String /// 연락 내용
   status       String /// 처리 상태 (pending: 검토중/발송전, completed: 발송됨, rejected: 발송 거부됨)
   created_at   DateTime  @db.Timestamptz /// 연락하기 요청 시점
-  completed_at DateTime? @db.Timestamptz /// 발송 시점
   deleted_at   DateTime? @db.Timestamptz /// 삭제 시점
 
   member    Member    @relation(fields: [member_id], references: [id])

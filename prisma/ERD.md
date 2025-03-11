@@ -163,7 +163,6 @@ erDiagram
   String message
   String status
   DateTime created_at
-  DateTime completed_at "nullable"
   DateTime deleted_at "nullable"
 }
 "Room" {
@@ -217,7 +216,7 @@ erDiagram
 **Properties**
   - `id`: PK
   - `member_id`: 가입된 사용자가 경력을 입력할 수 있다.
-  - `created_at`: 경력을 최초 입���후 저장한 시간.
+  - `created_at`: 경력을 최초 입력후 저장한 시간.
   - `deleted_at`: 경력을 삭제한 경우.
 
 ### `Experience_Snapshot`
@@ -367,12 +366,11 @@ React, NestJS 기술 스택(스킬)의 정보를 저장한다.
   - `message`: 연락 내용
   - `status`: 처리 상태 (pending: 검토중/발송전, completed: 발송됨, rejected: 발송 거부됨)
   - `created_at`: 연락하기 요청 시점
-  - `completed_at`: 발송 시점
   - `deleted_at`: 삭제 시점
 
 ### `Room`
 채팅방.
-하나의 캐릭터에 여러개의 유저가 채팅방을 생성할 수 있고, 유저는 여러개의 캐릭터에 대해 채팅방을 생성할 수 있다.
+하나의 캐릭터�� 여러개의 유저가 채팅방을 생성할 수 있고, 유저는 여러개의 캐릭터에 대해 채팅방을 생성할 수 있다.
 
 **Properties**
   - `id`: PK, 유저는 한 캐릭터에 대해서 여러 개의 방을 생성할 수 있기 때문에 별도의 ID를 둔다.
