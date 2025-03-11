@@ -38,4 +38,9 @@ export namespace Contacts {
    */
   export interface GetResponse
     extends Pick<Contacts, 'id' | 'memberId' | 'characterId' | 'purpose' | 'message' | 'createdAt' | 'status'> {}
+
+  /**
+   * 연락하기 상태 수정
+   */
+  export interface UpdateResponse extends Pick<Contacts, 'status'> {}
 }

@@ -1,9 +1,10 @@
 import core from '@nestia/core';
-import { Controller, UseGuards } from '@nestjs/common';
+import { Body, Controller, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AdminGuard } from 'src/guards/admin.guard';
 import { Character } from 'src/interfaces/characters.interface';
 import { Chat } from 'src/interfaces/chats.interface';
+import { Common } from 'src/interfaces/common.interface';
 import { Contacts } from 'src/interfaces/contacts.interface';
 import { Personality } from 'src/interfaces/personalities.interface';
 import { Room } from 'src/interfaces/rooms.interface';
@@ -74,5 +75,23 @@ export class AdminController {
   @core.TypedRoute.Get('contacts')
   async getContactsByPage(@core.TypedQuery() query: Contacts.GetByPageRequest): Promise<Contacts.GetByPageResponse> {
     return await this.contactsService.getByPage(query);
+  }
+
+  /**
+   * 연락하기로 요청된 메시지를 조회한다.
+   */
+  @core.TypedRoute.Patch('contacts/:id')
+  async updateContactStatus(
+    @core.TypedParam('id') id: Contacts['id'],
+    @core.TypedBody() body: Contacts.UpdateResponse,
+  ): Promise<Common.Response | Contacts.GetResponse> {
+    const status = body.status;
+    const contact = await this.contactsService.get(id);
+
+    if (contact.status === status) {
+      return { message: `변경된 내용이 없습니다.` };
+    }
+
+    return await this.contactsService.updateStatus(id, status);
   }
 }

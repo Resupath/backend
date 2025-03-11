@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { Character } from 'src/interfaces/characters.interface';
@@ -7,6 +7,8 @@ import { Member } from 'src/interfaces/member.interface';
 import { DateTimeUtil } from 'src/util/date-time.util';
 import { PaginationUtil } from 'src/util/pagination.util';
 import { PrismaService } from './prisma.service';
+import { Guard } from 'src/interfaces/guard.interface';
+import { Format } from 'typia/lib/tags';
 
 @Injectable()
 export class ContactsService {
@@ -123,5 +125,69 @@ export class ContactsService {
       count,
       take,
     });
+  }
+
+  /**
+   * 연락하기 메시지를 상세 조회합니다.
+   * @param id
+   */
+  async get(id: Contacts['id']): Promise<Contacts.GetResponse> {
+    const contact = await this.prisma.contact.findUnique({
+      select: {
+        id: true,
+        member_id: true,
+        character_id: true,
+        purpose: true,
+        message: true,
+        status: true,
+        created_at: true,
+      },
+      where: { id: id },
+    });
+
+    if (!contact) {
+      throw new NotFoundException(`연락하기 메시지 조회 실패. 존재하지 않거나 삭제된 메시지입니다.`);
+    }
+
+    return {
+      id: contact.id,
+      memberId: contact.member_id,
+      characterId: contact.character_id,
+      purpose: contact.purpose,
+      message: contact.message,
+      status: contact.status as Contacts['status'],
+      createdAt: contact.created_at.toISOString(),
+    };
+  }
+
+  /**
+   * 메시지의 상태를 수정합니다. (admin 용)
+   */
+  async updateStatus(id: Contacts['id'], status: Contacts['status']): Promise<Contacts.GetResponse> {
+    const contact = await this.prisma.contact.update({
+      select: {
+        id: true,
+        member_id: true,
+        character_id: true,
+        purpose: true,
+        message: true,
+        status: true,
+        created_at: true,
+      },
+      data: {
+        status: status,
+      },
+      where: { id: id },
+    });
+
+    return {
+      id: contact.id,
+      memberId: contact.member_id,
+      characterId: contact.character_id,
+      purpose: contact.purpose,
+      message: contact.message,
+      status: contact.status as Contacts['status'],
+      createdAt: contact.created_at.toISOString(),
+    };
   }
 }
