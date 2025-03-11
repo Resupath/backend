@@ -1,5 +1,5 @@
 import core from '@nestia/core';
-import { Body, Controller, UseGuards } from '@nestjs/common';
+import { Controller, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AdminGuard } from 'src/guards/admin.guard';
 import { Character } from 'src/interfaces/characters.interface';

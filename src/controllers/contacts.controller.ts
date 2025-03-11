@@ -6,7 +6,6 @@ import { Character } from 'src/interfaces/characters.interface';
 import { Contacts } from 'src/interfaces/contacts.interface';
 import { Guard } from 'src/interfaces/guard.interface';
 import { ContactsService } from 'src/services/contacts.service';
-import { PaginationUtil } from 'src/util/pagination.util';
 
 @Controller('contacts')
 export class ContactsController {

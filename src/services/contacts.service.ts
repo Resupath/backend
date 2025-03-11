@@ -7,8 +7,6 @@ import { Member } from 'src/interfaces/member.interface';
 import { DateTimeUtil } from 'src/util/date-time.util';
 import { PaginationUtil } from 'src/util/pagination.util';
 import { PrismaService } from './prisma.service';
-import { Guard } from 'src/interfaces/guard.interface';
-import { Format } from 'typia/lib/tags';
 
 @Injectable()
 export class ContactsService {
