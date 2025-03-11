@@ -42,5 +42,5 @@ export namespace Contacts {
   /**
    * 연락하기 상태 수정
    */
-  export interface UpdateResponse extends Pick<Contacts, 'status'> {}
+  export interface UpdateRequest extends Pick<Contacts, 'status'> {}
 }

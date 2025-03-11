@@ -83,7 +83,7 @@ export class AdminController {
   @core.TypedRoute.Patch('contacts/:id')
   async updateContactStatus(
     @core.TypedParam('id') id: Contacts['id'],
-    @core.TypedBody() body: Contacts.UpdateResponse,
+    @core.TypedBody() body: Contacts.UpdateRequest,
   ): Promise<Common.Response | Contacts.GetResponse> {
     const status = body.status;
     const contact = await this.contactsService.get(id);
