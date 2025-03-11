@@ -18,6 +18,7 @@ import { SkillsModule } from './modules/skills.module';
 import { SourcesModule } from './modules/sources.module';
 import { AdminModule } from './modules/admin.module';
 import { DashboardModule } from './modules/dashboard.module';
+import { ContactsModule } from './contacts/contacts.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { DashboardModule } from './modules/dashboard.module';
     MembersModule,
     AdminModule,
     DashboardModule,
+    ContactsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
