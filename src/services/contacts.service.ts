@@ -79,7 +79,12 @@ export class ContactsService {
       this.prisma.contact.findMany({
         select: {
           id: true,
-          member_id: true,
+          member: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
           character_id: true,
           purpose: true,
           message: true,
@@ -97,15 +102,18 @@ export class ContactsService {
     /**
      * mapping
      */
-    const data = contacts.map((el) => {
+    const data = contacts.map((el): Contacts.GetByPageData => {
       return {
         id: el.id,
-        memberId: el.member_id,
         characterId: el.character_id,
         purpose: el.purpose,
         message: el.message,
         status: el.status as Contacts['status'],
         createdAt: el.created_at.toISOString(),
+        member: {
+          id: el.member.id,
+          name: el.member.name,
+        },
       };
     });
 

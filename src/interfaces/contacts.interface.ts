@@ -24,7 +24,14 @@ export namespace Contacts {
    */
   export interface GetByPageRequest extends PaginationUtil.Request {}
 
-  export interface GetByPageResponse extends PaginationUtil.Response<Contacts.GetResponse> {}
+  export interface GetByPageData extends Omit<Contacts.GetResponse, 'memberId'> {
+    member: {
+      id: Member['id'];
+      name: Member['name'];
+    };
+  }
+
+  export interface GetByPageResponse extends PaginationUtil.Response<Contacts.GetByPageData> {}
 
   /**
    * 연락하기 조회
