@@ -158,10 +158,12 @@ npm i @rimo030/resupath-backend
 
 ## 📚 기록들...
 프로젝트를 진행하며 작성했던 문서입니다. 
+- [🔥 저비용으로 AWS 배포하기](https://rimo030.notion.site/AWS-1aebba1355f38024a884f59452b8d951?pvs=4)
 
 
 ### 개발 문서
 - [📄 Tech Stack](https://rimo030.notion.site/Tech-Stack-15abba1355f380bb8c0fd26cc7f0d258?pvs=4)
+- [📄 OpenAI](https://rimo030.notion.site/OpenAI-173bba1355f3806e8873d96bdc5f7ac3?pvs=4)
 - [📄 Commit Convention](https://rimo030.notion.site/Commit-Convention-173bba1355f38012a1e1e731105a644c?pvs=4)
 - [📄 Nestia swagger / e2e testing](https://rimo030.notion.site/Nestia-Typia-Setup-195bba1355f3807b8488cfaadee086fb?pvs=4)
 - [📄 Snapshot structure (스냅샷 구조)](https://rimo030.notion.site/Snapshot-structure-15abba1355f38026bef4d9fd651bf8ba?pvs=4)
@@ -179,7 +181,7 @@ npm i @rimo030/resupath-backend
 - [📄 LinkedIn OAuth](https://rimo030.notion.site/LinkedIn-OAuth-1a7bba1355f380a49efcf7310107fd85?pvs=4)
 
 
-### 이슈
+### 이슈 리포트
 - [🚨 Prisma init Error (node v23)](https://rimo030.notion.site/Prisma-init-Error-node-v23-15abba1355f3808c8112dbe5f7b935e5?pvs=4)
 - [🚨 rimraf: not found (npm run build fail)](https://rimo030.notion.site/rimraf-not-found-npm-run-build-fail-172bba1355f380c4a11ae87427f5bf32?pvs=4)
  
