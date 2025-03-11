@@ -1,5 +1,6 @@
 import core from '@nestia/core';
 import { Controller, UseGuards } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Member } from 'src/decorators/member.decorator';
 import { MemberGuard } from 'src/guards/member.guard';
 import { Character } from 'src/interfaces/characters.interface';
@@ -7,6 +8,7 @@ import { Contacts } from 'src/interfaces/contacts.interface';
 import { Guard } from 'src/interfaces/guard.interface';
 import { ContactsService } from 'src/services/contacts.service';
 
+@ApiTags('Contact')
 @Controller('contacts')
 export class ContactsController {
   constructor(private readonly contactsService: ContactsService) {}
