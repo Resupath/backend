@@ -1,3 +1,4 @@
+import { PaginationUtil } from 'src/util/pagination.util';
 import { tags } from 'typia';
 import { Character } from './characters.interface';
 import { Member } from './member.interface';
@@ -17,6 +18,13 @@ export namespace Contacts {
    * 연락하기 요청
    */
   export interface CreateRequst extends Pick<Contacts, 'purpose' | 'message'> {}
+
+  /**
+   * 연락하기 페이지 조회
+   */
+  export interface GetByPageRequest extends PaginationUtil.Request {}
+
+  export interface GetByPageResponse extends PaginationUtil.Response<Contacts.GetResponse> {}
 
   /**
    * 연락하기 조회
