@@ -60,7 +60,7 @@ export class SkillsService {
     const { skip, take } = PaginationUtil.getOffset(query);
 
     const whereInput: Prisma.SkillWhereInput | undefined = query.search
-      ? { keyword: { contains: query.search } }
+      ? { keyword: { contains: query.search, mode: 'insensitive' } }
       : undefined;
 
     const [data, count] = await this.prisma.$transaction([

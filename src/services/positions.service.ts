@@ -60,7 +60,7 @@ export class PositionsService {
     const { skip, take } = PaginationUtil.getOffset(query);
 
     const whereInput: Prisma.PositionWhereInput | undefined = query.search
-      ? { keyword: { contains: query.search } }
+      ? { keyword: { contains: query.search, mode: 'insensitive' } }
       : undefined;
 
     const [data, count] = await this.prisma.$transaction([
